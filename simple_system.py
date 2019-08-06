@@ -14,28 +14,49 @@ def dxdot_dparams(x, t, u, p1, p2):
 def sensitivities(x, t, u, p1, p2):
     S1 = p1/x * x
     S2 = p2/x * u
-    return [S1, S2]
+    return np.array([S1, S2])
+
+def all_sensitivities(xs, t, us, p1, p2):
+    all_sensitivities = []
+
+    for x, u in zip(xs, us):
+        all_sensitivities.append(sensitivities(x, t, u, p1, p2))
+    return np.array(all_sensitivities)
 
 
-tmax = 1000
+tmax = 10
 x0 = 1
 u0 = 1
 
-p1 = 2
+p1 = 0.001
 p2 = 2
 
 #calculate F_0
 #ignore covariance for now as noise = 0
 
-
-ZTZ = np.array([[p1**2/x0**2 * dxdp1**2, p1*p2/x0**2 * dxdp1*dxdp2],
-                [p1*p2/x0**2 * dxdp1*dxdp2, p2**2/x0**2 * dxdp2*dxdp1]])
+Z = np.array([])
 u = u0
 x = x0
+xs = [x0]
+us = [u]
+
+
 for i in range(tmax):
 
-    u = np.random.choice([-1,1])
+    u1 = np.random.choice([-1,1])
+    x1 = odeint(xdot, x, [0,1], args=(u, p1, p2,))[-1][0]
+    #print(x1, u1)
+    t = 0
+    Z = all_sensitivities(xs, t, us, p1, p2)
 
-    x1 = odeint(xdot, x, args=(u, p1, p2))
+    ZTZ = np.matmul(Z.T, Z)
+    print('ZTZ', ZTZ)
+    print('det ZTZ: ', np.linalg.det(ZTZ))
 
-    S1 = p1/x1 *
+    us.append(u1)
+    xs.append(x1)
+
+    x = x1
+    u = u1
+
+print(xs)
