@@ -29,8 +29,8 @@ tmax = 10
 x0 = 1
 u0 = 1
 
-p1 = 0.001
-p2 = 2
+p1 = 1
+p2 = 1
 
 #calculate F_0
 #ignore covariance for now as noise = 0
@@ -39,9 +39,10 @@ Z = np.array([])
 u = u0
 x = x0
 xs = [x0]
+
 us = [u]
 
-
+'''
 for i in range(tmax):
 
     u1 = np.random.choice([-1,1])
@@ -63,3 +64,12 @@ for i in range(tmax):
 
 print(Z)
 print(xs)
+'''
+
+for i in range(100):
+    u1 = np.random.choice([-1,1])
+    u = 1
+    x1 = odeint(xdot, x, [0,1], args=(u, p1, p2,))[-1][0]
+    x = x1
+
+    print(x)
