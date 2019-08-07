@@ -7,9 +7,10 @@ def xdot(x, t, u, p1, p2):
 
 def y(x):
     return x # + noise
-
+'''
 def dxdot_dparams(x, t, u, p1, p2):
     return [x, u]
+'''
 
 def sensitivities(x, t, u, p1, p2):
     S1 = p1/x * x
@@ -50,6 +51,7 @@ for i in range(tmax):
     Z = all_sensitivities(xs, t, us, p1, p2)
 
     ZTZ = np.matmul(Z.T, Z)
+    print()
     print('ZTZ', ZTZ)
     print('det ZTZ: ', np.linalg.det(ZTZ))
 
@@ -59,4 +61,5 @@ for i in range(tmax):
     x = x1
     u = u1
 
+print(Z)
 print(xs)
