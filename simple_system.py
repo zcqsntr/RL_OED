@@ -65,10 +65,10 @@ for i in range(tmax):
 print(Z)
 print(xs)
 '''
-
-for i in range(100):
+us = [1,-1,-1,1,-1,1]
+for i in range(6):
     u1 = np.random.choice([-1,1])
-    u = 1
+    u = us[i]
     x1 = odeint(xdot, x, [0,1], args=(u, p1, p2,))[-1][0]
     x = x1
 
