@@ -48,7 +48,7 @@ def get_one_step_RK(y, u, params):
 
     sensitivities_dot = jacobian(xdot, params) # this might need changin for second p1 derivative term, also jtime could make it quicker
 
-    FIM_dot = vertcat(y[0]**2, y[0]*y[1], y[1]**2)
+    FIM_dot = vertcat(2*y[1]*sensitivities_dot[0], y[1]*sensitivities_dot[1] + y[2]*sensitivities_dot[0], 2*y[2]*sensitivities_dot[1])
 
     RHS[0] = xdot
     RHS[1:3] = sensitivities_dot
@@ -67,7 +67,6 @@ def get_one_step_RK(y, u, params):
     one_step = Function('one_step', [y, u, params], [y1])
 
     return one_step
-
 
 def get_trajectory_solver(y, us, param_guesses):
 
@@ -101,7 +100,6 @@ def get_trajectory_solver(y, us, param_guesses):
     #next_u = 1 # TODO: optimise next_u wrt det_FIM
     return trajectory
 
-
 def gauss_newton(e,nlp,V):
 
     J = jacobian(e,V)
@@ -111,9 +109,33 @@ def gauss_newton(e,nlp,V):
     sigma = SX.sym("sigma")
     hessLag = Function('nlp_hess_l',{'x':V,'lam_f':sigma, 'hess_gamma_x_x':sigma*H},
                      ['x','p','lam_f','lam_g'], ['hess_gamma_x_x'],
-                     dict(jit=False, compiler='clang'))
-    return nlpsol("solver","ipopt", nlp, dict(hess_lag=hessLag, jit=False, compiler='clang'))
+                     dict(jit=False, compiler='clang', verbose = False))
+    return nlpsol("solver","ipopt", nlp, dict(hess_lag=hessLag, jit=False, compiler='clang', verbose_init = False, verbose = False))
 
+def get_u_solver(y0, u, param_guesses):
+    est_trajectory = trajectory_solver(y0, u, param_guesses)
+
+    FIM = vertcat(horzcat(est_trajectory[3,-1], est_trajectory[4,-1]), horzcat(est_trajectory[4, -1], est_trajectory[5, -1]))
+
+    obj = -log(det(FIM))
+    nlp = {'x':u, 'f':obj}
+    solver = gauss_newton(obj, nlp, params)
+
+    return solver
+
+def get_param_solver():
+
+    # model fitting
+    trajectory = trajectory_solver(y0, us, actual_params)
+    est_trajectory_sym = trajectory_solver(y0, us, params)
+
+    e = trajectory[0,:].T - est_trajectory_sym[0,:].T
+    nlp = {'x':params, 'f':0.5*dot(e,e)}
+    solver = gauss_newton(e, nlp, params)
+    print()
+    print(trajectory)
+    print()
+    return solver
 
 if __name__ == '__main__':
     '''
@@ -125,38 +147,56 @@ if __name__ == '__main__':
     u = SX.sym('u')
     params = SX.sym('params', 2)
     FIM = SX.sym('FIM', 2, 2)
-    N_control_inputs = 10
+    N_control_inputs = 5
     #actual_xs, _ , _ = run_trajectory_RK(y0, us, params)
     trajectory_solver = get_trajectory_solver(y, u, params)
 
-    y0 = DM([1, 0, 0, 0, 0, 0]) # x, and initial sensitivites
-    us = DM([-1,1]*(N_control_inputs//2))
+    y0 = DM([1, 0, 0, 0, 0, 0]) # x, initial sensitivites and initial FIM
+
     param_guesses = DM([0.9,1.1])
     actual_params = DM([1,1])
-    u0 = DM([0])
 
+    u0_np = np.array([0])
+    us_np = u0_np
+    u0 = DM(u0_np)
+    us = u0
+    # choosing next u define graph
+    u_solver = get_u_solver(y0, u, param_guesses)
 
-    est_trajectory = trajectory_solver(y0, u, param_guesses)
-    
-    # choosing next u
-    FIM = vertcat(horzcat(est_trajectory[3,-1], est_trajectory[4,-1]), horzcat(est_trajectory[4, -1], est_trajectory[5, -1]))
+    param_solver = get_param_solver() # dont use global variables
 
-    obj = -log(det(FIM))
-    nlp = {'x':u, 'f':obj}
-    solver = gauss_newton(obj, nlp, params)
-    sol = solver(x0=u0)
-    print(sol['x'])
+    all_param_guesses = []
 
-    # model fitting
-    trajectory = trajectory_solver(y0, us, actual_params)
+    all_ys = []
 
-    est_trajectory_sym = trajectory_solver(y0, us, params)
+    for e in range(N_control_inputs):
+        print('----------------------------------------------------------------------------------------')
 
-    e = trajectory[0,:].T - est_trajectory_sym[0,:].T
-    nlp = {'x':params, 'f':0.5*dot(e,e)}
-    solver = gauss_newton(e, nlp, params)
-    param_guesses = solver(x0=param_guesses)['x']
-    print(param_guesses)
+        # optimise for next u
+        sol = u_solver(x0=DM([0.5]))
+
+        u = sol['x']
+        # FIM optimisation only dependent on u0!!!
+
+        #u = 1
+
+        us_np = np.append(us_np, u)
+        us = DM(us_np)
+
+        print('solved u: ', u)
+
+        param_guesses = param_solver(x0=param_guesses)['x']
+        all_param_guesses.append(param_guesses.elements())
+        print('solved params: ', param_guesses)
+
+        '''
+        trajectory = trajectory_solver(y0, us, actual_params)
+        all_ys.append(trajectory.elements()[-1])
+        '''
+    print(all_ys)
+    print(us_np)
+    print(all_param_guesses)
+
 
 
 
@@ -164,3 +204,4 @@ if __name__ == '__main__':
 
 
 #TODO: COVARIANCE MATRIX IN FIM
+#       KEEP SEQUENCE OF FIMS AND ADD TO IT
