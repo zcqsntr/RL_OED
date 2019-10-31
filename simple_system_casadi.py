@@ -1,33 +1,12 @@
 from casadi import *
 import numpy as np
 import matplotlib.pyplot as plt
-'''
-def run_trajectory(x0, us, params):
-    system = get_system_solver(params)
 
-    r = system(x0=x0, p = us[0])
+def disablePrint():
+    sys.stdout = open(os.devnull, 'w')
 
-    for i in range(1, len(us)):
-
-        r = system(x0=r['xf'], p = us[i])
-
-
-def get_system_solver(true_params):
-    x = SX.sym('x')
-    u = SX.sym('u')
-    p1 = true_params[0]
-    p2 = true_params[1]
-
-    #system = integrator('system', 'cvodes', ode)
-
-    xdot = p1*x + p2*u
-
-    ode = {'x':x, 'p':u, 'ode':xdot} # u had to be labelled p here because of casadi
-    F = integrator('F', 'cvodes', ode)
-
-
-    return F
-'''
+def enablePrint():
+    sys.stdout = sys.__stdout__
 
 def outer_product(vector):
     n = 2 # DO THIS DYNAMICALLY
@@ -48,7 +27,7 @@ def get_one_step_RK(y, u, params):
 
     sensitivities_dot = jacobian(xdot, params) # this might need changin for second p1 derivative term, also jtime could make it quicker
 
-    FIM_dot = vertcat(2*y[1]*sensitivities_dot[0], y[1]*sensitivities_dot[1] + y[2]*sensitivities_dot[0], 2*y[2]*sensitivities_dot[1])
+    FIM_dot = vertcat(sensitivities_dot[0]**2, sensitivities_dot[1]*sensitivities_dot[0], sensitivities_dot[1]**2)
 
     RHS[0] = xdot
     RHS[1:3] = sensitivities_dot
@@ -68,10 +47,10 @@ def get_one_step_RK(y, u, params):
 
     return one_step
 
-def get_trajectory_solver(y, us, param_guesses):
+def get_trajectory_solver(y, u, param_guesses, tsteps):
 
     # system includes x and sensitivity evolution
-    system = get_one_step_RK(y, us, param_guesses)
+    system = get_one_step_RK(y, u, param_guesses)
 
     #sensitivites_0 = [0, 0] # we assume this initial sensitivity and integrate from here
     #u = us[0]
@@ -80,13 +59,13 @@ def get_trajectory_solver(y, us, param_guesses):
     output = y
     N_steps_per_interval = 1000
     for i in range(N_steps_per_interval):
-        output = system(output, us, param_guesses)
+        output = system(output, u, param_guesses)
         #sensitivity_matrices.append(mtimes(y[1:],transpose(y[1:])))
 
-    one_CI = Function('one_CI', [y, us, param_guesses], [output])
+    one_CI = Function('one_CI', [y, u, param_guesses], [output])
 
     # this solves over a whole expermient of N control intervals
-    trajectory = one_CI.mapaccum('trajectory', N_control_inputs)
+    trajectory = one_CI.mapaccum('trajectory', tsteps)
     '''
     # sum sensitivity matrices to get FIMs
     FIMs = [sensitivity_matrices[0]]
@@ -112,19 +91,28 @@ def gauss_newton(e,nlp,V):
                      dict(jit=False, compiler='clang', verbose = False))
     return nlpsol("solver","ipopt", nlp, dict(hess_lag=hessLag, jit=False, compiler='clang', verbose_init = False, verbose = False))
 
-def get_u_solver(y0, u, param_guesses):
-    est_trajectory = trajectory_solver(y0, u, param_guesses)
+def get_u_solver(y0, past_us, next_u, param_guesses):
+
+    all_us = SX.sym('all_us', len(past_us)+1)
+    all_us[0: len(past_us)] = past_us
+    all_us[-1] = next_u
+
+    est_trajectory = trajectory_solver(y0, all_us, param_guesses)
 
     FIM = vertcat(horzcat(est_trajectory[3,-1], est_trajectory[4,-1]), horzcat(est_trajectory[4, -1], est_trajectory[5, -1]))
 
+
+
+    past_trajectory = past_trajectory_solver(y0, past_us, param_guesses)
+    current_FIM = vertcat(horzcat(past_trajectory[3,-1], past_trajectory[4,-1]), horzcat(past_trajectory[4, -1], past_trajectory[5, -1]))
+
     obj = -log(det(FIM))
-    nlp = {'x':u, 'f':obj}
+    nlp = {'x':next_u, 'f':obj}
     solver = gauss_newton(obj, nlp, params)
 
-    return solver
+    return solver, current_FIM
 
-def get_param_solver():
-
+def get_param_solver(y0, us, param_guesses):
     # model fitting
     trajectory = trajectory_solver(y0, us, actual_params)
     est_trajectory_sym = trajectory_solver(y0, us, params)
@@ -132,10 +120,8 @@ def get_param_solver():
     e = trajectory[0,:].T - est_trajectory_sym[0,:].T
     nlp = {'x':params, 'f':0.5*dot(e,e)}
     solver = gauss_newton(e, nlp, params)
-    print()
-    print(trajectory)
-    print()
-    return solver
+
+    return solver, trajectory
 
 if __name__ == '__main__':
     '''
@@ -145,48 +131,50 @@ if __name__ == '__main__':
 
     y = SX.sym('y', 6) # one for x, two for sensitivites, three for FIM
     u = SX.sym('u')
+    next_u = SX.sym('next_u')
     params = SX.sym('params', 2)
     FIM = SX.sym('FIM', 2, 2)
     N_control_inputs = 5
     #actual_xs, _ , _ = run_trajectory_RK(y0, us, params)
-    trajectory_solver = get_trajectory_solver(y, u, params)
+
 
     y0 = DM([1, 0, 0, 0, 0, 0]) # x, initial sensitivites and initial FIM
 
     param_guesses = DM([0.9,1.1])
-    actual_params = DM([1,1])
+    actual_params = DM([1.,1.])
 
-    u0_np = np.array([0])
-    us_np = u0_np
-    u0 = DM(u0_np)
-    us = u0
+    u0 = DM([0.5])
+    us = np.array(u0.full())
     # choosing next u define graph
-    u_solver = get_u_solver(y0, u, param_guesses)
-
-    param_solver = get_param_solver() # dont use global variables
 
     all_param_guesses = []
 
     all_ys = []
 
-    for e in range(N_control_inputs):
-        print('----------------------------------------------------------------------------------------')
+    # conversion in matlab is full()
+    for e in range(1, N_control_inputs+1):
+
+        print(e, ' ----------------------------------------------------------------------------------------')
+        trajectory_solver = get_trajectory_solver(y, u, params, e+1)
+        past_trajectory_solver = get_trajectory_solver(y, u, params, e)
+
+        u_solver, FIM = get_u_solver(y0, us, next_u, param_guesses)
 
         # optimise for next u
-        sol = u_solver(x0=DM([0.5]))
+        disablePrint()
+        sol = u_solver(x0=DM([0.1]))
+        pred_u = sol['x']
 
-        u = sol['x']
-        # FIM optimisation only dependent on u0!!!
+        us = np.append(us, pred_u)
 
-        #u = 1
-
-        us_np = np.append(us_np, u)
-        us = DM(us_np)
-
-        print('solved u: ', u)
+        param_solver, trajectory = get_param_solver(y0, us, param_guesses)
 
         param_guesses = param_solver(x0=param_guesses)['x']
         all_param_guesses.append(param_guesses.elements())
+
+        enablePrint()
+        print(FIM)
+        print('solved u: ', pred_u)
         print('solved params: ', param_guesses)
 
         '''
@@ -194,8 +182,9 @@ if __name__ == '__main__':
         all_ys.append(trajectory.elements()[-1])
         '''
     print(all_ys)
-    print(us_np)
+    print(us)
     print(all_param_guesses)
+    print(trajectory)
 
 
 
@@ -204,4 +193,4 @@ if __name__ == '__main__':
 
 
 #TODO: COVARIANCE MATRIX IN FIM
-#       KEEP SEQUENCE OF FIMS AND ADD TO IT
+#       KEEP SEQUENCE OF FIMS AND ADD TO IT, ALTHOUGH DONT HAVE TO DO THIS IF USING COMPUTATIONAL SAVING APPROX?

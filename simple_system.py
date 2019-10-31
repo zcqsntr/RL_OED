@@ -27,7 +27,7 @@ def all_sensitivities(xs, t, us, p1, p2):
 
 tmax = 10
 x0 = 1
-u0 = 1
+u0 = 0.1
 
 p1 = 1
 p2 = 1
@@ -65,7 +65,7 @@ for i in range(tmax):
 print(Z)
 print(xs)
 '''
-us = [1,-1,-1,1,-1,1]
+us = [0.1,0.1,0.1,0.1,0.1,0.1]
 for i in range(6):
     u1 = np.random.choice([-1,1])
     u = us[i]
