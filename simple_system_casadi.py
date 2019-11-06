@@ -14,7 +14,7 @@ def get_one_step_RK(y, u, params):
 
     RHS = SX.sym('RHS', 6)
 
-    xdot = params[0]*y[0] + params[1]*u
+    xdot = (params[0] * u/(params[1] + u))*y[0]
 
     sensitivities_dot = jacobian(xdot, params) # this might need changin for second p1 derivative term, also jtime could make it quicker
 
@@ -120,6 +120,7 @@ if __name__ == '__main__':
 
     y = SX.sym('y', 6) # one for x, two for sensitivites, three for FIM
     u = SX.sym('u')
+    u_bounds = [0, 0.1]
     next_u = SX.sym('next_u')
     params = SX.sym('params', 2)
     FIM = SX.sym('FIM', 2, 2)
@@ -127,10 +128,10 @@ if __name__ == '__main__':
     #actual_xs, _ , _ = run_trajectory_RK(y0, us, params)
     y0 = DM([1, 0, 0, 0, 0, 0]) # x, initial sensitivites and initial FIM
 
-    param_guesses = DM([0.9,1.1])
-    actual_params = DM([1.,1.])
+    param_guesses = DM([0.6,1.5])
+    actual_params = DM([1,1])
 
-    u0 = DM([0.5])
+    u0 = DM([u_bounds[1]/2])
     us = np.array(u0.full())
     # choosing next u define graph
 
@@ -151,7 +152,7 @@ if __name__ == '__main__':
         disablePrint()
 
         # optimise for next u, that maximises FIM according to current param estimates
-        sol = u_solver(x0=DM([0.1]))
+        sol = u_solver(x0=u0, lbx = u_bounds[0], ubx = u_bounds[1])
         pred_u = sol['x']
         us = np.append(us, pred_u)
 

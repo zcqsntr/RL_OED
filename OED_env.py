@@ -38,7 +38,7 @@ class OED_env():
 
         RHS = SX.sym('RHS', 6)
 
-        xdot = self.sym_params[0]*self.sym_y[0] + self.sym_params[1]*self.sym_u
+        xdot = (self.sym_params[0] * self.sym_u/(self.sym_params[1] + self.sym_u))*self.sym_y[0]
 
         sensitivities_dot = jacobian(xdot, self.sym_params) # this might need changin for second p1 derivative term, also jtime could make it quicker
 
@@ -147,7 +147,7 @@ class OED_env():
 
     def get_reward(self):
         FIM = self.get_FIM()
-        return np.linalg.det(FIM) # maybe make this change in det(FIM)
+        return np.linalg.det(FIM)*1e7 # maybe make this change in det(FIM)
 
     def action_to_input(self,action):
         '''
