@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 import numpy as np
-import math 
+import math
 
 class DQN_agent():
 
@@ -32,7 +32,7 @@ class DQN_agent():
 
 
     def predict(self, state): #YES
-
+        
         return self.network.predict(state.reshape(1,-1))[0]
 
     def target_predict(self, state): #YES
