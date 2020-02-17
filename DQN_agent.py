@@ -32,7 +32,7 @@ class DQN_agent():
 
 
     def predict(self, state): #YES
-        
+
         return self.network.predict(state.reshape(1,-1))[0]
 
     def target_predict(self, state): #YES

@@ -38,6 +38,7 @@ class OED_env():
         RHS = SX.sym('RHS', len(self.initial_S.elements()))
 
         #xdot = (self.sym_params[0] * self.sym_u/(self.sym_params[1] + self.sym_u))*self.sym_y[0]
+
         xdot = xdot(self.sym_y, self.sym_u, self.sym_params)
         sensitivities_dot = jacobian(xdot, self.sym_params) # this might need changin for second p1 derivative term, also jtime could make it quicker
 
@@ -191,11 +192,13 @@ class OED_env():
 
         u = self.action_to_input(action)
 
+        print('actual input: ', u)
+
 
         self.us = np.append(self.us, u)
         trajectory_solver = self.get_trajectory_solver(self.xdot, len(self.us))
-        true_trajectory = trajectory_solver(self.initial_S, self.us, self.actual_params)
-        est_trajectory = trajectory_solver(self.initial_S, self.us, self.param_guesses)
+        self.true_trajectory = trajectory_solver(self.initial_S, self.us, self.actual_params)
+        self.est_trajectory = trajectory_solver(self.initial_S, self.us, self.param_guesses)
 
 
         param_solver = self.get_param_solver(trajectory_solver)
@@ -207,9 +210,9 @@ class OED_env():
 
 
 
-        reward = self.get_reward(est_trajectory)
+        reward = self.get_reward(self.est_trajectory)
         done = False
-        state = self.get_state(true_trajectory)
+        state = self.get_state(self.true_trajectory)
 
         return state, reward, done, None
 
@@ -260,7 +263,7 @@ class OED_env_model_discr(OED_env):
 
         true_trajectory = true_trajectory_solver(self.initial_S, self.us, self.actual_params)
         est_trajectory = trajectory_solver(self.initial_S, self.us, self.param_guesses)
-        est_trajectory_1 = trajectory_solver(self.initial_S, self.us, self.param_guesses_1)
+        est_trajectory_1 = trajectory_solver_1(self.initial_S, self.us, self.param_guesses_1)
 
         param_solver = self.get_param_solver(trajectory_solver)
         param_solver_1 = self.get_param_solver(trajectory_solver_1)
@@ -268,7 +271,7 @@ class OED_env_model_discr(OED_env):
         disablePrint()
         self.param_guesses = param_solver(x0=self.param_guesses)['x']
         self.param_guesses_1 = param_solver_1(x0=self.param_guesses_1)['x']
-        enablePrint()
+
         self.all_param_guesses.append(self.param_guesses.elements())
         self.all_param_guesses_1.append(self.param_guesses_1.elements())
 
@@ -277,6 +280,9 @@ class OED_env_model_discr(OED_env):
         reward = self.get_reward(est_trajectory, est_trajectory_1)
         done = False
         state = self.get_state(true_trajectory, est_trajectory, est_trajectory_1)
+        self.true_trajectory = true_trajectory
+        self.est_trajectory = est_trajectory
+        self.est_trajectory_1 = est_trajectory_1
 
         return state, reward, done, None
 
@@ -298,8 +304,8 @@ class OED_env_model_discr(OED_env):
         det_FIM_1 = np.linalg.det(FIM_1)*1e7 # maybe make this change in det(FIM)
 
         model_div = np.sum((est_trajectory[0, :] - est_trajectory_1[0,:])**2)
-        print(det_FIM + det_FIM_1, model_div*1e10)
-        return det_FIM + det_FIM_1 + model_div*1e10
+        print(det_FIM + det_FIM_1, model_div/10)
+        return det_FIM + det_FIM_1 + model_div/10
 
     def get_FIMs(self, est_trajectory, est_trajectory_1):
         FIM = vertcat(horzcat(est_trajectory[3,-1], est_trajectory[4,-1]), horzcat(est_trajectory[4, -1], est_trajectory[5, -1]))

@@ -113,73 +113,142 @@ def get_param_solver(y0, us, param_guesses):
     return solver, trajectory
 
 if __name__ == '__main__':
-    '''
-    params = DM([1,1])
-    param_guesses = DM([1.3, 0.8])
-    '''
+    returns = []
 
-    y = SX.sym('y', 6) # one for x, two for sensitivites, three for FIM
-    u = SX.sym('u')
-    u_bounds = [0, 0.1]
-    next_u = SX.sym('next_u')
-    params = SX.sym('params', 2)
-    FIM = SX.sym('FIM', 2, 2)
-    N_control_inputs = 5
-    #actual_xs, _ , _ = run_trajectory_RK(y0, us, params)
-    y0 = DM([1, 0, 0, 0, 0, 0]) # x, initial sensitivites and initial FIM
+    stop = 0.1
+    step = 0.001
+    #stop = 1
+    #step = 1
+    for u1 in np.arange(0, stop, step ):
+        for u2 in np.arange(0, stop, step):
 
-    param_guesses = DM([0.6,1.5])
-    actual_params = DM([1,1])
+            '''
+            params = DM([1,1])
+            param_guesses = DM([1.3, 0.8])
+            '''
 
-    u0 = DM([u_bounds[1]/2])
-    us = np.array(u0.full())
-    # choosing next u define graph
+            y = SX.sym('y', 6) # one for x, two for sensitivites, three for FIM
+            u = SX.sym('u')
+            u_bounds = [0, 0.1]
+            next_u = SX.sym('next_u')
+            params = SX.sym('params', 2)
+            FIM = SX.sym('FIM', 2, 2)
+            N_control_inputs = 5
+            #actual_xs, _ , _ = run_trajectory_RK(y0, us, params)
+            y0 = DM([1, 0, 0, 0, 0, 0]) # x, initial sensitivites and initial FIM
 
-    all_param_guesses = []
+            param_guesses = DM([0.9,1.1])
+            actual_params = DM([1.,1.])
 
-    all_ys = []
+            u0 = DM([u_bounds[1]/2])
+            u0 = DM([u1])
+            us = np.array(u0.full())
 
-    # conversion in matlab is full()
-    for e in range(1, N_control_inputs+1):
+            # choosing next u define graph
 
-        print(e, ' ----------------------------------------------------------------------------------------')
-        trajectory_solver = get_trajectory_solver(y, u, params, e+1) # to get the trajectory estimated by the params
-        past_trajectory_solver = get_trajectory_solver(y, u, params, e) # to get the actual measured trajectory of the system
+            all_param_guesses = []
 
-        u_solver, past_trajectory = get_u_solver(y0, us, next_u, param_guesses)
+            all_ys = []
+
+            # conversion in matlab is full()
+            for e in range(1, N_control_inputs+1):
+
+                print(e, ' ----------------------------------------------------------------------------------------')
+                trajectory_solver = get_trajectory_solver(y, u, params, e+1) # to get the trajectory estimated by the params
+                past_trajectory_solver = get_trajectory_solver(y, u, params, e) # to get the actual measured trajectory of the system
+
+                u_solver, past_trajectory = get_u_solver(y0, us, next_u, param_guesses)
+                disablePrint()
+
+                # optimise for next u, that maximises FIM according to current param estimates
+                sol = u_solver(x0=u0, lbx = u_bounds[0], ubx = u_bounds[1])
+                pred_u = sol['x']
+                #pred_u =  DM([u2])
+                us = np.append(us, pred_u)
 
 
-        disablePrint()
+                # estimate params based on whole trajectory so far
+                param_solver, trajectory = get_param_solver(y0, us, param_guesses)
+                param_guesses = param_solver(x0=param_guesses)['x']
+                all_param_guesses.append(param_guesses.elements())
 
-        # optimise for next u, that maximises FIM according to current param estimates
-        sol = u_solver(x0=u0, lbx = u_bounds[0], ubx = u_bounds[1])
-        pred_u = sol['x']
-        us = np.append(us, pred_u)
+                enablePrint()
+
+                print('solved u: ', pred_u)
+                print('solved params: ', param_guesses)
+                #print(y.elements())
+
+                #u0 =  pred_u
+
+                '''
+                trajectory = trajectory_solver(y0, us, actual_params)
+                all_ys.append(trajectory.elements()[-1])
+                '''
+
+            print('-------------------------------------------------------------')
+            print(all_ys)
+            print(us)
+            print(all_param_guesses)
+            print(trajectory)
+            xs = [1]
+            e_return = 0
+            trajectory = np.array(trajectory).T
+            for timestep in trajectory:
+                print(timestep)
+                deter = timestep[3] * timestep[5] - timestep[4]**2
+                #print(det)
+                e_return += deter
+                print(deter)
+                xs.append(timestep[0])
+            print(u1, u2)
+            print('return: ', e_return)
+            returns.append(e_return)
 
 
-        # estimate params based on whole trajectory so far
-        param_solver, trajectory = get_param_solver(y0, us, param_guesses)
-        param_guesses = param_solver(x0=param_guesses)['x']
-        all_param_guesses.append(param_guesses.elements())
 
-        enablePrint()
-        print('shape:', us.shape)
-        print(FIM)
-        print('solved u: ', pred_u)
-        print('solved params: ', param_guesses)
-        print(y.elements())
-        print(past_trajectory)
+    import numpy as np
+    from mpl_toolkits.mplot3d import Axes3D
+    import matplotlib.pyplot as plt
+    import random
 
-        '''
-        trajectory = trajectory_solver(y0, us, actual_params)
-        all_ys.append(trajectory.elements()[-1])
-        '''
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    n = int(stop/step)
+    xs = np.array([i for i in range(n) for _ in range(n)])*(stop/n)
+    ys = np.array(list(range(n)) * n)*(stop/n)
+    zs = returns
 
-    print('-------------------------------------------------------------')
-    print(all_ys)
-    print(us)
-    print(all_param_guesses)
-    print(trajectory)
+    ax.plot_trisurf(xs, ys, zs, cmap = 'plasma')
+
+    ax.set_xlabel('$u_1$')
+    ax.set_ylabel('$u_2$')
+    ax.set_zlabel('$|F_i|$')
+    plt.savefig('detFs.pdf')
+    plt.show()
+
+
+
+    plt.figure()
+    plt.step(range(len(np.append(us[0],us))), np.append(us[0], us)) #add first element to make plt.step work
+    np.save('us.npy', np.array(us))
+    plt.ylim(bottom = 0)
+    plt.ylabel('u')
+    plt.xlabel('Timestep')
+    plt.savefig('us.pdf')
+
+
+
+    plt.figure()
+    plt.plot(xs, label = 'trajectory')
+
+    #np.save('true_trajectory.npy', np.array(env.true_trajectory[0, :].elements()))
+
+    plt.legend()
+    plt.ylabel('Population (A.U)')
+    plt.xlabel('Timestep')
+    plt.savefig('trajectories.pdf')
+    np.save('trajectory.npy', np.array(xs))
+    plt.show()
 
 
 
