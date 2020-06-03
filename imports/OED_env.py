@@ -11,29 +11,45 @@ def enablePrint():
 
 class OED_env():
 
-    def __init__(self, initial_S, xdot, param_guesses, actual_params, u0, num_inputs, input_bounds, num_observables = 1):
-        self.state = initial_S
-        self.initial_S = initial_S
+    def __init__(self, y0, xdot, param_guesses, actual_params, u0, num_inputs, input_bounds, num_observables = 1):
+
+
+        # build the reinforcement learning state
+
+        self.n_system_variables = len(y0)
+
+        self.param_guesses = param_guesses
+        self.n_params = len(self.param_guesses.elements())
+        self.n_sensitivities = self.n_system_variables * self.n_params
+        self.n_FIM_elements = sum(range(self.n_params+1))
+        initial_S = y0
+
+        for _ in range(self.n_params*self.n_system_variables + self.n_FIM_elements):
+            initial_S.append(0)
+
+        self.initial_S = DM(initial_S)
+        self.state = self.initial_S
 
         self.xdot = xdot # f(x, u, params)
         # symbolic things for casadi differentiation
-        self.sym_y = SX.sym('y', len(initial_S.elements()))
+        self.sym_y = SX.sym('y', len(self.initial_S.elements()))
         self.sym_u = SX.sym('u')
         self.sym_next_u = SX.sym('next_u')
 
         self.sym_params = SX.sym('params', len(param_guesses.elements()))
-        self.n_params = len(self.param_guesses.elements())
+
         self.all_param_guesses = []
         self.all_ys = []
         self.us = np.array(u0.full())
 
-        self.initial_S = initial_S
-        self.param_guesses = param_guesses
+
         self.actual_params = actual_params
         self.u0 = u0
         self.num_inputs = num_inputs
         self.input_bounds = input_bounds
         self.num_observables = num_observables
+
+
 
     def get_one_step_RK(self, xdot):
 
@@ -46,10 +62,14 @@ class OED_env():
 
         sensitivities_dot = reshape(sensitivities_dot, (sensitivities_dot.size(1) * sensitivities_dot.size(2),1))
 
-        FIM_dot = vertcat(sensitivities_dot[0]**2, sensitivities_dot[1]*sensitivities_dot[0], sensitivities_dot[1]**2)
+        FIM_dot = vertcat(*[sensitivities_dot[i]*sensitivities_dot[j] for i in range(self.n_params) for j in range(i, self.n_params)])  # tested on 2 params, one output
+
 
         RHS[0:len(xdot.elements())] = xdot
         RHS[len(xdot.elements()):len(xdot.elements()) + len(sensitivities_dot.elements())] = sensitivities_dot
+
+        print(len(xdot.elements()) + len(sensitivities_dot.elements()))
+        print(len(self.initial_S.elements()))
         RHS[len(xdot.elements()) + len(sensitivities_dot.elements()):] = FIM_dot
 
         ode = Function('ode', [self.sym_y, self.sym_u, self.sym_params], [RHS])
@@ -124,10 +144,15 @@ class OED_env():
 
         est_trajectory = self.trajectory_solver(self.initial_S, all_us, self.param_guesses)
 
-        FIM = vertcat(horzcat(est_trajectory[3,-1], est_trajectory[4,-1]), horzcat(est_trajectory[4, -1], est_trajectory[5, -1]))
+        FIM = self.get_FIM(est_trajectory)
+
 
         past_trajectory = self.past_trajectory_solver(self.initial_S, self.us, self.param_guesses)
-        current_FIM = vertcat(horzcat(past_trajectory[3,-1], past_trajectory[4,-1]), horzcat(past_trajectory[4, -1], past_trajectory[5, -1]))
+
+
+
+        current_FIM = self.get_FIM(past_trajectory)
+
 
         obj = -log(det(FIM))
         nlp = {'x':self.sym_next_u, 'f':obj}
@@ -142,8 +167,6 @@ class OED_env():
         else:
             trajectory = test_trajectory
 
-        print(trajectory)
-
         est_trajectory_sym = trajectory_solver(self.initial_S, self.us, self.sym_params)
 
         e = trajectory[0,:].T - est_trajectory_sym[0,:].T
@@ -152,9 +175,36 @@ class OED_env():
 
         return solver
 
-    def get_FIM(self, est_trajectory):
+    def get_FIM(self, trajectory):
+        #TODO: TEST THIS FOR LARGER FIMS
+        FIM_start = self.n_system_variables + self.n_params*self.n_system_variables
 
-        FIM = vertcat(horzcat(est_trajectory[3,-1], est_trajectory[4,-1]), horzcat(est_trajectory[4, -1], est_trajectory[5, -1]))
+        FIM_end = FIM_start + self.n_FIM_elements
+
+        FIM_elements = trajectory[FIM_start:FIM_end, -1]
+        start = 0
+        end = self.n_params
+
+        FIM = reshape(FIM_elements[start:end], (1, self.n_params)) # the first row
+
+
+        for i in range(1, self.n_params): #for each row
+            start = end
+            end = start + self.n_params - i
+
+            #get the first n_params - i elements
+            row = FIM_elements[start:end]
+
+            #get the other i elements
+
+            for j in range(i):
+
+                row = horzcat(FIM[j, i-j], row)
+
+            reshape(row, (1, self.n_params))  # turn to row ector
+
+            FIM = vertcat(FIM, row)
+
         return FIM
 
     def get_reward(self, est_trajectory):
@@ -204,8 +254,9 @@ class OED_env():
             u = u_solver(x0=self.u0, lbx = self.input_bounds[0], ubx = self.input_bounds[1])['x']
 
         else: #RL step
+            print(action)
             u = self.action_to_input(action)
-            pass
+            print(u)
 
         #print('--------------------COMPARISON ACTION SETTING: ')
         #u = action
@@ -226,20 +277,24 @@ class OED_env():
         reward = self.get_reward(self.est_trajectory)
         done = False
 
-
         state = self.get_state(self.true_trajectory)
         self.all_ys.append(state)
         return state, reward, done, None
 
     def get_state(self, true_trajectory):
         # get the current measured system state
-        sys_state = true_trajectory[:self.num_observables, -1]
+        sys_state = true_trajectory[:self.num_observables, -1] #TODO: measurement noise
+
+        # get current fim elements
+        FIM_start = self.n_system_variables + self.n_params * self.n_system_variables
+
+        FIM_end = FIM_start + self.n_FIM_elements
+
+        FIM_elements = true_trajectory[FIM_start:FIM_end]
         #print('----------------------ADDING NOISE TO STATE: ')
         #sys_state += np.random.normal(sys_state, sys_state/10)
 
-        current_FIM = self.get_FIM(true_trajectory)
-        print('fim: ', current_FIM.shape)
-        state = np.append(sys_state, np.append(self.param_guesses, current_FIM[0, 1, 3]))
+        state = np.append(sys_state, np.append(self.param_guesses, FIM_elements))
         return state
 
     def reset(self):

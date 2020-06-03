@@ -16,10 +16,16 @@ def xdot(sym_y, sym_u, sym_params):
     return (sym_params[0] * sym_u/(sym_params[1] + sym_u))*sym_y[0]
 
 
+def disablePrint():
+    sys.stdout = open(os.devnull, 'w')
+
+def enablePrint():
+    sys.stdout = sys.__stdout__
+
 if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
-    n_episodes = 200
+    n_episodes = 1
     agent = DQN_agent()
 
     all_returns = []
@@ -49,22 +55,16 @@ if __name__ == '__main__':
         e_return = 0
         #actions = [9,4,9,4,9,4]
         for e in range(1, N_control_inputs+1):
-            action = agent.get_action(state, explore_rate)
+            #action = agent.get_action(state, explore_rate)
+
+            disablePrint()
+            next_state, reward, done, _ = env.step()
+            enablePrint()
 
 
-            next_state, reward, done, _ = env.step(action)
+            #transition = (state, action, reward, next_state)
 
-
-
-            transition = (state, action, reward, next_state)
-
-            agent.buffer.add(transition)
-
-            agent.Q_update()
-            #print('State: ', state)
-            print('Action: ', action)
-            print('Reward: ', reward)
-
+            #gent.buffer.add(transition)
             state = next_state
             e_return += reward
 
@@ -101,4 +101,4 @@ if __name__ == '__main__':
     plt.xlabel('Timestep')
     plt.savefig('us.pdf')
 
-    plt.show()
+    #plt.show()

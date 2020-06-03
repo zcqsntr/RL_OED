@@ -17,7 +17,7 @@ def xdot(sym_y, sym_u, sym_params):
 
 
 if __name__ == '__main__':
-    sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+    #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
     n_episodes = 600
     agent = DQN_agent()

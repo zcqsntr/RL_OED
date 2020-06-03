@@ -41,7 +41,7 @@ def monod(C0, sym_params):
         growth_rate = umax * (C0/ (Km0 + C0))
         return growth_rate
 
-def xdot(sym_y, sym_u, sym_params):
+def xdot_simple_chemostat(sym_y, sym_u, sym_params):
     '''
     Calculates and returns derivatives for the numerical solver odeint
 
@@ -72,8 +72,6 @@ def xdot(sym_y, sym_u, sym_params):
     dC0 = q*(C0in - C0) - 1/y0*R*N
 
     # consstruct derivative vector for odeint
-
-
     dsol = SX.sym('dsol', 2)
     dsol[0] = dN
     dsol[1] = dC0
@@ -154,6 +152,8 @@ if __name__ == '__main__':
 
     # monod system works
 
+    #SIMPLE CHEMOSTAT SYSTEM
+
     param_guesses = DM([7, 0.0006845928, 50000])
     actual_params = DM([0.7, 0.00006845928, 500000])
 
@@ -163,10 +163,14 @@ if __name__ == '__main__':
     u0 = DM([0])
     us = np.array(u0.full())
     y0 = DM([30000,0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    x0 = [30000]
     N_control_inputs = 5
 
     num_inputs = 10 # number of discrete inputs
 
-    env = OED_env(y0, xdot, param_guesses, actual_params, u0, num_inputs, input_bounds)
+    env = OED_env(x0, xdot_simple_chemostat, param_guesses, actual_params, u0, num_inputs, input_bounds)
 
     OED()
+
+
+    # DOUBLE AUX CHEMOSTAT SYSTEM
