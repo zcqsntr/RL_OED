@@ -1,25 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="d4a265c6-eb3f-4c7a-9611-a62750211fde" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+    <list default="true" id="d4a265c6-eb3f-4c7a-9611-a62750211fde" name="Default Changelist" comment="t">
       <change afterPath="$PROJECT_DIR$/Nates_system/RL_param_inf.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/param_inf/OED_param_inf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/RL_OED.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/RL_OED.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_casadi_jacobian.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RL_model_discr.py" beforeDir="false" afterPath="$PROJECT_DIR$/model_discrimination/RL_model_discr.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imports/DQN_agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/imports/DQN_agent.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/imports/OED_env.py" beforeDir="false" afterPath="$PROJECT_DIR$/imports/OED_env.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/param_inf/RL_param_inf.py" beforeDir="false" afterPath="$PROJECT_DIR$/param_inf/RL_param_inf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/param_inf/RL_train_on_prior.py" beforeDir="false" afterPath="$PROJECT_DIR$/param_inf/RL_train_on_prior.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/param_inf/all_returns.npy" beforeDir="false" afterPath="$PROJECT_DIR$/param_inf/all_returns.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/param_inf/est_trajectory.npy" beforeDir="false" afterPath="$PROJECT_DIR$/param_inf/est_trajectory.npy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/param_inf/return.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/param_inf/return.pdf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/param_inf/trajectories.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/param_inf/trajectories.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/param_inf/true_trajectory.npy" beforeDir="false" afterPath="$PROJECT_DIR$/param_inf/true_trajectory.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/param_inf/us.npy" beforeDir="false" afterPath="$PROJECT_DIR$/param_inf/us.npy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/param_inf/us.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/param_inf/us.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/chemostat.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/chemostat.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -131,18 +121,32 @@
       <workItem from="1589974973454" duration="7788000" />
       <workItem from="1590480989194" duration="54000" />
       <workItem from="1591092783430" duration="7945000" />
-      <workItem from="1591171317778" duration="1053000" />
+      <workItem from="1591171317778" duration="15184000" />
+      <workItem from="1591259448797" duration="81000" />
+      <workItem from="1591271891165" duration="10398000" />
     </task>
+    <task id="LOCAL-00001" summary="Fixed get_FIM and reneralised it to systems with more than one parameter">
+      <created>1591172912260</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1591172912260</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Fixed get_FIM and reneralised it to systems with more than one parameter" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed get_FIM and reneralised it to systems with more than one parameter" />
+  </component>
   <component name="WindowStateProjectService">
-    <state x="845" y="789" width="860" height="847" key="CommitChangelistDialog2" timestamp="1591172865789">
+    <state x="845" y="789" width="860" height="847" key="CommitChangelistDialog2" timestamp="1591177344938">
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
-    <state x="845" y="789" width="860" height="847" key="CommitChangelistDialog2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591172865789" />
+    <state x="845" y="789" width="860" height="847" key="CommitChangelistDialog2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591177344938" />
     <state x="52" y="637" width="2360" height="1215" key="DiffContextDialog" timestamp="1591172827042">
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
@@ -155,13 +159,17 @@
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
     <state x="769" y="847" key="SettingsEditor/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591172774846" />
+    <state x="875" y="948" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1591172920880">
+      <screen x="0" y="507" width="2560" height="1413" />
+    </state>
+    <state x="875" y="948" width="800" height="528" key="Vcs.Push.Dialog.v2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591172920880" />
     <state x="100" y="605" width="2360" height="1215" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1591172794349">
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
     <state x="100" y="605" width="2360" height="1215" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591172794349" />
-    <state x="936" y="1040" key="com.intellij.ide.util.TipDialog" timestamp="1591171318233">
+    <state x="936" y="1040" key="com.intellij.ide.util.TipDialog" timestamp="1591259526577">
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
-    <state x="936" y="1040" key="com.intellij.ide.util.TipDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591171318233" />
+    <state x="936" y="1040" key="com.intellij.ide.util.TipDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591259526577" />
   </component>
 </project>

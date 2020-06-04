@@ -53,8 +53,11 @@ class DQN_agent():
 
         for transition in self.buffer.sample():
             state, action, reward, next_state = transition # i fnext_state is none, then done
+
             inputs.append(state)
             # construct target
+
+
             values = self.predict(state)
 
             next_values = self.target_predict(next_state)
@@ -72,6 +75,7 @@ class DQN_agent():
             targets.append(values)
 
         # shuffle inputs and target for IID
+
         inputs, targets  = np.array(inputs), np.array(targets)
 
 
