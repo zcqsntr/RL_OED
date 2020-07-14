@@ -25,8 +25,8 @@ y  = MX.sym('y')
 dy = MX.sym('dy')
 u  = MX.sym('u')
 
-states = vertcat(y,dy);
-controls = u;
+states = vertcat(y,dy)
+controls = u
 
 M = MX.sym("x")
 c = MX.sym("c")
@@ -55,7 +55,7 @@ states_final = states+dt/6.0*(k1+2*k2+2*k3+k4)
 # Create a function that simulates one step propagation in a sample
 one_step = Function('one_step',[states, controls, params],[states_final]);
 
-X = states;
+X = states
 
 for i in range(N_steps_per_sample):
   X = one_step(X, controls, params)
@@ -111,9 +111,9 @@ def gauss_newton(e,nlp,V):
 # that they are in the order of ~0.1..100
 X_symbolic = all_samples(x0, u_data, repmat(params*scale,1,N))
 print(X_symbolic)
-e = y_data-X_symbolic[0,:].T;
 
-sys.exit()
+e = y_data-X_symbolic[0,:].T
+
 
 nlp = {'x':params, 'f':0.5*dot(e,e)}
 

@@ -19,34 +19,61 @@ def disablePrint():
 def enablePrint():
     sys.stdout = sys.__stdout__
 
-def xdot(sym_y, sym_u, sym_params):
-    a, Kt, Krt, d, b = [sym_params[i] for i in range(5)] #intrinsic parameters
+def xdot(sym_y, sym_theta, sym_u):
+    a, Kt, Krt, d, b = [sym_theta[i] for i in range(sym_theta.size()[0])] #intrinsic parameters
     #a = 20min^-1
     Kr = 40 # practically unidentifiable
+    Km = 750
     #Kt = 5e5
     #Krt = 1.09e9
     #d = 2.57e-4 um^-3min^-1
     #b = 4 min-1
     #Km = 750 um^-3
 
-    u = sym_u # for now just choose u
+    u = sym_u[0] # for now just choose u
+    lam = 0.03465735902799726 #min^-1 GROWTH RATE
+    #lam = 0.006931471805599453
+    #lam = sym_u[1]
 
-    #extrinsic parameters
-    g = 1.4
-    Pa = 1000
-    G = 1.3
-    eta = 900 #um^-3min^-1
-    Rf = 600
-    V = 0.4 #um^-3
-    lam = 0.7e-2 #min^-1
+    C = 40
+    D = 20
+    V0 = 0.28
+    V = V0*np.exp((C+D)*lam) #eq 2
+    G =1/(lam*C) *(np.exp((C+D)*lam) - np.exp(D*lam)) #eq 3
+
+    l_ori = 0.26 # chose this so that g matched values for table 2 for both growth rates as couldnt find it defined in paper
+
+    g = np.exp( (C+D-l_ori*C)*lam)#eq 4
+
+    rho = 0.55
+    k_pr = -6.47
+    TH_pr0 = 0.65
+
+    k_p = 0.3
+    TH_p0 = 0.0074
+    m_rnap = 6.3e-7
+
+    k_a = -9.3
+    TH_a0 = 0.59
+
+    Pa = rho*V0/m_rnap *(k_a*lam + TH_a0) * (k_p*lam + TH_p0) * (k_pr*lam + TH_pr0) *np.exp((C+D)*lam) #eq 10
+
+    k_r = 5.48
+    TH_r0 = 0.03
+    m_rib = 1.57e-6
+    Rtot = (k_r*lam + TH_r0) * (k_pr*lam + TH_pr0)*(rho*V0*np.exp((C+D)*lam))/m_rib
+
+    TH_f = 0.1
+    Rf = TH_f*Rtot #eq 17
     n = 5e6
+    eta = 900  # um^-3min^-1
+
 
     rna, prot = sym_y[0], sym_y[1]
 
-    Km = 750 #um^-3 but has a range in the paper, this is the nominal value
+    rna_dot = a*(g/V)*(  (Pa/(n*G)*Kr + (Pa*Krt*u)/(n*G)**2)  /  (1 + (Pa/n*G)*Kr + (Kt/(n*G) + Pa*Krt/(n*G)**2) *u )) - d*eta*rna/V
 
-    rna_dot = a*(g/V)*((Pa/(n*G)*Kr + (Pa*Krt*u)/(n*G)**2)/(1 + (Pa/n*G)*Kr + (Kt/(n*G) + Pa*Krt/(n*G)**2)*u)) -d*eta*rna
-    prot_dot = (b*Rf/V)/(Km + Rf/V)*rna/V - lam*prot/V
+    prot_dot = ((b*Rf/V) / (Km + Rf/V))  * rna/V - lam*prot/V
 
     xdot = SX.sym('xdot', 2)
 
@@ -55,97 +82,128 @@ def xdot(sym_y, sym_u, sym_params):
 
     return xdot
 
-
-
 if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
-    n_episodes = 1
-    agent = DQN_agent(layer_sizes = [22,20,20,10])
+    n_episodes = 500
+    agent = DQN_agent(layer_sizes = [22,20,20,12])
 
     all_returns = []
+
+    actual_params = DM([20, 5e5, 1.09e9, 2.57e-4, 4.])
+
+    input_bounds = [-3, 3] # pn the log scale
+
+    n_params = actual_params.size()[0]
+    n_system_variables = 2
+    n_FIM_elements = sum(range(n_params + 1))
+
+    n_tot = n_system_variables + n_params * n_system_variables + n_FIM_elements
+    print(n_params, n_system_variables, n_FIM_elements)
+    num_inputs = 12  # number of discrete inputs available to RL
+
+    dt = 1 / 100
 
     for episode in range(n_episodes):
         print()
         print('EPISODE: ', episode)
         explore_rate = agent.get_rate(episode, 0, 1, n_episodes/10)
         print('explore rate: ', explore_rate)
-        y0 = [0,0]
 
-        param_guesses = DM([25, 6e5, 1.2e9, 3e-4, 3])
-        actual_params = DM([20, 5e5, 1.09e9, 2.57e-4, 4.])
 
-        input_bounds = [0, 10000]
-        u0 = DM([input_bounds[1]/2])
+        param_guesses = DM([22, 6e5, 1.2e9, 3e-4, 3.5])
+        param_guesses = actual_params
+        y0 = [0.000001, 0.000001]
+
+        u0 = DM([0.0])
         us = np.array(u0.full())
 
-        N_control_inputs = 6
-
-        num_inputs = 10 # number of discrete inputs
-
-        state = np.array(y0 + param_guesses.elements() + [0] * 15)
-
-        env = OED_env(y0, xdot, param_guesses, actual_params, u0, num_inputs, input_bounds)
+        N_control_intervals = 6
+        control_interval_time = 100
 
 
 
+        env = OED_env(y0, xdot, param_guesses, actual_params, u0, num_inputs, input_bounds, dt)
+        state = env.get_initial_RL_state()
 
         e_return = 0
+        e_actions =[]
+        e_rewards = []
         #actions = [9,4,9,4,9,4]
-        for e in range(1, N_control_inputs+1):
+        for e in range(0, N_control_intervals):
             action = agent.get_action(state, explore_rate)
 
-            disablePrint()
             next_state, reward, done, _ = env.step(action)
-            enablePrint()
-
+            if e == N_control_intervals - 1:
+                next_state = [None]*22
             transition = (state, action, reward, next_state)
 
             agent.buffer.add(transition)
 
-            agent.Q_update()
-            #print('State: ', state)
-            print('Action: ', action)
-            print('Reward: ', reward)
+            if episode > 10: # let the buffer fill up a bit
+                agent.Q_update()
+            e_actions.append(action)
+            e_rewards.append(reward)
 
             state = next_state
             e_return += reward
 
         all_returns.append(e_return)
-        agent.update_target_network()
-        [print(fim) for fim in env.FIMs]
-        [print(df) for df in env.detFIMs]
+
+        if episode%10 == 0: agent.update_target_network() # probably do this less regularly
+
 
         '''
         trajectory = trajectory_solver(y0, us, actual_params)
         all_ys.append(trajectory.elements()[-1])
         '''
         print('return: ', e_return)
+        print('actions:', e_actions)
+        print('us: ', env.us)
+        print('rewards: ', e_rewards)
 
+    print(env.all_param_guesses)
+    print(env.actual_params)
+
+
+
+
+    t = np.arange(N_control_intervals) * int(control_interval_time)
+
+    plt.plot(env.true_trajectory[0, :].elements(), label = 'true')
+    plt.plot(env.est_trajectory[0, :].elements(), label = 'est')
+    plt.legend()
+    plt.ylabel('rna')
+    plt.xlabel('time (mins)')
+    plt.savefig('rna_trajectories.pdf')
+    np.save('trajectories.npy', np.array(env.true_trajectory))
+
+    plt.figure()
+    plt.plot( env.true_trajectory[1, :].elements(), label = 'true')
+    plt.plot(env.est_trajectory[1, :].elements(), label = 'est')
+    plt.legend()
+    plt.ylabel('protein')
+    plt.xlabel('time (mins)')
+    plt.savefig('prot_trajectories.pdf')
+
+    plt.figure()
+    plt.step(np.arange(len(env.us.T)), np.log10(np.array(env.us.T)))
+    plt.ylabel('u')
+    plt.xlabel('time (mins)')
+    np.save('us.npy', np.log10(np.array(env.us)))
+    plt.ylim(bottom=0)
+    plt.ylabel('u')
+    plt.xlabel('Timestep')
+    plt.savefig('log_us.pdf')
+
+    plt.figure()
     plt.plot(all_returns)
     plt.ylabel('Return')
     plt.xlabel('Episode')
     plt.savefig('return.pdf')
     np.save('all_returns.npy', np.array(all_returns))
 
-    plt.figure()
-    plt.plot(np.array(env.true_trajectory[0, :].elements()), label = 'true trajectory')
-    plt.plot(np.array(env.est_trajectory[0, :].elements()), label = 'estimated trajectory')
-    np.save('true_trajectory.npy', np.array(env.true_trajectory[0, :].elements()))
-    np.save('est_trajectory.npy', np.array(env.est_trajectory[0, :].elements()))
-    print(env.all_param_guesses)
-    print(env.actual_params)
-    plt.legend()
-    plt.ylabel('Population (A.U)')
-    plt.xlabel('Timestep')
-    plt.savefig('trajectories.pdf')
 
-    plt.figure()
-    plt.step(range(len(np.append(env.us[0],env.us))), np.append(env.us[0],env.us)) #add first element to make plt.step work
-    np.save('us.npy', np.array(env.us))
-    plt.ylim(bottom = 0)
-    plt.ylabel('u')
-    plt.xlabel('Timestep')
-    plt.savefig('us.pdf')
+
 
     plt.show()

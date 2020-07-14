@@ -5,7 +5,7 @@ import math
 
 class DQN_agent():
 
-    def __init__(self,layer_sizes = [6,20,20,10]):
+    def __init__(self,layer_sizes ):
         self.memory = []
         self.layer_sizes = layer_sizes
         self.gamma = 0.9
@@ -21,8 +21,8 @@ class DQN_agent():
         #tf.keras.backend.clear_session()
         initialiser = keras.initializers.RandomUniform(minval = -0.5, maxval = 0.5, seed = None)
         network = keras.Sequential([
-            keras.layers.InputLayer([layer_sizes[0]]),
-            keras.layers.Dense(layer_sizes[1], activation = tf.nn.relu),
+
+            keras.layers.Dense(layer_sizes[1], input_shape= (self.layer_sizes[0],), activation = tf.nn.relu),
             keras.layers.Dense(layer_sizes[2], activation = tf.nn.relu),
             keras.layers.Dense(layer_sizes[3]) # linear output layer
         ])
@@ -31,46 +31,89 @@ class DQN_agent():
         return network
 
 
-    def predict(self, state): #YES
+    def predict(self, states): #YES
 
-        return self.network.predict(state.reshape(1,-1))[0]
+        return self.network.predict(states.reshape(-1,self.layer_sizes[0]))
 
-    def target_predict(self, state): #YES
+    def target_predict(self, states): #YES
 
-        return self.target_network.predict(state.reshape(1,-1))[0]
-
-
+        return self.target_network.predict(states.reshape(-1,self.layer_sizes[0]))
 
     def get_inputs_targets(self):
         '''
         gets fitted Q inputs and calculates targets for training the Q-network for episodic training
         '''
 
+        states = []
+
+        next_states = []
+        actions = []
+        rewards = []
+
+
+        #for transition in self.buffer.sample():  # could make this faster
+        for transition in self.buffer.buffer[0:10]:
+            state, action, reward, next_state = transition  # i fnext_state is none, then done
+
+            states.append(state)
+            next_states.append(next_state)
+            actions.append(action)
+            rewards.append(reward)
+
+        states = np.array(states)
+        next_states = np.array(next_states, dtype = np.float64)
+        actions = np.array(actions)
+        rewards = np.array(rewards)
+        #print('ns:', next_states)
+        print(states.shape, next_states.shape, actions.shape, rewards.shape)
+
+        # construct targe
+        values = self.predict(states)
+        next_values = self.target_predict(next_states)
+
+
+
+        for i in range(len(next_states)):
+            #print(actions[i], rewards[i])
+            if math.isnan(next_states[i][0]):
+
+                values[i, actions[i]] = rewards[i]
+            else:
+
+                values[i, actions[i]] = rewards[i]  + self.gamma * np.max(next_values[i])  # could introduce step size here, maybe not needed for neural agent
+
+        return states, values
+
+    def get_inputs_targets_old(self):
+        
+
+        
+
         inputs = []
         targets = []
 
 
-
-        for transition in self.buffer.sample():
+        #for transition in self.buffer.sample(): # could make this faster
+        for transition in self.buffer.buffer[0:10]:  # could make this faster
             state, action, reward, next_state = transition # i fnext_state is none, then done
-
+            print(action, reward)
             inputs.append(state)
-            # construct target
+            # construct targe
+            values = self.predict(np.array(state))[0]
 
 
-            values = self.predict(state)
-
-            next_values = self.target_predict(next_state)
 
             assert len(values) == self.n_actions, 'neural network returning wrong number of values'
-            assert len(next_values) == self.n_actions, 'neural network returning wrong number of values'
+
 
             #update the value for the taken action using cost function and current Q
 
             if next_state is None:
-                values[action] = reward + self.gamma*np.max(next_values) # could introduce step size here, maybe not needed for neural agent
-            else:
                 values[action] = reward
+            else:
+                next_values = self.target_predict(np.array(next_state))[0]
+                assert len(next_values) == self.n_actions, 'neural network returning wrong number of values'
+                values[action] = reward + self.gamma * np.max( next_values)  # could introduce step size here, maybe not needed for neural agent
 
             targets.append(values)
 
@@ -91,10 +134,19 @@ class DQN_agent():
         if inputs is None and targets is None:
             inputs, targets = self.get_inputs_targets()
 
+            #inputs_old, targets_old = self.get_inputs_targets_old()
+            #print(inputs ==inputs_old)
+            #print(np.isclose(targets, targets_old))
+        #print('inputs: ', inputs)
+        #print('target: ', targets)
+        #print('target old: ', targets_old)
         history = self.network.fit(inputs, targets, epochs = 300, verbose = False)
         return history
 
-    def update_target_network(self): # test this
+
+
+    def update_target_network(self): # tested
+
         self.target_network.set_weights(self.network.get_weights())
 
     def save_network(self, save_path): # tested
@@ -124,9 +176,6 @@ class DQN_agent():
             action = np.argmax(values)
 
         return action
-
-    def run_episode():
-        return
 
     def get_rate(self, episode, MIN_RATE,  MAX_RATE, denominator):
         '''
@@ -162,7 +211,7 @@ class ExperienceBuffer():
     Class to handle the management of the QDN storage buffer, stores experience
     in the form [state, action, reward, next_state]
     '''
-    def __init__(self, buffer_size = 1000):
+    def __init__(self, buffer_size = 100):
         '''
         Parameters:
 
