@@ -8,7 +8,7 @@ class DQN_agent():
     def __init__(self,layer_sizes ):
         self.memory = []
         self.layer_sizes = layer_sizes
-        self.gamma = 0.9
+        self.gamma = 0.99
         self.state_size = layer_sizes[0]
         self.n_actions = layer_sizes[-1]
         self.network = self.initialise_network(layer_sizes)
@@ -140,7 +140,7 @@ class DQN_agent():
         #print('inputs: ', inputs)
         #print('target: ', targets)
         #print('target old: ', targets_old)
-        history = self.network.fit(inputs, targets, epochs = 300, verbose = False)
+        history = self.network.fit(inputs, targets, epochs = 1, verbose = False)
         return history
 
 

@@ -84,8 +84,22 @@ def xdot(sym_y, sym_theta, sym_u):
 
 if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+    if len(sys.argv) == 3:
+        save_path =  sys.argv[1] + sys.argv[2] +'/'
+        os.makedirs(save_path, exist_ok = True)
+    elif len(sys.argv) == 2:
+        save_path =  sys.argv[1] +'/'
+        os.makedirs(save_path, exist_ok = True)
+    else:
+        save_path = './'
 
-    n_episodes = 1
+    if sys.argv[2] == 1:
+        n_episodes = 10000
+    elif sys.argv[2] == 2:
+        n_episodes = 50000
+    else:
+        n_episodes = 100000
+
     agent = DQN_agent(layer_sizes = [22,20,20,12])
 
     all_returns = []
@@ -150,7 +164,7 @@ if __name__ == '__main__':
 
         all_returns.append(e_return)
 
-        if episode%10 == 0: agent.update_target_network() # probably do this less regularly
+        if episode%100 == 0: agent.update_target_network()
 
 
         '''
@@ -175,35 +189,37 @@ if __name__ == '__main__':
     plt.legend()
     plt.ylabel('rna')
     plt.xlabel('time (mins)')
-    plt.savefig('rna_trajectories.pdf')
-    np.save('trajectories.npy', np.array(env.true_trajectory))
+    plt.savefig(save_path + 'rna_trajectories.pdf')
+    np.save(save_path + 'trajectories.npy', np.array(env.true_trajectory))
 
     plt.figure()
     plt.plot( env.true_trajectory[1, :].elements(), label = 'true')
     plt.plot(env.est_trajectory[1, :].elements(), label = 'est')
     plt.legend()
-    plt.ylabel('protein')
+    plt.ylabel( 'protein')
     plt.xlabel('time (mins)')
-    plt.savefig('prot_trajectories.pdf')
+    plt.savefig(save_path + 'prot_trajectories.pdf')
+    np.save(save_path + 'true_trajectory.npy', env.true_trajectory)
+    np.save(save_path + 'est_trajectory.npy', env.est_trajectory)
 
     plt.figure()
-    plt.step(np.arange(len(env.us.T)), np.log10(np.array(env.us.T)))
+    plt.step(np.arange(len(env.us.T)), np.array(env.us.T))
     plt.ylabel('u')
     plt.xlabel('time (mins)')
-    np.save('us.npy', np.log10(np.array(env.us)))
+    np.save(save_path + 'us.npy', np.array(env.us))
     plt.ylim(bottom=0)
     plt.ylabel('u')
     plt.xlabel('Timestep')
-    plt.savefig('log_us.pdf')
+    plt.savefig(save_path + 'log_us.pdf')
 
     plt.figure()
     plt.plot(all_returns)
     plt.ylabel('Return')
     plt.xlabel('Episode')
-    plt.savefig('return.pdf')
-    np.save('all_returns.npy', np.array(all_returns))
+    plt.savefig(save_path + 'return.pdf')
+    np.save(save_path + 'all_returns.npy', np.array(all_returns))
 
 
 
 
-    plt.show()
+   # plt.show()
