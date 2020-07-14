@@ -85,7 +85,7 @@ def xdot(sym_y, sym_theta, sym_u):
 if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
-    n_episodes = 500
+    n_episodes = 1
     agent = DQN_agent(layer_sizes = [22,20,20,12])
 
     all_returns = []

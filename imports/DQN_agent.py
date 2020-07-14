@@ -211,7 +211,7 @@ class ExperienceBuffer():
     Class to handle the management of the QDN storage buffer, stores experience
     in the form [state, action, reward, next_state]
     '''
-    def __init__(self, buffer_size = 100):
+    def __init__(self, buffer_size = 1000):
         '''
         Parameters:
 
