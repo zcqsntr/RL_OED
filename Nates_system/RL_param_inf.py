@@ -84,8 +84,18 @@ def xdot(sym_y, sym_theta, sym_u):
 
 if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+    n_episodes = 1000
+
     if len(sys.argv) == 3:
+        if sys.argv[2] == '1':
+            n_episodes = 10000
+        elif sys.argv[2] == '2':
+            n_episodes = 50000
+        else:
+            n_episodes = 100000
+
         save_path =  sys.argv[1] + sys.argv[2] +'/'
+        print(n_episodes)
         os.makedirs(save_path, exist_ok = True)
     elif len(sys.argv) == 2:
         save_path =  sys.argv[1] +'/'
@@ -93,12 +103,6 @@ if __name__ == '__main__':
     else:
         save_path = './'
 
-    if sys.argv[2] == 1:
-        n_episodes = 10000
-    elif sys.argv[2] == 2:
-        n_episodes = 50000
-    else:
-        n_episodes = 100000
 
     agent = DQN_agent(layer_sizes = [22,20,20,12])
 
