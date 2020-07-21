@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="d4a265c6-eb3f-4c7a-9611-a62750211fde" name="Default Changelist" comment="t">
-      <change afterPath="$PROJECT_DIR$/Nates_system/RL_param_inf.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_casadi_jacobian.py" afterDir="false" />
+    <list default="true" id="d4a265c6-eb3f-4c7a-9611-a62750211fde" name="Default Changelist" comment="fixed inputs argument bug">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Nates_system/RL_param_inf.py" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/RL_param_inf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/imports/DQN_agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/imports/DQN_agent.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/imports/OED_env.py" beforeDir="false" afterPath="$PROJECT_DIR$/imports/OED_env.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/param_inf/return.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/param_inf/return.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/param_inf/trajectories.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/param_inf/trajectories.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/param_inf/us.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/param_inf/us.pdf" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FavoritesManager">
+    <favorites_list name="RL_OED" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -36,7 +35,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/Nates_system" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/Nates_system/reward_prediction" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -47,9 +46,15 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/Nates_system/reward_prediction" />
+      <recent name="$PROJECT_DIR$/Nates_system/100eps_deltar" />
+      <recent name="$PROJECT_DIR$/Nates_system/100eps" />
+      <recent name="$PROJECT_DIR$/Nates_system/500_eps" />
       <recent name="$PROJECT_DIR$/model_discrimination" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/Nates_system/500eps_logdeltar" />
+      <recent name="$PROJECT_DIR$/Nates_system/500epsdeltalogr" />
       <recent name="$PROJECT_DIR$/Nates_system" />
       <recent name="$PROJECT_DIR$/param_inf" />
     </key>
@@ -123,7 +128,25 @@
       <workItem from="1591092783430" duration="7945000" />
       <workItem from="1591171317778" duration="15184000" />
       <workItem from="1591259448797" duration="81000" />
-      <workItem from="1591271891165" duration="10398000" />
+      <workItem from="1591271891165" duration="12516000" />
+      <workItem from="1591343443849" duration="452000" />
+      <workItem from="1591363534141" duration="7000" />
+      <workItem from="1591363554039" duration="7422000" />
+      <workItem from="1591707771944" duration="620000" />
+      <workItem from="1592914944866" duration="52000" />
+      <workItem from="1593510520600" duration="11274000" />
+      <workItem from="1593590880573" duration="34276000" />
+      <workItem from="1593763893807" duration="19038000" />
+      <workItem from="1594026395217" duration="2237000" />
+      <workItem from="1594111033241" duration="11787000" />
+      <workItem from="1594201342374" duration="33267000" />
+      <workItem from="1594372467731" duration="2860000" />
+      <workItem from="1594630242651" duration="21832000" />
+      <workItem from="1594801529030" duration="2972000" />
+      <workItem from="1594886486973" duration="1198000" />
+      <workItem from="1594908579267" duration="12000" />
+      <workItem from="1594974001079" duration="190000" />
+      <workItem from="1594982076742" duration="11390000" />
     </task>
     <task id="LOCAL-00001" summary="Fixed get_FIM and reneralised it to systems with more than one parameter">
       <created>1591172912260</created>
@@ -132,7 +155,28 @@
       <option name="project" value="LOCAL" />
       <updated>1591172912260</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Nates system coded, need to fix bug in updated sym_Y">
+      <created>1591286823870</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1591286823870</updated>
+    </task>
+    <task id="LOCAL-00003" summary="sym_Y bug fixed. ready for server to test RL">
+      <created>1594717734407</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1594717734407</updated>
+    </task>
+    <task id="LOCAL-00004" summary="fixed inputs argument bug">
+      <created>1594801686621</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1594801686621</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -140,36 +184,51 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Fixed get_FIM and reneralised it to systems with more than one parameter" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed get_FIM and reneralised it to systems with more than one parameter" />
+    <MESSAGE value="Nates system coded, need to fix bug in updated sym_Y" />
+    <MESSAGE value="sym_Y bug fixed. ready for server to test RL" />
+    <MESSAGE value="fixed inputs argument bug" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed inputs argument bug" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="845" y="789" width="860" height="847" key="CommitChangelistDialog2" timestamp="1591177344938">
+    <state x="958" y="1017" width="633" height="390" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1594244720558">
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
-    <state x="845" y="789" width="860" height="847" key="CommitChangelistDialog2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591177344938" />
+    <state x="958" y="1017" width="633" height="390" key="#com.intellij.fileTypes.FileTypeChooser/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1594244720558" />
+    <state x="1013" y="961" width="524" height="502" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1594631866345">
+      <screen x="0" y="507" width="2560" height="1413" />
+    </state>
+    <state x="1013" y="961" width="524" height="502" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1594631866345" />
+    <state x="845" y="789" width="860" height="847" key="CommitChangelistDialog2" timestamp="1595335380296">
+      <screen x="0" y="507" width="2560" height="1413" />
+    </state>
+    <state x="845" y="789" width="860" height="847" key="CommitChangelistDialog2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1595335380296" />
     <state x="52" y="637" width="2360" height="1215" key="DiffContextDialog" timestamp="1591172827042">
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
     <state x="52" y="637" width="2360" height="1215" key="DiffContextDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591172827042" />
-    <state x="1063" y="970" width="780" height="595" key="FileChooserDialogImpl" timestamp="1590481033932">
+    <state x="977" y="731" width="780" height="692" key="FileChooserDialogImpl" timestamp="1594199921165">
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
-    <state x="1063" y="970" width="780" height="595" key="FileChooserDialogImpl/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1590481033932" />
+    <state x="977" y="731" width="780" height="692" key="FileChooserDialogImpl/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1594199921165" />
     <state x="769" y="847" key="SettingsEditor" timestamp="1591172774846">
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
     <state x="769" y="847" key="SettingsEditor/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591172774846" />
-    <state x="875" y="948" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1591172920880">
+    <state x="875" y="948" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1594801694336">
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
-    <state x="875" y="948" width="800" height="528" key="Vcs.Push.Dialog.v2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591172920880" />
+    <state x="875" y="948" width="800" height="528" key="Vcs.Push.Dialog.v2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1594801694336" />
     <state x="100" y="605" width="2360" height="1215" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1591172794349">
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
     <state x="100" y="605" width="2360" height="1215" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591172794349" />
-    <state x="936" y="1040" key="com.intellij.ide.util.TipDialog" timestamp="1591259526577">
+    <state x="1559" y="811" width="688" height="410" key="com.intellij.ide.util.TipDialog" timestamp="1594908580129">
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
-    <state x="936" y="1040" key="com.intellij.ide.util.TipDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591259526577" />
+    <state x="1559" y="811" width="688" height="410" key="com.intellij.ide.util.TipDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1594908580129" />
+    <state x="943" y="827" width="672" height="678" key="search.everywhere.popup" timestamp="1594128855429">
+      <screen x="0" y="507" width="2560" height="1413" />
+    </state>
+    <state x="943" y="827" width="672" height="678" key="search.everywhere.popup/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1594128855429" />
   </component>
 </project>

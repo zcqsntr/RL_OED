@@ -65,7 +65,7 @@ class DQN_agent():
         actions = np.array(actions)
         rewards = np.array(rewards)
         #print('ns:', next_states)
-        print(states.shape, next_states.shape, actions.shape, rewards.shape)
+
 
         # construct targe
         values = self.predict(states)
@@ -80,7 +80,7 @@ class DQN_agent():
                 values[i, actions[i]] = rewards[i]
             else:
 
-                values[i, actions[i]] = rewards[i]  + self.gamma * np.max(next_values[i])  # could introduce step size here, maybe not needed for neural agent
+                values[i, actions[i]] = rewards[i]  + self.gamma * np.max(next_values[i])
 
         return states, values
 

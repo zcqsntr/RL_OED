@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from OED_env import *
 from DQN_agent import *
 import tensorflow as tf
+import time
 
 
 def disablePrint():
@@ -84,17 +85,17 @@ def xdot(sym_y, sym_theta, sym_u):
 
 if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
-    n_episodes = 1000
+
 
     if len(sys.argv) == 3:
         if sys.argv[2] == '1':
-            n_episodes = 10000
-        elif sys.argv[2] == '2':
-            n_episodes = 50000
-        else:
             n_episodes = 100000
+        elif sys.argv[2] == '2':
+            n_episodes = 200000
+        else:
+            n_episodes = 300000
 
-        save_path =  sys.argv[1] + sys.argv[2] +'/'
+        save_path =  sys.argv[1] + sys.argv[2]+'/'
         print(n_episodes)
         os.makedirs(save_path, exist_ok = True)
     elif len(sys.argv) == 2:
@@ -122,26 +123,23 @@ if __name__ == '__main__':
 
     dt = 1 / 100
 
+    param_guesses = DM([22, 6e5, 1.2e9, 3e-4, 3.5])
+    param_guesses = actual_params
+    y0 = [0.000001, 0.000001]
+
+
+
+    N_control_intervals = 6
+    control_interval_time = 100
+
+    env = OED_env(y0, xdot, param_guesses, actual_params, num_inputs, input_bounds, dt, control_interval_time)
+
     for episode in range(n_episodes):
-        print()
-        print('EPISODE: ', episode)
+
         explore_rate = agent.get_rate(episode, 0, 1, n_episodes/10)
-        print('explore rate: ', explore_rate)
 
 
-        param_guesses = DM([22, 6e5, 1.2e9, 3e-4, 3.5])
-        param_guesses = actual_params
-        y0 = [0.000001, 0.000001]
-
-        u0 = DM([0.0])
-        us = np.array(u0.full())
-
-        N_control_intervals = 6
-        control_interval_time = 100
-
-
-
-        env = OED_env(y0, xdot, param_guesses, actual_params, u0, num_inputs, input_bounds, dt)
+        env.reset()
         state = env.get_initial_RL_state()
 
         e_return = 0
@@ -149,17 +147,23 @@ if __name__ == '__main__':
         e_rewards = []
         #actions = [9,4,9,4,9,4]
         for e in range(0, N_control_intervals):
+            t = time.time()
             action = agent.get_action(state, explore_rate)
 
+
             next_state, reward, done, _ = env.step(action)
+
+
             if e == N_control_intervals - 1:
                 next_state = [None]*22
             transition = (state, action, reward, next_state)
 
             agent.buffer.add(transition)
 
-            if episode > 10: # let the buffer fill up a bit
+            if episode >10: # let the buffer fill up a bit
+
                 agent.Q_update()
+
             e_actions.append(action)
             e_rewards.append(reward)
 
@@ -175,13 +179,20 @@ if __name__ == '__main__':
         trajectory = trajectory_solver(y0, us, actual_params)
         all_ys.append(trajectory.elements()[-1])
         '''
-        print('return: ', e_return)
-        print('actions:', e_actions)
-        print('us: ', env.us)
-        print('rewards: ', e_rewards)
 
-    print(env.all_param_guesses)
-    print(env.actual_params)
+        if episode %100 == 0:
+            print()
+            print('EPISODE: ', episode)
+            print('explore rate: ', explore_rate)
+            print('return: ', e_return)
+            print('actions:', e_actions)
+            print('us: ', env.us)
+            print('rewards: ', e_rewards)
+
+    #print(env.FIMs)
+            print(env.detFIMs)
+    #print(env.all_param_guesses)
+    #print(env.actual_params)
 
 
 
@@ -189,7 +200,7 @@ if __name__ == '__main__':
     t = np.arange(N_control_intervals) * int(control_interval_time)
 
     plt.plot(env.true_trajectory[0, :].elements(), label = 'true')
-    plt.plot(env.est_trajectory[0, :].elements(), label = 'est')
+    #plt.plot(env.est_trajectory[0, :].elements(), label = 'est')
     plt.legend()
     plt.ylabel('rna')
     plt.xlabel('time (mins)')
@@ -198,13 +209,13 @@ if __name__ == '__main__':
 
     plt.figure()
     plt.plot( env.true_trajectory[1, :].elements(), label = 'true')
-    plt.plot(env.est_trajectory[1, :].elements(), label = 'est')
+    #plt.plot(env.est_trajectory[1, :].elements(), label = 'est')
     plt.legend()
     plt.ylabel( 'protein')
     plt.xlabel('time (mins)')
     plt.savefig(save_path + 'prot_trajectories.pdf')
     np.save(save_path + 'true_trajectory.npy', env.true_trajectory)
-    np.save(save_path + 'est_trajectory.npy', env.est_trajectory)
+    #np.save(save_path + 'est_trajectory.npy', env.est_trajectory)
 
     plt.figure()
     plt.step(np.arange(len(env.us.T)), np.array(env.us.T))
@@ -226,4 +237,4 @@ if __name__ == '__main__':
 
 
 
-   # plt.show()
+    #plt.show()

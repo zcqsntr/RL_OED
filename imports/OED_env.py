@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import copy
 import math
-
+import time
 def disablePrint():
     sys.stdout = open(os.devnull, 'w')
 
@@ -12,7 +12,7 @@ def enablePrint():
 
 class OED_env():
 
-    def __init__(self, x0, xdot, param_guesses, actual_params, u0, num_inputs, input_bounds, dt):
+    def __init__(self, x0, xdot, param_guesses, actual_params, num_inputs, input_bounds, dt, control_interval_time):
 
 
         # build the reinforcement learning state
@@ -24,6 +24,7 @@ class OED_env():
 
         self.dt = dt
 
+        self.initial_params = param_guesses
         self.param_guesses = param_guesses
         self.n_params = len(self.param_guesses.elements())
         self.n_sensitivities = self.n_system_variables * self.n_params
@@ -32,7 +33,7 @@ class OED_env():
         print(self.n_params, self.n_sensitivities, self.n_FIM_elements)
         print('n fim: ', self.n_FIM_elements)
         self.x0 = x0
-        self.u0 = u0
+
 
         self.initial_Y = DM([0] * (self.n_tot))
 
@@ -47,12 +48,24 @@ class OED_env():
 
         self.all_param_guesses = []
         self.all_RL_states = []
-        self.us = np.array(u0.full())
+        self.us = np.array([])
 
 
         self.actual_params = actual_params
         self.num_inputs = num_inputs
         self.input_bounds = input_bounds
+
+        self.G  = self.get_control_interval_solver(control_interval_time, dt) # set this up here as it take ages
+
+    def reset(self):
+        self.param_guesses = self.initial_params
+        self.Y = self.initial_Y
+        self.FIMs = []
+        self.detFIMs = []
+        self.us = np.array([])
+        self.true_trajectory = []
+        self.est_trajectory = []
+
 
     def G(self, Y, theta, u):
         RHS = SX.sym('RHS', len(self.initial_Y.elements()))
@@ -112,7 +125,7 @@ class OED_env():
     def get_control_interval_solver(self, control_interval_time, dt):
 
         theta = SX.sym('theta', len(self.actual_params.elements()))
-        u = SX.sym('u', self.u0.size()[0])
+        u = SX.sym('u', 1)
 
         G_1 = self.get_one_step_RK(theta, u, dt)  # pass theta and u in just in case#
 
@@ -125,10 +138,10 @@ class OED_env():
         G = Function('G', [Y_0, theta, u], [Y_iter])
         return G
 
-    def get_sampled_trajectory_solver(self, N_control_intervals, control_interval_time, dt):
+    def get_sampled_trajectory_solver(self, N_control_intervals):
 
-        G = self.get_control_interval_solver(control_interval_time, dt)
-        trajectory_solver = G.mapaccum('trajectory', N_control_intervals)
+        trajectory_solver = self.G.mapaccum('trajectory', N_control_intervals)
+
         return trajectory_solver
 
     def get_full_trajectory_solver(self,  N_control_intervals, control_interval_time, dt):
@@ -205,9 +218,6 @@ class OED_env():
             u = u_solver(x0=self.u0, lbx = self.input_bounds[0], ubx = self.input_bounds[1])['x']
         else: #RL step
             u = self.action_to_input(action)
-
-
-
         self.us = np.append(self.us, 10**u)
 
         '''
@@ -224,18 +234,19 @@ class OED_env():
         '''
 
 
-
-        control_interval_time = 100
         N_control_intervals = len(self.us)
         #N_control_intervals = 12
 
 
-        sampled_trajectory_solver = self.get_sampled_trajectory_solver(N_control_intervals, control_interval_time, self.dt) # the sampled trajectory seen by the agent
-        trajectory_solver = self.get_full_trajectory_solver(N_control_intervals, control_interval_time, self.dt) # the true trajectory of the system
-        #trajectory_solver = trajectory_solver(N_control_intervals, control_interval_time, dt ) #this si the symbolic trajectory
+        sampled_trajectory_solver = self.get_sampled_trajectory_solver(N_control_intervals) # the sampled trajectory seen by the agent
 
+
+        #trajectory_solver = self.get_full_trajectory_solver(N_control_intervals, control_interval_time, self.dt) # the true trajectory of the system
+        #trajectory_solver = trajectory_solver(N_control_intervals, control_interval_time, dt ) #this si the symbolic trajectory
+        t = time.time()
         self.true_trajectory = sampled_trajectory_solver(self.initial_Y,  self.actual_params, self.us)
-        self.est_trajectory = sampled_trajectory_solver(self.initial_Y, self.param_guesses, self.us )
+
+        #self.est_trajectory = sampled_trajectory_solver(self.initial_Y, self.param_guesses, self.us )
 
         #param_solver = self.get_param_solver(sampled_trajectory_solver)
         # estimate params based on whole trajectory so far
@@ -244,22 +255,32 @@ class OED_env():
         enablePrint()
         #self.all_param_guesses.append(self.param_guesses.elements())
 
-        reward = self.get_reward(self.est_trajectory)
+        #reward = self.get_reward(self.est_trajectory)
+
+        reward = self.get_reward(self.true_trajectory)
+
         done = False
 
-        state = self.get_RL_state(self.true_trajectory, self.est_trajectory)
+        #state = self.get_RL_state(self.true_trajectory, self.est_trajectory)
+
+        state = self.get_RL_state(self.true_trajectory, self.true_trajectory)
+
         self.all_RL_states.append(state)
         return state, reward, done, None
 
     def get_reward(self, est_trajectory):
         FIM = self.get_FIM(est_trajectory)
-        print('eigs: ', np.linalg.eig(FIM)[0])
 
+        #use this method to remove the small negatvie eigenvalues
+        eigs = np.real(np.linalg.eig(FIM)[0])
+        eigs[eigs<0] = 0.00000000000000000000000001
+        det_FIM = np.prod(eigs)
         #use qr factorisation for numerical stability
         #det q is either 1 or -1
-        q, r = np.linalg.qr(FIM)
-        det_FIM = r.diagonal().prod() * np.linalg.det(q)
-        print('det: ', det_FIM)
+
+        #q, r = np.linalg.qr(FIM)
+        #det_FIM = r.diagonal().prod() * np.linalg.det(q)
+        #print('det: ', det_FIM)
 
         self.FIMs.append(FIM)
         self.detFIMs.append(det_FIM)
@@ -272,7 +293,14 @@ class OED_env():
             reward = np.log(det_FIM)
 
         if math.isnan(reward):
+            pass
+            print()
             print('nan reward, FIM might have negative determinant !!!!')
+            print('eigs: ', eigs)
+            print(det_FIM)
+            print(self.detFIMs[-2])
+            print(det_FIM - self.detFIMs[-2])
+
             reward = -100
         return reward/100
 
@@ -356,6 +384,8 @@ class OED_env():
         return state / np.array([1e3, 1e4, 1e2, 1e6, 1e10, 1e-3, 1e1, 1e9, 1e9, 1e9, 1e9, 1, 1e9, 1e9, 1e9, 1, 1e9, 1e9, 1, 1e9, 1, 1e7])
 
     def get_RL_state(self, true_trajectory, est_trajectory):
+
+
         # get the current measured system state
         sys_state = true_trajectory[:self.n_system_variables, -1] #TODO: measurement noise
 
@@ -371,9 +401,11 @@ class OED_env():
 
         state = np.append(sys_state, np.append(self.param_guesses, FIM_elements))
 
-        print(self.normalise_RL_state(state))
+        #print(self.normalise_RL_state(state))
 
         return self.normalise_RL_state(state)
+
+
 
     def get_initial_RL_state(self):
         state = np.array(self.x0 + self.param_guesses.elements() + [0] * self.n_FIM_elements)
@@ -454,7 +486,7 @@ class OED_env_model_discr(OED_env):
         det_FIM_1 = np.linalg.det(FIM_1)*1e7 # maybe make this change in det(FIM)
 
         model_div = np.sum((est_trajectory[0, :] - est_trajectory_1[0,:])**2)
-        print(det_FIM + det_FIM_1, model_div/10)
+        #print(det_FIM + det_FIM_1, model_div/10)
         return det_FIM + det_FIM_1 + model_div/10
 
     def get_FIMs(self, est_trajectory, est_trajectory_1):
