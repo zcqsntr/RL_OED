@@ -86,7 +86,7 @@ def xdot(sym_y, sym_theta, sym_u):
 if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
-
+    n_episodes = 100000
     if len(sys.argv) == 3:
         if sys.argv[2] == '1':
             n_episodes = 100000
@@ -160,7 +160,7 @@ if __name__ == '__main__':
 
             agent.buffer.add(transition)
 
-            if episode >10: # let the buffer fill up a bit
+            if episode >1000: # let the buffer fill up a bit
 
                 agent.Q_update()
 
@@ -172,7 +172,7 @@ if __name__ == '__main__':
 
         all_returns.append(e_return)
 
-        if episode%100 == 0: agent.update_target_network()
+        if episode%1500 == 0: agent.update_target_network()
 
 
         '''
@@ -234,7 +234,7 @@ if __name__ == '__main__':
     plt.savefig(save_path + 'return.pdf')
     np.save(save_path + 'all_returns.npy', np.array(all_returns))
 
-
+    np.save(save_path + 'values.npy', np.array(agent.values))
 
 
     #plt.show()

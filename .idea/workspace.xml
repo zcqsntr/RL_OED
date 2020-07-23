@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="d4a265c6-eb3f-4c7a-9611-a62750211fde" name="Default Changelist" comment="fixed inputs argument bug">
+    <list default="true" id="d4a265c6-eb3f-4c7a-9611-a62750211fde" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Nates_system/OED_setup_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/OED_setup_test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/RL_param_inf.py" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/RL_param_inf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/imports/DQN_agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/imports/DQN_agent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imports/OED_env.py" beforeDir="false" afterPath="$PROJECT_DIR$/imports/OED_env.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -146,7 +146,8 @@
       <workItem from="1594886486973" duration="1198000" />
       <workItem from="1594908579267" duration="12000" />
       <workItem from="1594974001079" duration="190000" />
-      <workItem from="1594982076742" duration="11390000" />
+      <workItem from="1594982076742" duration="20452000" />
+      <workItem from="1595407911119" duration="8985000" />
     </task>
     <task id="LOCAL-00001" summary="Fixed get_FIM and reneralised it to systems with more than one parameter">
       <created>1591172912260</created>
@@ -176,7 +177,14 @@
       <option name="project" value="LOCAL" />
       <updated>1594801686621</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="improved speed">
+      <created>1595335408372</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1595335408372</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -187,7 +195,8 @@
     <MESSAGE value="Nates system coded, need to fix bug in updated sym_Y" />
     <MESSAGE value="sym_Y bug fixed. ready for server to test RL" />
     <MESSAGE value="fixed inputs argument bug" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed inputs argument bug" />
+    <MESSAGE value="improved speed" />
+    <option name="LAST_COMMIT_MESSAGE" value="improved speed" />
   </component>
   <component name="WindowStateProjectService">
     <state x="958" y="1017" width="633" height="390" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1594244720558">
@@ -198,10 +207,10 @@
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
     <state x="1013" y="961" width="524" height="502" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1594631866345" />
-    <state x="845" y="789" width="860" height="847" key="CommitChangelistDialog2" timestamp="1595335380296">
+    <state x="845" y="789" width="860" height="847" key="CommitChangelistDialog2" timestamp="1595335408278">
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
-    <state x="845" y="789" width="860" height="847" key="CommitChangelistDialog2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1595335380296" />
+    <state x="845" y="789" width="860" height="847" key="CommitChangelistDialog2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1595335408278" />
     <state x="52" y="637" width="2360" height="1215" key="DiffContextDialog" timestamp="1591172827042">
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
@@ -214,18 +223,22 @@
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
     <state x="769" y="847" key="SettingsEditor/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591172774846" />
-    <state x="875" y="948" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1594801694336">
+    <state x="875" y="948" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1595335663558">
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
-    <state x="875" y="948" width="800" height="528" key="Vcs.Push.Dialog.v2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1594801694336" />
+    <state x="875" y="948" width="800" height="528" key="Vcs.Push.Dialog.v2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1595335663558" />
     <state x="100" y="605" width="2360" height="1215" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1591172794349">
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
     <state x="100" y="605" width="2360" height="1215" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591172794349" />
-    <state x="1559" y="811" width="688" height="410" key="com.intellij.ide.util.TipDialog" timestamp="1594908580129">
+    <state x="1559" y="811" width="688" height="410" key="com.intellij.ide.util.TipDialog" timestamp="1595407924107">
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
-    <state x="1559" y="811" width="688" height="410" key="com.intellij.ide.util.TipDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1594908580129" />
+    <state x="1559" y="811" width="688" height="410" key="com.intellij.ide.util.TipDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1595407924107" />
+    <state x="980" y="1006" width="590" height="413" key="git4idea.merge.GitPullDialog" timestamp="1595335414906">
+      <screen x="0" y="507" width="2560" height="1413" />
+    </state>
+    <state x="980" y="1006" width="590" height="413" key="git4idea.merge.GitPullDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1595335414906" />
     <state x="943" y="827" width="672" height="678" key="search.everywhere.popup" timestamp="1594128855429">
       <screen x="0" y="507" width="2560" height="1413" />
     </state>

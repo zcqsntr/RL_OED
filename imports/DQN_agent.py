@@ -14,6 +14,7 @@ class DQN_agent():
         self.network = self.initialise_network(layer_sizes)
         self.target_network = self.initialise_network(layer_sizes)
         self.buffer = ExperienceBuffer()
+        self.values = []
 
 
     def initialise_network(self, layer_sizes): #YES
@@ -168,11 +169,11 @@ class DQN_agent():
         if np.random.random() < explore_rate:
             action = np.random.choice(range(self.layer_sizes[-1]))
             # remove this when not debugging
-            #values = self.predict(state)
-            #self.values.append(values)
+            values = self.predict(state)
+            self.values.append(values)
         else:
             values = self.predict(state)
-            #self.values.append(values)
+            self.values.append(values)
             action = np.argmax(values)
 
         return action
@@ -211,7 +212,7 @@ class ExperienceBuffer():
     Class to handle the management of the QDN storage buffer, stores experience
     in the form [state, action, reward, next_state]
     '''
-    def __init__(self, buffer_size = 1000):
+    def __init__(self, buffer_size = 12000):
         '''
         Parameters:
 

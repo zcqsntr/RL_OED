@@ -290,16 +290,13 @@ FIMs = []
 
 
 
-logus = [1,-3,2,-3,3,-3]
+logus = [1,-3,2,-3,3,-3] # rational design, -67.73
 #logus = [3,-1,3,-1,3,3]
 ws = [0,0,0,1]*int(N_control_intervals/4)
-#SHOULD REPEAT ALL THESE AS DQN WAS BROKEN
-us = np.array([1.00000000e-03, 2.31012970e+01, 5.33669923e-01, 1.23284674e-02, 2.84803587e+02, 1.00000000e-03 ,1.00000000e-03]) # r, -70.49, -68.72
-#us = np.array([1.00000000e-03, 2.31012970e+01, 6.57933225e+00, 2.84803587e+02, 2.31012970e+01, 2.84803587e+02, 2.84803587e+02]) # delta log(r) 100eps , -51.0, -57.45
-#us = np.array([1.00000000e-03, 2.31012970e+01, 4.32876128e-02, 4.32876128e-02,4.32876128e-02, 1.23284674e-02, 4.32876128e-02]) #delta log(r) 500eps -58.5, -58.5
 
-us = np.array([ 2.31012970e+01, 5.33669923e-01, 2.84803587e+02, 1.00000000e-03, 4.32876128e-02, 4.32876128e-02]) # -71.72 middle of 500eps logdeltar
-us = np.array([2.31012970e+01, 5.33669923e-01, 6.57933225e+00,5.33669923e-01, 6.57933225e+00, 5.33669923e-01]) # - 60.9 end of logdeltar
+#us = np.array([1.87381742e+00, 1.00000000e+03, 1.23284674e-02, 1.23284674e-02, 1.23284674e-02, 1.23284674e-02]) # gamma = 0: -68.3567
+
+
 
 for i,doub_rate in enumerate(doub_rates):
     grs = []
@@ -314,8 +311,8 @@ for i,doub_rate in enumerate(doub_rates):
 
     inputs = []
 
-    #us = 10. ** np.array(logus) #-67.73
-   #us = np.random.rand(6,) * 1000
+    us = 10. ** np.array(logus)
+
     print('us :', us)
 
     for u in us:
