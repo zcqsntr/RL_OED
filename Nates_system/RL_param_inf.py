@@ -195,8 +195,12 @@ if __name__ == '__main__':
     #print(env.all_param_guesses)
     #print(env.actual_params)
 
+    np.save(save_path + 'trajectories.npy', np.array(env.true_trajectory))
+    np.save(save_path + 'true_trajectory.npy', env.true_trajectory)
+    np.save(save_path + 'us.npy', np.array(env.us))
+    np.save(save_path + 'all_returns.npy', np.array(all_returns))
 
-
+    np.save(save_path + 'values.npy', np.array(agent.values))
 
     t = np.arange(N_control_intervals) * int(control_interval_time)
 
@@ -206,7 +210,7 @@ if __name__ == '__main__':
     plt.ylabel('rna')
     plt.xlabel('time (mins)')
     plt.savefig(save_path + 'rna_trajectories.pdf')
-    np.save(save_path + 'trajectories.npy', np.array(env.true_trajectory))
+
 
     plt.figure()
     plt.plot( env.true_trajectory[1, :].elements(), label = 'true')
@@ -215,14 +219,14 @@ if __name__ == '__main__':
     plt.ylabel( 'protein')
     plt.xlabel('time (mins)')
     plt.savefig(save_path + 'prot_trajectories.pdf')
-    np.save(save_path + 'true_trajectory.npy', env.true_trajectory)
+
     #np.save(save_path + 'est_trajectory.npy', env.est_trajectory)
 
     plt.figure()
     plt.step(np.arange(len(env.us.T)), np.array(env.us.T))
     plt.ylabel('u')
     plt.xlabel('time (mins)')
-    np.save(save_path + 'us.npy', np.array(env.us))
+
     plt.ylim(bottom=0)
     plt.ylabel('u')
     plt.xlabel('Timestep')
@@ -233,9 +237,7 @@ if __name__ == '__main__':
     plt.ylabel('Return')
     plt.xlabel('Episode')
     plt.savefig(save_path + 'return.pdf')
-    np.save(save_path + 'all_returns.npy', np.array(all_returns))
 
-    np.save(save_path + 'values.npy', np.array(agent.values))
 
 
     #plt.show()

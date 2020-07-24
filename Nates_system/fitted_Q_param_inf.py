@@ -92,11 +92,11 @@ if __name__ == '__main__':
     #n_episodes = 1000
     if len(sys.argv) == 3:
         if sys.argv[2] == '1':
-            n_episodes = 100000
+            n_episodes = 10000
         elif sys.argv[2] == '2':
-            n_episodes = 200000
+            n_episodes = 50000
         else:
-            n_episodes = 300000
+            n_episodes = 100000
 
         save_path =  sys.argv[1] + sys.argv[2]+'/'
         print(n_episodes)
