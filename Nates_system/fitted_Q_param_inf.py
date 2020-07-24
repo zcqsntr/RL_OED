@@ -15,7 +15,7 @@ import tensorflow as tf
 import time
 
 from ROCC import *
-import time
+
 
 def disablePrint():
     sys.stdout = open(os.devnull, 'w')
@@ -89,7 +89,7 @@ def xdot(sym_y, sym_theta, sym_u):
 if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
-    #n_episodes = 1000
+    n_episodes = 1000
     if len(sys.argv) == 3:
         if sys.argv[2] == '1':
             n_episodes = 10000
@@ -195,12 +195,13 @@ if __name__ == '__main__':
         trajectory = trajectory_solver(y0, us, actual_params)
         all_ys.append(trajectory.elements()[-1])
         '''
-
-        if episode %10 == 0:
+        skip = 10
+        if episode %skip == 0:
             print()
             print('EPISODE: ', episode)
             print('explore rate: ', explore_rate)
             print('return: ', e_return)
+            print('av return: ', np.mean(all_returns[-skip:]))
             print('actions:', e_actions)
             print('us: ', env.us)
             print('rewards: ', e_rewards)

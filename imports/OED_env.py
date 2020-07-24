@@ -202,9 +202,12 @@ class OED_env():
 
         est_trajectory_sym = trajectory_solver(self.initial_Y, sym_theta,  self.us)
 
-        e = ((trajectory[0:2,:] - est_trajectory_sym[0:2,:])*1/(0.05*trajectory[0:2,:])).T # weighted least squares
+        e = ((trajectory[:,0:2] - est_trajectory_sym[:,0:2])/(0.05*trajectory[:,0:2]+0.00000001)) # weighted least squares cut off initial conditions
         nlp = {'x':sym_theta, 'f':0.5*dot(e,e)}
+
         solver = self.gauss_newton(e, nlp, sym_theta)
+
+        #solver.print_options()
 
         return solver
 

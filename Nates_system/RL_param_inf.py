@@ -180,12 +180,13 @@ if __name__ == '__main__':
         trajectory = trajectory_solver(y0, us, actual_params)
         all_ys.append(trajectory.elements()[-1])
         '''
-
-        if episode %100 == 0:
+        skip = 100
+        if episode %skip == 0:
             print()
             print('EPISODE: ', episode)
             print('explore rate: ', explore_rate)
             print('return: ', e_return)
+            print('av return: ', np.mean(all_returns[-skip:]))
             print('actions:', e_actions)
             print('us: ', env.us)
             print('rewards: ', e_rewards)
