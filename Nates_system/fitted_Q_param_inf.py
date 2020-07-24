@@ -4,6 +4,7 @@ import os
 IMPORT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'imports')
 
 sys.path.append(IMPORT_PATH)
+
 import math
 from casadi import *
 import numpy as np
@@ -12,6 +13,8 @@ from OED_env import *
 from DQN_agent import *
 import tensorflow as tf
 import time
+
+from ROCC import *
 
 
 def disablePrint():
@@ -105,7 +108,7 @@ if __name__ == '__main__':
         save_path = './'
 
 
-    agent = DQN_agent(layer_sizes = [22,20,20,12])
+    agent = KerasFittedQAgent(layer_sizes = [22,20,20,12])
 
     all_returns = []
 
@@ -145,6 +148,7 @@ if __name__ == '__main__':
         e_return = 0
         e_actions =[]
         e_rewards = []
+        trajectory = []
         #actions = [9,4,9,4,9,4]
         for e in range(0, N_control_intervals):
             t = time.time()
@@ -158,8 +162,8 @@ if __name__ == '__main__':
                 next_state = [None]*22
                 done = True
             transition = (state, action, reward, next_state, done)
+            trajectory.append(transition)
 
-            agent.buffer.add(transition)
 
             if episode >1000: # let the buffer fill up a bit
 
@@ -170,10 +174,21 @@ if __name__ == '__main__':
 
             state = next_state
             e_return += reward
+        agent.memory.append(trajectory)
 
+        #train the agent
+        if len(agent.memory[0]) * len(agent.memory) < 100:
+            n_iters = 4
+        elif len(agent.memory[0]) * len(agent.memory) < 200:
+            n_iters = 5
+        else:
+            n_iters = 10
+
+        for _ in range(n_iters):
+            agent.fitted_Q_update()
         all_returns.append(e_return)
 
-        if episode%(n_episodes//10) == 0: agent.update_target_network()
+        if episode%1500 == 0: agent.update_target_network()
 
 
         '''

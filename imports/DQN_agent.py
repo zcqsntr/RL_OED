@@ -50,16 +50,18 @@ class DQN_agent():
         next_states = []
         actions = []
         rewards = []
+        dones = []
+        sample = self.buffer.sample()
 
+        for transition in sample:  # could make this faster
 
-        #for transition in self.buffer.sample():  # could make this faster
-        for transition in self.buffer.buffer[0:10]:
-            state, action, reward, next_state = transition  # i fnext_state is none, then done
+            state, action, reward, next_state, done= transition  # i fnext_state is none, then done
 
             states.append(state)
             next_states.append(next_state)
             actions.append(action)
             rewards.append(reward)
+            done.append(done)
 
         states = np.array(states)
         next_states = np.array(next_states, dtype = np.float64)
@@ -76,7 +78,7 @@ class DQN_agent():
 
         for i in range(len(next_states)):
             #print(actions[i], rewards[i])
-            if math.isnan(next_states[i][0]):
+            if dones[i]:
 
                 values[i, actions[i]] = rewards[i]
             else:
@@ -236,12 +238,12 @@ class ExperienceBuffer():
         '''
 
         # input validation
-        if len(transition) != 4:
-            raise ValueError("Experience must be length 4, of the for [state, action, reward, state1]")
+        if len(transition) != 5:
+            raise ValueError("Experience must be length 5, of the for [state, action, reward, state1, done]")
         if len(self.buffer) == self.buffer_size:
             self.buffer = self.buffer[1:, :]
 
-        transition = np.array(transition).reshape(1,4)
+        transition = np.array(transition).reshape(1,5)
 
         if self.buffer == []:
             self.buffer = transition
