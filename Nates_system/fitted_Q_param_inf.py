@@ -15,7 +15,7 @@ import tensorflow as tf
 import time
 
 from ROCC import *
-
+import time
 
 def disablePrint():
     sys.stdout = open(os.devnull, 'w')
@@ -89,7 +89,7 @@ def xdot(sym_y, sym_theta, sym_u):
 if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
-    n_episodes = 100000
+    #n_episodes = 1000
     if len(sys.argv) == 3:
         if sys.argv[2] == '1':
             n_episodes = 100000
@@ -150,6 +150,7 @@ if __name__ == '__main__':
         e_rewards = []
         trajectory = []
         #actions = [9,4,9,4,9,4]
+
         for e in range(0, N_control_intervals):
             t = time.time()
             action = agent.get_action(state, explore_rate)
@@ -164,31 +165,30 @@ if __name__ == '__main__':
             transition = (state, action, reward, next_state, done)
             trajectory.append(transition)
 
-
-            if episode >1000: # let the buffer fill up a bit
-
-                agent.Q_update()
-
             e_actions.append(action)
             e_rewards.append(reward)
 
             state = next_state
             e_return += reward
+
         agent.memory.append(trajectory)
 
         #train the agent
+
         if len(agent.memory[0]) * len(agent.memory) < 100:
             n_iters = 4
         elif len(agent.memory[0]) * len(agent.memory) < 200:
             n_iters = 5
         else:
-            n_iters = 10
+            n_iters = 7
+
 
         for _ in range(n_iters):
             agent.fitted_Q_update()
+
         all_returns.append(e_return)
 
-        if episode%1500 == 0: agent.update_target_network()
+
 
 
         '''
@@ -196,7 +196,7 @@ if __name__ == '__main__':
         all_ys.append(trajectory.elements()[-1])
         '''
 
-        if episode %100 == 0:
+        if episode %10 == 0:
             print()
             print('EPISODE: ', episode)
             print('explore rate: ', explore_rate)
