@@ -276,7 +276,7 @@ class OED_env():
 
         #use this method to remove the small negatvie eigenvalues
 
-        q, r = np.linalg.qr(cov)
+        q, r = np.linalg.qr(FIM)
         det_FIM = r.diagonal().prod() * np.linalg.det(q)
 
         if det_FIM <= 0:

@@ -86,7 +86,7 @@ def xdot(sym_y, sym_theta, sym_u):
 if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
-    n_episodes = 100000
+    n_episodes = 1
     if len(sys.argv) == 3:
         if sys.argv[2] == '1':
             n_episodes = 100000
