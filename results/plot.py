@@ -38,15 +38,28 @@ plt.savefig('trajectories.pdf')
 
 #OED_return = 14.51719430470262
 '''
+'''
+# plot returns
+for i in range(1,4):
 
-plt.figure()
-RL_returns = np.load('/home/neythen/Desktop/Projects/RL_OED/param_inf/all_returns.npy')
-RL_returns = [np.mean(RL_returns[n:n+100]) for n in range(0, 500, 1)]
-plt.plot(RL_returns, label = 'RL return')
-plt.ylabel('Return')
-plt.xlabel('Episode')
-#plt.hlines(OED_return,0, len(RL_returns), label = 'OED return', color = 'orange')
+    plt.figure()
+    RL_returns = np.load('/home/neythen/Desktop/Projects/RL_OED/results/value_inv/Nates_system_fixed/repeat' + str(i) + '/all_returns.npy')
+    print(RL_returns[-1])
+    RL_returns = [np.mean(RL_returns[n:n+100]) for n in range(0, len(RL_returns)- 100, 1)]
+    plt.plot(RL_returns, label = 'RL return')
+    plt.ylabel('Return')
+    plt.xlabel('Episode')
+    #plt.hlines(OED_return,0, len(RL_returns), label = 'OED return', color = 'orange')
 
-plt.legend(loc = 'lower right')
-plt.savefig('return.pdf')
+    plt.legend(loc = 'lower right')
+   # plt.savefig('return.pdf')
 plt.show()
+'''
+
+for i in range(1,4):
+
+    values = np.load('/home/neythen/Desktop/Projects/RL_OED/results/value_inv/Nates_system_fixed/repeat'+str(i) + '/values.npy')
+    print(values.shape)
+
+    plt.plot(values[6:-1:6, 0, :])
+    plt.show()

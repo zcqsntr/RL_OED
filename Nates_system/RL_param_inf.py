@@ -173,7 +173,7 @@ if __name__ == '__main__':
 
         all_returns.append(e_return)
 
-        if episode%(n_episodes//10) == 0: agent.update_target_network()
+        if episode%(n_episodes//50) == 0: agent.update_target_network()
 
 
         '''
@@ -181,7 +181,7 @@ if __name__ == '__main__':
         all_ys.append(trajectory.elements()[-1])
         '''
         skip = 100
-        if episode %skip == 0:
+        if episode %skip == 0 or episode == n_episodes -1:
             print()
             print('EPISODE: ', episode)
             print('explore rate: ', explore_rate)
@@ -200,7 +200,7 @@ if __name__ == '__main__':
     np.save(save_path + 'true_trajectory.npy', env.true_trajectory)
     np.save(save_path + 'us.npy', np.array(env.us))
     np.save(save_path + 'all_returns.npy', np.array(all_returns))
-
+    np.save(save_path + 'actions.npy', np.array(agent.actions))
     np.save(save_path + 'values.npy', np.array(agent.values))
 
     t = np.arange(N_control_intervals) * int(control_interval_time)

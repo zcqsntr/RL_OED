@@ -295,8 +295,8 @@ logus = [1,-3,2,-3,3,-3] # rational design, -67.73
 ws = [0,0,0,1]*int(N_control_intervals/4)
 
 #us = np.array([1.87381742e+00, 1.00000000e+03, 1.23284674e-02, 1.23284674e-02, 1.23284674e-02, 1.23284674e-02]) # gamma = 0: -68.3567
-
-
+us = np.array([1.87381742e+00, 2.84803587e+02, 1.23284674e-02, 1.51991108e-01, 5.33669923e-01, 1.00000000e-03]) # fitted Q: -67.169 log(delta det F)
+us = np.array([1.51991108e-01, 1.87381742e+00 ,1.00000000e+03, 1.00000000e+03, 6.57933225e+00 ,1.87381742e+00])
 
 for i,doub_rate in enumerate(doub_rates):
     grs = []
@@ -311,7 +311,7 @@ for i,doub_rate in enumerate(doub_rates):
 
     inputs = []
 
-    us = 10. ** np.array(logus)
+    #us = 10. ** np.array(logus)
 
     print('us :', us)
 
@@ -353,8 +353,10 @@ for i in range(1,len(FIMs)):
 
 print('FIMS: ', len(FIMs))
 print(total_FIM)
-print(np.linalg.det(total_FIM))
-print(-np.log(np.linalg.det(total_FIM)))
+q, r = np.linalg.qr(total_FIM)
+det_FIM = r.diagonal().prod() * np.linalg.det(q)
+print(det_FIM)
+print(-np.log(det_FIM))
 
 
 

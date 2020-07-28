@@ -15,6 +15,7 @@ class DQN_agent():
         self.target_network = self.initialise_network(layer_sizes)
         self.buffer = ExperienceBuffer()
         self.values = []
+        self.actions = []
 
 
     def initialise_network(self, layer_sizes): #YES
@@ -170,14 +171,13 @@ class DQN_agent():
 
         if np.random.random() < explore_rate:
             action = np.random.choice(range(self.layer_sizes[-1]))
-            # remove this when not debugging
-            values = self.predict(state)
-            self.values.append(values)
+
+
         else:
             values = self.predict(state)
             self.values.append(values)
             action = np.argmax(values)
-
+            self.actions.append(action)
         return action
 
     def get_rate(self, episode, MIN_RATE,  MAX_RATE, denominator):

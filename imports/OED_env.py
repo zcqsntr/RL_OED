@@ -275,9 +275,14 @@ class OED_env():
         FIM = self.get_FIM(est_trajectory)
 
         #use this method to remove the small negatvie eigenvalues
-        eigs = np.real(np.linalg.eig(FIM)[0])
-        eigs[eigs<0] = 0.00000000000000000000000001
-        det_FIM = np.prod(eigs)
+
+        q, r = np.linalg.qr(cov)
+        det_FIM = r.diagonal().prod() * np.linalg.det(q)
+
+        if det_FIM <= 0:
+            eigs = np.real(np.linalg.eig(FIM)[0])
+            eigs[eigs<0] = 0.00000000000000000000000001
+            det_FIM = np.prod(eigs)
         #use qr factorisation for numerical stability
         #det q is either 1 or -1
 
@@ -289,7 +294,8 @@ class OED_env():
         self.detFIMs.append(det_FIM)
 
         try:
-            reward = np.log(det_FIM-self.detFIMs[-2])
+            #reward = np.log(det_FIM-self.detFIMs[-2])
+            reward = np.log(det_FIM) - np.log(self.detFIMs[-2])
             #print('det adfa: ', det_FIM)
             #print(det_FIM - self.detFIMs[-2])
         except:

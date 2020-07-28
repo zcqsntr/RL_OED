@@ -107,8 +107,10 @@ N_control_intervals = 6
 all_final_params = []
 
 logus = [1,-3,2,-3,3,-3]
-us = 10. ** np.array(logus) # rational design -67.73 optimality score
+us = 10. ** np.array(logus) # rational design -67.73 optimality score, log(detcov) = 481.6
 #us = np.array([1.87381742e+00, 1.00000000e+03, 1.23284674e-02, 1.23284674e-02, 1.23284674e-02, 1.23284674e-02]) # gamma = 0: -68.3567 optimality score
+#us = np.array([1.87381742e+00, 2.84803587e+02, 1.23284674e-02 ,4.32876128e-02,1.23284674e-02, 1.23284674e-02]) # fitted Q
+
 for i in range(30):
     print('SAMPLE: ', i)
     param_guesses = np.random.uniform(low = [1, 2e3, 4.02e5, 7.7e-5, 1], high = [30, 1e6, 59.3e10, 7.7e-4, 10])
