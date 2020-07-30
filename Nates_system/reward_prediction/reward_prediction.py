@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from OED_env import *
 from DQN_agent import *
 import tensorflow as tf
-
+from ROCC import *
 
 def disablePrint():
     sys.stdout = open(os.devnull, 'w')
@@ -83,28 +83,30 @@ def xdot(sym_y, sym_theta, sym_u):
     return xdot
 
 def generate_data():
-    dt = 1 / 100
+    dt = 1/100
 
     all_states = []
     all_actions = []
     all_rewards = []
+
+
+    param_guesses = DM([22, 6e5, 1.2e9, 3e-4, 3.5])
+    param_guesses = actual_params
+    y0 = [0.000001, 0.000001]
+
+    u0 = DM([0.001])
+    us = np.array(u0.full())
+
+    control_interval_time = 100
+
+    num_inputs = 12  # number of discrete inputs available to RL
+
+    env = OED_env(y0, xdot, param_guesses, actual_params, num_inputs, input_bounds, dt, control_interval_time)
     for episode in range(n_episodes):
-        print()
-        print('EPISODE: ', episode)
-
-        param_guesses = DM([22, 6e5, 1.2e9, 3e-4, 3.5])
-        param_guesses = actual_params
-        y0 = [0.000001, 0.000001]
-
-        u0 = DM([0.001])
-        us = np.array(u0.full())
-
-
-        control_interval_time = 100
-
-        num_inputs = 12  # number of discrete inputs available to RL
-
-        env = OED_env(y0, xdot, param_guesses, actual_params, u0, num_inputs, input_bounds, dt)
+        if episode %10 == 0:
+            print()
+            print('EPISODE: ', episode)
+        env.reset()
         state = env.get_initial_RL_state()
 
         for e in range(0, N_control_intervals):
@@ -127,50 +129,64 @@ def generate_data():
     np.save('all_rewards.npy', all_rewards)
 
 def train_agent():
-    agent = DQN_agent(layer_sizes=[22, 20, 20, 12])
+    agent = KerasFittedQAgent(layer_sizes=[22, 150, 150, 150, 12])
 
 
     all_states = np.load('all_states.npy')
     all_rewards = np.load('all_rewards.npy')
     all_actions = np.load('all_actions.npy')
+    print(all_states.shape)
+    training_states = all_states[0:5500]
+    testing_states = all_states[5500:6000]
 
-    training_states = all_states[0:1000]
-    testing_states = all_states[1000:]
+    training_rewards = all_rewards[0:5500]
+    testing_rewards = all_rewards[5500:6000]
 
-    training_rewards = all_rewards[0:1000]
-    testing_rewards = all_rewards[1000:]
-
-    training_actions = all_actions[0:1000]
-    testing_actions = all_actions[1000:]
+    training_actions = all_actions[0:5500]
+    testing_actions = all_actions[5500:6000]
 
 
     # training
+    trajectory = []
     for i in range(len(training_states) - 1):
         state = training_states[i]
         next_state = training_states[i+1]
         action = training_actions[i]
         reward = training_rewards[i]
-        transition = (state, action, reward, next_state)
-        agent.buffer.add(transition)
+        transition = (state, action, reward, next_state, False)
+        trajectory.append(transition)
+        #agent.buffer.add(transition)
+    agent.memory.append(trajectory)
     #training
-    for episode in range(n_episodes*N_control_intervals):
-        print(episode)
-        agent.Q_update()
-        if episode%1 == 0: agent.update_target_network()
+    #for episode in range(n_episodes*N_control_intervals):
+    #    print(episode)
+    #    agent.Q_update()
+    #    if episode%1 == 0: agent.update_target_network()
+
+    for i in range(20):
+        print()
+        print('fitted Q iter: ', i)
+        agent.fitted_Q_update()
+
+    print('states: ', testing_states.shape)
+
+    pred_values = agent.predict(training_states)
 
 
+    print('values :', pred_values.shape)
+    print('actions: ',testing_actions.shape)
 
-    print(testing_states.shape)
-    pred_values = agent.predict(testing_states)
 
-    pred_rewards = np.array([pred_values[i, a] for i, a in enumerate(testing_actions)])
+    pred_rewards = np.array([pred_values[i, a] for i, a in enumerate(training_actions)])
+    print('rewards: ',pred_rewards.shape)
+
     np.save('pred_rewards.npy', pred_rewards)
 
-    print(np.sum(np.abs(pred_rewards-testing_rewards)))
+    print(np.mean(np.abs(pred_rewards-training_rewards)**2))
     print(testing_rewards.shape)
-    print(pred_rewards.shape)
-    plt.plot(testing_rewards)
-    plt.plot(pred_rewards)
+    #print((pred_rewards-testing_rewards).shape)
+    plt.plot(training_rewards[0:100])
+    plt.plot(pred_rewards[0:100])
     plt.savefig('reward_pred.pdf')
     plt.show()
 
@@ -180,7 +196,7 @@ if __name__ == '__main__':
 
     #n_episodes = 167
     N_control_intervals = 6
-    n_episodes = 200
+    n_episodes = 1000
 
     all_returns = []
 

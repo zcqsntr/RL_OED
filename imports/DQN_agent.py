@@ -8,7 +8,7 @@ class DQN_agent():
     def __init__(self,layer_sizes ):
         self.memory = []
         self.layer_sizes = layer_sizes
-        self.gamma = 0.99
+        self.gamma = 0.
         self.state_size = layer_sizes[0]
         self.n_actions = layer_sizes[-1]
         self.network = self.initialise_network(layer_sizes)

@@ -89,9 +89,10 @@ def xdot(sym_y, sym_theta, sym_u):
 if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
-    n_episodes = 1
+    n_episodes = 1000
     if len(sys.argv) == 3:
         if sys.argv[2] == '1':
+
             n_episodes = 10000
         elif sys.argv[2] == '2':
             n_episodes = 50000
@@ -108,8 +109,8 @@ if __name__ == '__main__':
         save_path = './'
 
 
-    agent = KerasFittedQAgent(layer_sizes = [22,20,20,12])
-
+    agent = KerasFittedQAgent(layer_sizes = [22, 150, 150, 150, 12])
+    print('n_actions', agent.n_actions)
     all_returns = []
 
     actual_params = DM([20, 5e5, 1.09e9, 2.57e-4, 4.])
@@ -180,7 +181,7 @@ if __name__ == '__main__':
         elif len(agent.memory[0]) * len(agent.memory) < 200:
             n_iters = 5
         else:
-            n_iters = 7
+            n_iters = 20
 
 
         for _ in range(n_iters):

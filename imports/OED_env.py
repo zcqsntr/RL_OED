@@ -113,6 +113,8 @@ class OED_env():
         Y_input = SX.sym('Y_input', self.n_tot)
 
         k1 = g(Y_input, theta, u)
+
+
         k2 = g(Y_input + dt / 2.0 * k1, theta, u)
         k3 = g(Y_input + dt / 2.0 * k2, theta, u)
         k4 = g(Y_input + dt * k3, theta, u)
