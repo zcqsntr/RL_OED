@@ -124,17 +124,17 @@ def generate_data():
     all_rewards = np.array(all_rewards)
 
 
-    np.save('all_states.npy', all_states)
-    np.save('all_actions.npy', all_actions)
-    np.save('all_rewards.npy', all_rewards)
+    np.save('results/reward_prediction/all_states.npy', all_states)
+    np.save('results/reward_prediction/all_actions.npy', all_actions)
+    np.save('results/reward_prediction/all_rewards.npy', all_rewards)
 
 def train_agent():
     agent = KerasFittedQAgent(layer_sizes=[22, 150, 150, 150, 12])
 
 
-    all_states = np.load('all_states.npy')
-    all_rewards = np.load('all_rewards.npy')
-    all_actions = np.load('all_actions.npy')
+    all_states = np.load('results/reward_prediction/all_states.npy')
+    all_rewards = np.load('results/reward_prediction/all_rewards.npy')
+    all_actions = np.load('results/reward_prediction/all_actions.npy')
     print(all_states.shape)
     training_states = all_states[0:5500]
     testing_states = all_states[5500:6000]
@@ -180,7 +180,7 @@ def train_agent():
     pred_rewards = np.array([pred_values[i, a] for i, a in enumerate(training_actions)])
     print('rewards: ',pred_rewards.shape)
 
-    np.save('pred_rewards.npy', pred_rewards)
+    np.save('results/reward_prediction/pred_rewards.npy', pred_rewards)
 
     print(np.mean(np.abs(pred_rewards-training_rewards)**2))
     print(testing_rewards.shape)

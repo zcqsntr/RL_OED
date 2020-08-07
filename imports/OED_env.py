@@ -55,7 +55,7 @@ class OED_env():
         self.num_inputs = num_inputs
         self.input_bounds = input_bounds
 
-        self.G  = self.get_control_interval_solver(control_interval_time, dt) # set this up here as it take ages
+        self.CI_solver  = self.get_control_interval_solver(control_interval_time, dt) # set this up here as it take ages
 
     def reset(self):
         self.param_guesses = self.initial_params
@@ -142,7 +142,7 @@ class OED_env():
 
     def get_sampled_trajectory_solver(self, N_control_intervals):
 
-        trajectory_solver = self.G.mapaccum('trajectory', N_control_intervals)
+        trajectory_solver = self.CI_solver.mapaccum('trajectory', N_control_intervals)
 
         return trajectory_solver
 
@@ -392,7 +392,7 @@ class OED_env():
         return UE
 
     def normalise_RL_state(self, state):
-        return state / np.array([1e3, 1e4, 1e2, 1e6, 1e10, 1e-3, 1e1, 1e9, 1e9, 1e9, 1e9, 1, 1e9, 1e9, 1e9, 1, 1e9, 1e9, 1, 1e9, 1, 1e7])
+        return state / np.array([1e3, 1e4, 1e2, 1e6, 1e10, 1e-3, 1e1, 1e9, 1e9, 1e9, 1e9, 1, 1e9, 1e9, 1e9, 1, 1e9, 1e9, 1, 1e9, 1, 1e7,10, 100])
 
     def get_RL_state(self, true_trajectory, est_trajectory):
 
@@ -412,7 +412,9 @@ class OED_env():
 
         state = np.append(sys_state, np.append(self.param_guesses, FIM_elements))
 
-        #print(self.normalise_RL_state(state))
+        state = np.append(state, true_trajectory.shape[1])
+        state = np.append(state, np.log(self.detFIMs[-1]))
+
 
         return self.normalise_RL_state(state)
 
@@ -420,6 +422,9 @@ class OED_env():
 
     def get_initial_RL_state(self):
         state = np.array(self.x0 + self.param_guesses.elements() + [0] * self.n_FIM_elements)
+        state = np.append(state, 0)
+        state = np.append(state, 0)
+
         return self.normalise_RL_state(state)
 
 

@@ -179,8 +179,7 @@ def get_one_step_RK(theta, u, dt):
 
 def get_control_interval_solver():
 
-    theta = SX.sym(''
-                   'theta', len(actual_params.elements()))
+    theta = SX.sym('theta', len(actual_params.elements()))
     u = SX.sym('u',3)
 
 
@@ -291,13 +290,18 @@ FIMs = []
 
 
 logus = [1,-3,2,-3,3,-3] # rational design, -67.73
-#logus = [3,-1,3,-1,3,3]
+logus = [3,-1,3,-1,3,3] # nates 1 (not exact) nan
+#logus = [1,1,3,-1,3,3] # nates 2 (not exact) -60.5
 ws = [0,0,0,1]*int(N_control_intervals/4)
 
 #us = np.array([1.87381742e+00, 1.00000000e+03, 1.23284674e-02, 1.23284674e-02, 1.23284674e-02, 1.23284674e-02]) # gamma = 0: -68.3567
-us = np.array([1.87381742e+00, 2.84803587e+02, 1.23284674e-02, 1.51991108e-01, 5.33669923e-01, 1.00000000e-03]) # fitted Q: -67.169 log(delta det F)
-us = np.array([1.51991108e-01,1.87381742e+00, 2.31012970e+01, 1.00000000e+03,
- 6.57933225e+00, 1.23284674e-02])
+#us = np.array([1.87381742e+00, 2.84803587e+02, 1.23284674e-02, 1.51991108e-01, 5.33669923e-01, 1.00000000e-03]) # fitted Q: -67.169 log(delta det F)
+#us = np.array([1.51991108e-01,1.87381742e+00, 2.31012970e+01, 1.00000000e+03,6.57933225e+00, 1.23284674e-02])
+
+us:  [2.84803587e+02 1.00000000e-03 8.11130831e+01 1.00000000e-03
+ 1.23284674e-02 1.23284674e-02]  #-72.46740549151691
+
+
 
 for i,doub_rate in enumerate(doub_rates):
     grs = []
@@ -312,7 +316,7 @@ for i,doub_rate in enumerate(doub_rates):
 
     inputs = []
 
-    #us = 10. ** np.array(logus)
+    us = 10. ** np.array(logus)
 
     print('us :', us)
 

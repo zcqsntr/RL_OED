@@ -58,7 +58,7 @@ plt.show()
 
 for i in range(1,2):
 
-    values = np.load('/home/neythen/Desktop/Projects/RL_OED/Nates_system/fitted_Q_new_reward/values.npy')
+    values = np.load('/Nates_system/results/fitted_Q_new_reward/values.npy')
     print(values.shape)
 
     plt.plot(values[6:-1:6, 0, :])

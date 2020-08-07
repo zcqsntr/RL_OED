@@ -15,7 +15,7 @@ import tensorflow as tf
 import time
 
 from ROCC import *
-
+from xdot import xdot
 
 def disablePrint():
     sys.stdout = open(os.devnull, 'w')
@@ -23,73 +23,13 @@ def disablePrint():
 def enablePrint():
     sys.stdout = sys.__stdout__
 
-def xdot(sym_y, sym_theta, sym_u):
-    a, Kt, Krt, d, b = [sym_theta[i] for i in range(sym_theta.size()[0])] #intrinsic parameters
-    #a = 20min^-1
-    Kr = 40 # practically unidentifiable
-    Km = 750
-    #Kt = 5e5
-    #Krt = 1.09e9
-    #d = 2.57e-4 um^-3min^-1
-    #b = 4 min-1
-    #Km = 750 um^-3
 
-    u = sym_u[0] # for now just choose u
-    lam = 0.03465735902799726 #min^-1 GROWTH RATE
-    #lam = 0.006931471805599453
-    #lam = sym_u[1]
-
-    C = 40
-    D = 20
-    V0 = 0.28
-    V = V0*np.exp((C+D)*lam) #eq 2
-    G =1/(lam*C) *(np.exp((C+D)*lam) - np.exp(D*lam)) #eq 3
-
-    l_ori = 0.26 # chose this so that g matched values for table 2 for both growth rates as couldnt find it defined in paper
-
-    g = np.exp( (C+D-l_ori*C)*lam)#eq 4
-
-    rho = 0.55
-    k_pr = -6.47
-    TH_pr0 = 0.65
-
-    k_p = 0.3
-    TH_p0 = 0.0074
-    m_rnap = 6.3e-7
-
-    k_a = -9.3
-    TH_a0 = 0.59
-
-    Pa = rho*V0/m_rnap *(k_a*lam + TH_a0) * (k_p*lam + TH_p0) * (k_pr*lam + TH_pr0) *np.exp((C+D)*lam) #eq 10
-
-    k_r = 5.48
-    TH_r0 = 0.03
-    m_rib = 1.57e-6
-    Rtot = (k_r*lam + TH_r0) * (k_pr*lam + TH_pr0)*(rho*V0*np.exp((C+D)*lam))/m_rib
-
-    TH_f = 0.1
-    Rf = TH_f*Rtot #eq 17
-    n = 5e6
-    eta = 900  # um^-3min^-1
-
-
-    rna, prot = sym_y[0], sym_y[1]
-
-    rna_dot = a*(g/V)*(  (Pa/(n*G)*Kr + (Pa*Krt*u)/(n*G)**2)  /  (1 + (Pa/n*G)*Kr + (Kt/(n*G) + Pa*Krt/(n*G)**2) *u )) - d*eta*rna/V
-
-    prot_dot = ((b*Rf/V) / (Km + Rf/V))  * rna/V - lam*prot/V
-
-    xdot = SX.sym('xdot', 2)
-
-    xdot[0] = rna_dot
-    xdot[1] = prot_dot
-
-    return xdot
 
 if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
-    n_episodes = 1000
+
+    n_episodes = 20000
     if len(sys.argv) == 3:
         if sys.argv[2] == '1':
 
@@ -109,7 +49,7 @@ if __name__ == '__main__':
         save_path = './'
 
 
-    agent = KerasFittedQAgent(layer_sizes = [22, 150, 150, 150, 12])
+    agent = KerasFittedQAgent(layer_sizes = [24, 150, 150, 150, 12])
     print('n_actions', agent.n_actions)
     all_returns = []
 
@@ -137,11 +77,8 @@ if __name__ == '__main__':
     control_interval_time = 100
 
     env = OED_env(y0, xdot, param_guesses, actual_params, num_inputs, input_bounds, dt, control_interval_time)
-
+    explore_rate = 1
     for episode in range(n_episodes):
-
-        explore_rate = agent.get_rate(episode, 0, 1, n_episodes/10)
-
 
         env.reset()
         state = env.get_initial_RL_state()
@@ -161,7 +98,7 @@ if __name__ == '__main__':
 
 
             if e == N_control_intervals - 1:
-                next_state = [None]*22
+                next_state = [None]*24
                 done = True
             transition = (state, action, reward, next_state, done)
             trajectory.append(transition)
@@ -172,31 +109,38 @@ if __name__ == '__main__':
             state = next_state
             e_return += reward
 
+
         agent.memory.append(trajectory)
 
         #train the agent
+        skip = 200
+        if episode % skip == 0 or episode == n_episodes - 2:
+            explore_rate = agent.get_rate(episode, 0, 1, n_episodes / 10)
+            if explore_rate == 1:
+                n_iters = 0
+            elif len(agent.memory[0]) * len(agent.memory) < 10000:
+                n_iters = 1
+            elif len(agent.memory[0]) * len(agent.memory) < 20000:
+                n_iters = 1
+            elif len(agent.memory[0]) * len(agent.memory) < 40000:
+                n_iters = 1
+            else:
+                n_iters = 2
 
-        if len(agent.memory[0]) * len(agent.memory) < 100:
-            n_iters = 4
-        elif len(agent.memory[0]) * len(agent.memory) < 200:
-            n_iters = 5
-        else:
-            n_iters = 20
-
-
-        for _ in range(n_iters):
-            agent.fitted_Q_update()
+            t = time.time()
+            for iter in range(n_iters):
+                print(iter, n_iters)
+                agent.fitted_Q_update()
+                print()
+            print('fitting time: ', time.time() -t)
 
         all_returns.append(e_return)
-
-
-
 
         '''
         trajectory = trajectory_solver(y0, us, actual_params)
         all_ys.append(trajectory.elements()[-1])
         '''
-        skip = 10
+
         if episode %skip == 0 or episode == n_episodes -1:
             print()
             print('EPISODE: ', episode)
