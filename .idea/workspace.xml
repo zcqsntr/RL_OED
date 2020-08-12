@@ -27,7 +27,6 @@
       <change afterPath="$PROJECT_DIR$/Nates_system/results/value_conv/sse.png" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Nates_system/results/value_conv/test.png" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Nates_system/results/value_conv/train.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/casadi_qr_test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/500eps_logdeltar/all_returns.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500eps_logdeltar/all_returns.npy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/500eps_logdeltar/log_us.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500eps_logdeltar/log_us.pdf" afterDir="false" />
@@ -43,7 +42,6 @@
       <change beforePath="$PROJECT_DIR$/Nates_system/500epsdeltalogr/rna_trajectories.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500epsdeltalogr/rna_trajectories.pdf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/500epsdeltalogr/trajectories.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500epsdeltalogr/trajectories.npy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/500epsdeltalogr/us.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500epsdeltalogr/us.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/OED_param_inf.py" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/OED_param_inf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/OED_setup_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/OED_setup_test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/data/all_actions.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/reward_prediction/data/all_actions.npy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/data/all_rewards.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/reward_prediction/data/all_rewards.npy" afterDir="false" />
@@ -54,8 +52,6 @@
       <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/deltalogdetFIM/all_rewards.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/reward_prediction/deltalogdetFIM/all_rewards.npy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/deltalogdetFIM/all_states.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/reward_prediction/deltalogdetFIM/all_states.npy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/deltalogdetFIM/reward_pred.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/reward_prediction/deltalogdetFIM/reward_pred.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imports/OED_env.py" beforeDir="false" afterPath="$PROJECT_DIR$/imports/OED_env.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -221,7 +217,7 @@
       <workItem from="1596618301211" duration="49553000" />
       <workItem from="1596788316015" duration="15336000" />
       <workItem from="1597043578821" duration="6332000" />
-      <workItem from="1597219348907" duration="18265000" />
+      <workItem from="1597219348907" duration="19142000" />
     </task>
     <task id="LOCAL-00001" summary="Fixed get_FIM and reneralised it to systems with more than one parameter">
       <created>1591172912260</created>
@@ -349,7 +345,14 @@
       <option name="project" value="LOCAL" />
       <updated>1597226767350</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="OEd optimisation working">
+      <created>1597260431350</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1597260431350</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -373,7 +376,8 @@
     <MESSAGE value="Fitted Q tuned and working" />
     <MESSAGE value="Results gathered from fitted_Q" />
     <MESSAGE value="Fixed numerical erros in calculating reward" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed numerical erros in calculating reward" />
+    <MESSAGE value="OEd optimisation working" />
+    <option name="LAST_COMMIT_MESSAGE" value="OEd optimisation working" />
   </component>
   <component name="WindowStateProjectService">
     <state x="958" y="1017" width="633" height="390" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1595926439563">
@@ -384,10 +388,10 @@
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
     <state x="1013" y="961" width="524" height="502" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1594631866345" />
-    <state x="845" y="219" width="1454" height="847" key="CommitChangelistDialog2" timestamp="1597226767126">
+    <state x="845" y="219" width="1454" height="847" key="CommitChangelistDialog2" timestamp="1597261316248">
       <screen x="0" y="219" width="2560" height="1413" />
     </state>
-    <state x="845" y="219" width="1454" height="847" key="CommitChangelistDialog2/0.219.2560.1413/2560.0.1080.1920@0.219.2560.1413" timestamp="1597226767126" />
+    <state x="845" y="219" width="1454" height="847" key="CommitChangelistDialog2/0.219.2560.1413/2560.0.1080.1920@0.219.2560.1413" timestamp="1597261316248" />
     <state x="845" y="452" width="1250" height="1179" key="CommitChangelistDialog2/0.480.2560.1440/2560.0.1080.1920@0.480.2560.1440" timestamp="1596792303239" />
     <state x="845" y="789" width="860" height="847" key="CommitChangelistDialog2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1596091257751" />
     <state x="52" y="637" width="2360" height="1215" key="DiffContextDialog" timestamp="1591172827042">
@@ -403,10 +407,10 @@
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
     <state x="769" y="847" key="SettingsEditor/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591172774846" />
-    <state x="875" y="660" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1597226774164">
+    <state x="875" y="660" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1597260433431">
       <screen x="0" y="219" width="2560" height="1413" />
     </state>
-    <state x="875" y="660" width="800" height="528" key="Vcs.Push.Dialog.v2/0.219.2560.1413/2560.0.1080.1920@0.219.2560.1413" timestamp="1597226774164" />
+    <state x="875" y="660" width="800" height="528" key="Vcs.Push.Dialog.v2/0.219.2560.1413/2560.0.1080.1920@0.219.2560.1413" timestamp="1597260433431" />
     <state x="875" y="948" width="800" height="528" key="Vcs.Push.Dialog.v2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1596091268228" />
     <state x="100" y="605" width="2360" height="1215" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1591172794349">
       <screen x="0" y="507" width="2560" height="1413" />
@@ -416,9 +420,10 @@
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
     <state x="1559" y="811" width="688" height="410" key="com.intellij.ide.util.TipDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1596014143348" />
-    <state x="980" y="1006" width="590" height="413" key="git4idea.merge.GitPullDialog" timestamp="1595593547491">
-      <screen x="0" y="507" width="2560" height="1413" />
+    <state x="980" y="718" width="590" height="413" key="git4idea.merge.GitPullDialog" timestamp="1597261223717">
+      <screen x="0" y="219" width="2560" height="1413" />
     </state>
+    <state x="980" y="718" key="git4idea.merge.GitPullDialog/0.219.2560.1413/2560.0.1080.1920@0.219.2560.1413" timestamp="1597261223717" />
     <state x="980" y="1006" width="590" height="413" key="git4idea.merge.GitPullDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1595593547491" />
     <state x="943" y="539" width="672" height="678" key="search.everywhere.popup" timestamp="1597227210089">
       <screen x="0" y="219" width="2560" height="1413" />
