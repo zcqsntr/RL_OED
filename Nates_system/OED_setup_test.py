@@ -303,7 +303,7 @@ ws = [1,1,1,1]*int(N_control_intervals/4)
 
 #us:  [2.84803587e+02 1.00000000e-03 8.11130831e+01 1.00000000e-03 1.23284674e-02 1.23284674e-02]  #-72.46740549151691 fitted Q
 
-us = np.array([2.84803587e+02, 1.23284674e-02, 2.31012970e+01, 3.51119173e-03, 1.23284674e-02, 3.51119173e-03]) #-73.2607748599451 fitted Q
+#us = np.array([2.84803587e+02, 1.23284674e-02, 2.31012970e+01, 3.51119173e-03, 1.23284674e-02, 3.51119173e-03]) #-73.2607748599451 fitted Q
 
 for i,doub_rate in enumerate(doub_rates):
     grs = []
@@ -369,26 +369,36 @@ print('obj: ', -np.log(det_FIM))
 
 sol = transpose(trajectory)
 t = np.arange(1,N_control_intervals +1)* (600/48) #int(control_interval_time / dt)) * dt
+
+fig, ax1 = plt.subplots()
+ax1.plot(t, sol[:, 0], label = 'mRNA')
+ax1.set_ylabel('mRNA #')
+ax1.set_xlabel('Time (min)')
+
+
+ax2 = ax1.twinx()
+ax2.plot(t, sol[:, 1], color='red', label='Protein')
+ax2.set_ylabel('Protein #')
+ax2.set_xlabel('Time (min)')
+fig.tight_layout()
+fig.legend(bbox_to_anchor=(0.3, 0.9))
+
 plt.figure()
-plt.plot(t, sol[:, 0])
-plt.ylabel('rna')
-plt.xlabel('time (mins)')
-plt.figure()
-plt.plot(t, sol[:, 1])
-plt.ylabel('protein')
-plt.xlabel('time (mins)')
-plt.figure()
-plt.step(t, np.log10(us[0].T))
+plt.step(t, np.log10(us[0].T), color='black')
 plt.ylabel('log(u)')
-plt.xlabel('time (mins)')
+plt.xlabel('Time (min)')
+
+
+'''
 plt.figure()
 plt.step(t, ws)
 plt.ylabel('w')
-plt.xlabel('time (mins)')
+plt.xlabel('time (min)')
 plt.figure()
 plt.step(t, us[1].T)
 plt.ylabel('growth rate 1/min')
-plt.xlabel('time (mins)')
+plt.xlabel('time (min)')
+'''
 plt.show()
 
 print(sol.shape)
