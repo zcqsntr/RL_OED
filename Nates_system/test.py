@@ -110,16 +110,14 @@ all_final_params = []
 all_initial_params = []
 
 logus = [1,-3,2,-3,3,-3]
-us = 10. ** np.array(logus) # rational design -67.73 optimality score, log(detcov) = 481.6
-#us = np.array([1.87381742e+00, 1.00000000e+03, 1.23284674e-02, 1.23284674e-02, 1.23284674e-02, 1.23284674e-02]) # gamma = 0: -68.3567 optimality score
-#us = np.array([1.87381742e+00, 2.84803587e+02, 1.23284674e-02 ,4.32876128e-02,1.23284674e-02, 1.23284674e-02]) # fitted Q
-
+us = 10. ** np.array(logus) # rational design -67.73 optimality score, log(detcov) = 66.96
+us = np.array([2.84803587e+02, 1.23284674e-02, 2.31012970e+01, 3.51119173e-03, 1.23284674e-02, 3.51119173e-03]) #-73.2607748599451 fitted Q
 
 env = OED_env(y0, xdot, param_guesses, actual_params, num_inputs, input_bounds, dt, control_interval_time)
 trajectory_solver = env.get_sampled_trajectory_solver(N_control_intervals)
 
 
-for i in range(3):
+for i in range(30):
     print('SAMPLE: ', i)
     param_guesses = np.random.uniform(low=[1, 2e3, 4.02e5, 7.7e-5, 1], high=[30, 1e6, 59.3e10, 7.7e-4, 10])
     param_guesses = DM(param_guesses)
@@ -129,11 +127,11 @@ for i in range(3):
 
     env.us = us
 
-
     trajectory = trajectory_solver(env.initial_Y, env.actual_params, env.us).T
+    print(trajectory.shape)
     #print(trajectory[:,0:2])
     # add noramlly distributed noise
-    trajectory[:,0:2] += np.random.normal(loc = 0, scale = np.sqrt(0.5*trajectory[:,0:2]))
+    trajectory[:,0:2] += np.random.normal(loc = 0, scale = np.sqrt(0.05*trajectory[:,0:2]))
     #print(trajectory[:,0:2])
     #print(np.random.normal(loc = 0, scale = 0.05*trajectory[:,0:2]))
     param_solver = env.get_param_solver(trajectory_solver, trajectory.T)
@@ -173,13 +171,16 @@ print(np.array(all_final_params))
 all_final_params = np.array(all_final_params)
 cov = np.cov(all_final_params.T)
 
-q, r = np.linalg.qr(cov)
-det = r.diagonal().prod() * np.linalg.det(q)
+q, r = qr(cov)
+
+det_cov = np.prod(diag(r).elements())
+
+logdet_cov = trace(log(r)).elements()[0]
 print(cov)
 print(check_symmetric(cov))
 print('cov shape: ', cov.shape)
-print(np.linalg.det(cov))
-print(' det cov: ', det)
+
+print(' det cov: ', det_cov)
 print('eigen values: ', np.linalg.eig(cov)[0])
-print('log det cov; ', np.log(det))
+print('log det cov; ',logdet_cov)
 

@@ -54,7 +54,8 @@ if __name__ == '__main__':
 
     e_return = 0
 
-    u0 = (10**input_bounds[0] - 10**input_bounds[1])/2
+    u0 = (10**input_bounds[1] - 10**input_bounds[0])/2
+    print('u0:', u0)
     env.u0 = DM(u0)
 
     e_rewards = []
@@ -63,23 +64,23 @@ if __name__ == '__main__':
         disablePrint()
         next_state, reward, done, _ = env.step()
         enablePrint()
-        env.u0 = env.us[-1]
-
+        #env.u0 = env.us[-1]
+        print(env.us[-1])
         if e == N_control_intervals - 1:
             next_state = [None]*24
             done = True
 
         e_rewards.append(reward)
-
+        print(reward)
         state = next_state
         e_return += reward
 
 
+    print(env.us)
+    print('return: ', e_return)
 
-    print(e_return)
 
-
-    save_path = '/home/neythen/Desktop/Projects/RL_OED/Nates_system/OED/'
+    save_path = '/home/neythen/Desktop/Projects/RL_OED/Nates_system/OED0/'
 
 
 
@@ -89,9 +90,7 @@ if __name__ == '__main__':
     # np.save(save_path + 'est_trajectory.npy', env.est_trajectory)
     np.save(save_path + 'us.npy', np.array(env.us))
 
-    np.save(save_path + 'all_returns.npy', np.array(all_returns))
-    np.save(save_path + 'actions.npy', np.array(agent.actions))
-    np.save(save_path + 'values.npy', np.array(agent.values))
+
     t = np.arange(N_control_intervals) * int(control_interval_time)
 
     plt.plot(env.true_trajectory[0, :].elements(), label = 'true')
@@ -121,12 +120,7 @@ if __name__ == '__main__':
     plt.xlabel('Timestep')
     plt.savefig(save_path + 'log_us.pdf')
 
-    plt.figure()
-    plt.plot(all_returns)
-    plt.ylabel('Return')
-    plt.xlabel('Episode')
-    plt.savefig(save_path + 'return.pdf')
 
 
 
-    #plt.show()
+    plt.show()

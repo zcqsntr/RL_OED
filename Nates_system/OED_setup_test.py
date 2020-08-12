@@ -303,7 +303,8 @@ ws = [1,1,1,1]*int(N_control_intervals/4)
 
 #us:  [2.84803587e+02 1.00000000e-03 8.11130831e+01 1.00000000e-03 1.23284674e-02 1.23284674e-02]  #-72.46740549151691 fitted Q
 
-us = np.array([2.84803587e+02, 1.23284674e-02, 2.31012970e+01, 3.51119173e-03, 1.23284674e-02, 3.51119173e-03]) #-73.2607748599451 fitted Q
+#us = np.array([2.84803587e+02, 1.23284674e-02, 2.31012970e+01, 3.51119173e-03, 1.23284674e-02, 3.51119173e-03]) #-73.2607748599451 fitted Q
+us = np.array([9.99995957e+02, 1.00000000e-03, 1.84705323e+00, 1.00000000e-03,1.00000000e-03, 1.00000000e-03]) # 71.00  u optimisation
 
 for i,doub_rate in enumerate(doub_rates):
     grs = []
@@ -360,12 +361,15 @@ for i in range(1,len(FIMs)):
 
 print('FIMS: ', len(FIMs))
 print(total_FIM)
-q, r = np.linalg.qr(total_FIM)
-det_FIM = r.diagonal().prod() * np.linalg.det(q)
+
+q, r = qr(total_FIM)
+
+det_FIM = np.prod(diag(r).elements())
+
+logdet_FIM = trace(log(r)).elements()[0]  # do it like this to protect from numerical errors from multiplying large EVs
+
 print('det: ', det_FIM)
-print('obj: ', -np.log(det_FIM))
-
-
+print('obj: ', logdet_FIM)
 
 sol = transpose(trajectory)
 t = np.arange(1,N_control_intervals +1)* (600/48) #int(control_interval_time / dt)) * dt

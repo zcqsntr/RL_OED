@@ -194,7 +194,7 @@ class OED_env():
         obj = -trace(log(r))
         #obj = -log(det(FIM))
         nlp = {'x': u, 'f': obj}
-        solver = self.gauss_newton(obj, nlp, theta)
+        solver = self.gauss_newton(obj, nlp, u)
 
         return solver  # , current_FIM
 
@@ -226,10 +226,11 @@ class OED_env():
 
         if action is None: # Traditional OED step
             u_solver = self.get_u_solver()
-            u = u_solver(x0=self.u0, lbx = self.input_bounds[0], ubx = self.input_bounds[1])['x']
+            u = u_solver(x0=self.u0, lbx = 10**self.input_bounds[0], ubx = 10**self.input_bounds[1])['x']
+            self.us = np.append(self.us, u)
         else: #RL step
             u = self.action_to_input(action)
-        self.us = np.append(self.us, 10**u)
+            self.us = np.append(self.us, 10**u)
 
         '''
         logus = [1,-3,2,-3,3,-3]
@@ -284,11 +285,12 @@ class OED_env():
 
         #use this method to remove the small negatvie eigenvalues
 
-        q, r = np.linalg.qr(FIM)
-        r = np.dot(r,q) # this produces same results and remove the numerical errors
-        det_FIM = r.diagonal().prod()
+        # casadi QR seems better,gives same results as np but some -ves in different places and never gives -ve determinant
+        q, r = qr(FIM)
 
-        logdet_FIM = np.trace(np.log(r)) # do it like this to protect from numerical errors from multiplying large EVs
+        det_FIM = np.prod(diag(r).elements())
+
+        logdet_FIM = trace(log(r)).elements()[0] # do it like this to protect from numerical errors from multiplying large EVs
 
         if det_FIM <= 0:
             eigs = np.real(np.linalg.eig(FIM)[0])
