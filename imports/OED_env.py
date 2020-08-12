@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import copy
 import math
 import time
+import scipy as sp
 def disablePrint():
     sys.stdout = open(os.devnull, 'w')
 
@@ -20,6 +21,7 @@ class OED_env():
         self.n_system_variables = len(x0)
         self.FIMs = []
         self.detFIMs = []
+        self.logdetFIMs = [] # so we dont have to multiply large eignvalues
         self.n_sensitivities = []
 
         self.dt = dt
@@ -65,7 +67,6 @@ class OED_env():
         self.us = np.array([])
         self.true_trajectory = []
         self.est_trajectory = []
-
 
     def G(self, Y, theta, u):
         RHS = SX.sym('RHS', len(self.initial_Y.elements()))
@@ -148,7 +149,7 @@ class OED_env():
 
     def get_full_trajectory_solver(self,  N_control_intervals, control_interval_time, dt):
         theta = SX.sym('theta', len(self.actual_params.elements()))
-        u = SX.sym('u', self.u0.size()[0])
+        u = SX.sym('u',1)
         G = self.get_one_step_RK(theta, u, dt)
 
         trajectory_solver = G.mapaccum('trajectory', int(N_control_intervals * control_interval_time / dt))
@@ -166,32 +167,36 @@ class OED_env():
                          dict(jit=False, compiler='clang', verbose = False))
         return nlpsol("solver","ipopt", nlp, dict(hess_lag=hessLag, jit=False, compiler='clang', verbose_init = False, verbose = False))
 
-
-
     def get_u_solver(self):
         '''
         only used for FIM optimisation based OED
         '''
-        trajectory_solver = self.get_sampled_trajectory_solver(self.xdot, len(self.us) + 1)
+        theta = SX.sym('theta', len(self.actual_params.elements()))
+
+
+        u = SX.sym('u', 1)
+        trajectory_solver = self.get_sampled_trajectory_solver(len(self.us) + 1)
         # self.past_trajectory_solver = self.get_trajectory_solver(self.xdot, len(self.us))
 
         all_us = SX.sym('all_us', len(self.us) + 1)
         all_us[0: len(self.us)] = self.us
-        all_us[-1] = self.sym_next_u
+        all_us[-1] = u
 
-        est_trajectory = trajectory_solver(self.initial_Y, all_us, self.param_guesses)
+        est_trajectory = trajectory_solver(self.initial_Y, self.param_guesses, all_us)
 
         FIM = self.get_FIM(est_trajectory)
 
         # past_trajectory = self.past_trajectory_solver(self.initial_Y, self.us, self.param_guesses)
         # current_FIM = self.get_FIM(past_trajectory)
 
-        obj = -log(det(FIM))
-        nlp = {'x': self.sym_next_u, 'f': obj}
-        solver = self.gauss_newton(obj, nlp, self.sym_params)
+        q,r = qr(FIM)
+
+        obj = -trace(log(r))
+        #obj = -log(det(FIM))
+        nlp = {'x': u, 'f': obj}
+        solver = self.gauss_newton(obj, nlp, u)
 
         return solver  # , current_FIM
-
 
     def get_param_solver(self, trajectory_solver, test_trajectory = None):
         # model fitting
@@ -221,10 +226,11 @@ class OED_env():
 
         if action is None: # Traditional OED step
             u_solver = self.get_u_solver()
-            u = u_solver(x0=self.u0, lbx = self.input_bounds[0], ubx = self.input_bounds[1])['x']
+            u = u_solver(x0=self.u0, lbx = 10**self.input_bounds[0], ubx = 10**self.input_bounds[1])['x']
+            self.us = np.append(self.us, u)
         else: #RL step
             u = self.action_to_input(action)
-        self.us = np.append(self.us, 10**u)
+            self.us = np.append(self.us, 10**u)
 
         '''
         logus = [1,-3,2,-3,3,-3]
@@ -279,39 +285,35 @@ class OED_env():
 
         #use this method to remove the small negatvie eigenvalues
 
-        q, r = np.linalg.qr(FIM)
-        det_FIM = r.diagonal().prod() * np.linalg.det(q)
+        # casadi QR seems better,gives same results as np but some -ves in different places and never gives -ve determinant
+        q, r = qr(FIM)
+
+        det_FIM = np.prod(diag(r).elements())
+
+        logdet_FIM = trace(log(r)).elements()[0] # do it like this to protect from numerical errors from multiplying large EVs
 
         if det_FIM <= 0:
             eigs = np.real(np.linalg.eig(FIM)[0])
             eigs[eigs<0] = 0.00000000000000000000000001
             det_FIM = np.prod(eigs)
-        #use qr factorisation for numerical stability
-        #det q is either 1 or -1
-
-        #q, r = np.linalg.qr(FIM)
-        #det_FIM = r.diagonal().prod() * np.linalg.det(q)
-        #print('det: ', det_FIM)
+            logdet_FIM = np.log(det_FIM)
 
         self.FIMs.append(FIM)
         self.detFIMs.append(det_FIM)
+        self.logdetFIMs.append(logdet_FIM)
 
         try:
             #reward = np.log(det_FIM-self.detFIMs[-2])
-            reward = np.log(det_FIM) - np.log(self.detFIMs[-2])
+            reward = logdet_FIM - self.logdetFIMs[-2]
             #print('det adfa: ', det_FIM)
             #print(det_FIM - self.detFIMs[-2])
         except:
-            reward = np.log(det_FIM)
+            reward = logdet_FIM
 
         if math.isnan(reward):
             pass
             print()
             print('nan reward, FIM might have negative determinant !!!!')
-            print('eigs: ', eigs)
-            print(det_FIM)
-            print(self.detFIMs[-2])
-            print(det_FIM - self.detFIMs[-2])
 
             reward = -100
         return reward/100
@@ -418,8 +420,6 @@ class OED_env():
 
 
         return self.normalise_RL_state(state)
-
-
 
     def get_initial_RL_state(self):
         state = np.array(self.x0 + self.param_guesses.elements() + [0] * self.n_FIM_elements)
