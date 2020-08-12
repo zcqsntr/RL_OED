@@ -87,8 +87,8 @@ def G(Y, theta, u):
     inv_sigma = SX.sym('sig', 2, 2)#sigma matrix in Nates paper
     inv_sigma[0,1] = 0
     inv_sigma[1,0] = 0
-    inv_sigma[0,0] = 1/(std_rna*Y[0]) #*w/12.5 # inverse of diagonal matrix
-    inv_sigma[1,1] = 1/(std_prot*Y[1]) #*w/12.5# inverse of diagonal matrix
+    inv_sigma[0,0] = 1/(std_rna*Y[0])# *w/12.5 # inverse of diagonal matrix
+    inv_sigma[1,1] = 1/(std_prot*Y[1])# *w/12.5# inverse of diagonal matrix
 
 
     sensitivities = reshape(Y[n_system_variables:n_system_variables + n_params*n_system_variables], (n_system_variables, n_params))
@@ -290,18 +290,20 @@ FIMs = []
 
 
 logus = [1,-3,2,-3,3,-3] # rational design, -67.73
-logus = [3,-1,3,-1,3,3] # nates 1 (not exact) nan
+#logus = [3,-1,3,-1,3,3] # nates 1 (not exact) nan
 #logus = [1,1,3,-1,3,3] # nates 2 (not exact) -60.5
-ws = [0,0,0,1]*int(N_control_intervals/4)
+
+us = 10. ** np.array(logus)
+ws = [1,1,1,1]*int(N_control_intervals/4)
+
 
 #us = np.array([1.87381742e+00, 1.00000000e+03, 1.23284674e-02, 1.23284674e-02, 1.23284674e-02, 1.23284674e-02]) # gamma = 0: -68.3567
 #us = np.array([1.87381742e+00, 2.84803587e+02, 1.23284674e-02, 1.51991108e-01, 5.33669923e-01, 1.00000000e-03]) # fitted Q: -67.169 log(delta det F)
 #us = np.array([1.51991108e-01,1.87381742e+00, 2.31012970e+01, 1.00000000e+03,6.57933225e+00, 1.23284674e-02])
 
-us:  [2.84803587e+02 1.00000000e-03 8.11130831e+01 1.00000000e-03
- 1.23284674e-02 1.23284674e-02]  #-72.46740549151691
+#us:  [2.84803587e+02 1.00000000e-03 8.11130831e+01 1.00000000e-03 1.23284674e-02 1.23284674e-02]  #-72.46740549151691 fitted Q
 
-
+us = np.array([2.84803587e+02, 1.23284674e-02, 2.31012970e+01, 3.51119173e-03, 1.23284674e-02, 3.51119173e-03]) #-73.2607748599451 fitted Q
 
 for i,doub_rate in enumerate(doub_rates):
     grs = []
@@ -316,7 +318,7 @@ for i,doub_rate in enumerate(doub_rates):
 
     inputs = []
 
-    us = 10. ** np.array(logus)
+
 
     print('us :', us)
 
@@ -366,7 +368,7 @@ print('obj: ', -np.log(det_FIM))
 
 
 sol = transpose(trajectory)
-t = np.arange(N_control_intervals )* (600/12.5) #int(control_interval_time / dt)) * dt
+t = np.arange(1,N_control_intervals +1)* (600/48) #int(control_interval_time / dt)) * dt
 plt.figure()
 plt.plot(t, sol[:, 0])
 plt.ylabel('rna')

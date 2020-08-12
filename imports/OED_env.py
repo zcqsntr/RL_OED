@@ -166,14 +166,16 @@ class OED_env():
                          dict(jit=False, compiler='clang', verbose = False))
         return nlpsol("solver","ipopt", nlp, dict(hess_lag=hessLag, jit=False, compiler='clang', verbose_init = False, verbose = False))
 
+
+
     def get_u_solver(self):
         '''
         only used for FIM optimisation based OED
         '''
-        trajectory_solver = self.get_sampled_trajectory_solver(self.xdot, len(self.us)+1)
-        #self.past_trajectory_solver = self.get_trajectory_solver(self.xdot, len(self.us))
+        trajectory_solver = self.get_sampled_trajectory_solver(self.xdot, len(self.us) + 1)
+        # self.past_trajectory_solver = self.get_trajectory_solver(self.xdot, len(self.us))
 
-        all_us = SX.sym('all_us', len(self.us)+1)
+        all_us = SX.sym('all_us', len(self.us) + 1)
         all_us[0: len(self.us)] = self.us
         all_us[-1] = self.sym_next_u
 
@@ -181,16 +183,15 @@ class OED_env():
 
         FIM = self.get_FIM(est_trajectory)
 
-
-        #past_trajectory = self.past_trajectory_solver(self.initial_Y, self.us, self.param_guesses)
-        #current_FIM = self.get_FIM(past_trajectory)
-
+        # past_trajectory = self.past_trajectory_solver(self.initial_Y, self.us, self.param_guesses)
+        # current_FIM = self.get_FIM(past_trajectory)
 
         obj = -log(det(FIM))
-        nlp = {'x':self.sym_next_u, 'f':obj}
+        nlp = {'x': self.sym_next_u, 'f': obj}
         solver = self.gauss_newton(obj, nlp, self.sym_params)
 
-        return solver#, current_FIM
+        return solver  # , current_FIM
+
 
     def get_param_solver(self, trajectory_solver, test_trajectory = None):
         # model fitting

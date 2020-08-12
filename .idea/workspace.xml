@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d4a265c6-eb3f-4c7a-9611-a62750211fde" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/Nates_system/OED_param_inf.py" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Nates_system/fit_q/actions.npy" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Nates_system/fit_q/all_returns.npy" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Nates_system/fit_q/log_us.pdf" afterDir="false" />
@@ -12,12 +13,22 @@
       <change afterPath="$PROJECT_DIR$/Nates_system/fit_q/true_trajectory.npy" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Nates_system/fit_q/us.npy" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Nates_system/fit_q/values.npy" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/actions.npy" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/all_returns.npy" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/fitted_Q_param_inf.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/log_us.pdf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/prot_trajectories.pdf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/return.pdf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/rna_trajectories.pdf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/trajectories.npy" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/true_trajectory.npy" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/us.npy" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/values.npy" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Nates_system/plot.py" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Nates_system/results/value_conv/all_value_SSEs.npy" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Nates_system/results/value_conv/sse.png" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Nates_system/results/value_conv/test.png" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Nates_system/results/value_conv/train.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/test_overfitting.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/test_value_convergence.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/500eps_logdeltar/all_returns.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500eps_logdeltar/all_returns.npy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/500eps_logdeltar/log_us.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500eps_logdeltar/log_us.pdf" afterDir="false" />
@@ -34,7 +45,6 @@
       <change beforePath="$PROJECT_DIR$/Nates_system/500epsdeltalogr/trajectories.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500epsdeltalogr/trajectories.npy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/500epsdeltalogr/us.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500epsdeltalogr/us.npy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/OED_setup_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/OED_setup_test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/fitted_Q_param_inf.py" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/fitted_Q_param_inf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/data/all_actions.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/reward_prediction/data/all_actions.npy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/data/all_rewards.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/reward_prediction/data/all_rewards.npy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/data/all_states.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/reward_prediction/data/all_states.npy" afterDir="false" />
@@ -44,11 +54,8 @@
       <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/deltalogdetFIM/all_rewards.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/reward_prediction/deltalogdetFIM/all_rewards.npy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/deltalogdetFIM/all_states.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/reward_prediction/deltalogdetFIM/all_states.npy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/deltalogdetFIM/reward_pred.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/reward_prediction/deltalogdetFIM/reward_pred.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/reward_prediction.py" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/reward_prediction.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/imports/OED_env.py" beforeDir="false" afterPath="$PROJECT_DIR$/imports/OED_env.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/results/plot.py" beforeDir="false" afterPath="$PROJECT_DIR$/results/plot.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_value_convergence.py" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/xdot.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -92,7 +99,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/Nates_system/fit_q" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/Nates_system/fit_q_2" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -212,7 +219,9 @@
       <workItem from="1596614602338" duration="468000" />
       <workItem from="1596615108766" duration="3012000" />
       <workItem from="1596618301211" duration="49553000" />
-      <workItem from="1596788316015" duration="3413000" />
+      <workItem from="1596788316015" duration="15336000" />
+      <workItem from="1597043578821" duration="6332000" />
+      <workItem from="1597219348907" duration="301000" />
     </task>
     <task id="LOCAL-00001" summary="Fixed get_FIM and reneralised it to systems with more than one parameter">
       <created>1591172912260</created>
@@ -319,7 +328,14 @@
       <option name="project" value="LOCAL" />
       <updated>1596091257882</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="Fitted Q tuned and working">
+      <created>1596792303504</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1596792303504</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -340,7 +356,8 @@
     <MESSAGE value="value inv" />
     <MESSAGE value="bug fix" />
     <MESSAGE value="reward fit improved" />
-    <option name="LAST_COMMIT_MESSAGE" value="reward fit improved" />
+    <MESSAGE value="Fitted Q tuned and working" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fitted Q tuned and working" />
   </component>
   <component name="WindowStateProjectService">
     <state x="958" y="1017" width="633" height="390" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1595926439563">
@@ -351,9 +368,10 @@
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
     <state x="1013" y="961" width="524" height="502" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1594631866345" />
-    <state x="845" y="789" width="860" height="847" key="CommitChangelistDialog2" timestamp="1596091257751">
-      <screen x="0" y="507" width="2560" height="1413" />
+    <state x="845" y="452" width="1250" height="1179" key="CommitChangelistDialog2" timestamp="1596792303239">
+      <screen x="0" y="480" width="2560" height="1440" />
     </state>
+    <state x="845" y="452" width="1250" height="1179" key="CommitChangelistDialog2/0.480.2560.1440/2560.0.1080.1920@0.480.2560.1440" timestamp="1596792303239" />
     <state x="845" y="789" width="860" height="847" key="CommitChangelistDialog2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1596091257751" />
     <state x="52" y="637" width="2360" height="1215" key="DiffContextDialog" timestamp="1591172827042">
       <screen x="0" y="507" width="2560" height="1413" />

@@ -77,6 +77,8 @@ def xdot(sym_y, sym_theta, sym_u):
 
     return xdot
 
+def check_symmetric(a, rtol=1e-05, atol=1e-08):
+    return numpy.allclose(a, a.T, rtol=rtol, atol=atol)
 '''
 1) generate noisy data sets acording to the assumed model and experimental design and repeatedly fit to find the 'true' parameter variability under the given design
 2) report the full D optimality score
@@ -125,8 +127,6 @@ for i in range(3):
     print('initial params: ', param_guesses)
     env.reset()
 
-
-
     env.us = us
 
 
@@ -166,7 +166,7 @@ for i in range(3):
 
 
 
-    all_final_params.append(param_guesses.elements()/np.array([1e2, 1e6, 1e10, 1e-3, 1e1]))
+    all_final_params.append(param_guesses.elements())
 
 np.save('results/all_final_params.npy', all_final_params)
 print(np.array(all_final_params))
@@ -176,6 +176,7 @@ cov = np.cov(all_final_params.T)
 q, r = np.linalg.qr(cov)
 det = r.diagonal().prod() * np.linalg.det(q)
 print(cov)
+print(check_symmetric(cov))
 print('cov shape: ', cov.shape)
 print(np.linalg.det(cov))
 print(' det cov: ', det)
