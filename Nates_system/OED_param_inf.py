@@ -54,12 +54,16 @@ if __name__ == '__main__':
 
     e_return = 0
 
+    u0 = (10**input_bounds[0] - 10**input_bounds[1])/2
+    env.u0 = DM(u0)
 
+    e_rewards = []
     for e in range(0, N_control_intervals):
-
+        print(e)
         disablePrint()
         next_state, reward, done, _ = env.step()
         enablePrint()
+        env.u0 = env.us[-1]
 
         if e == N_control_intervals - 1:
             next_state = [None]*24
