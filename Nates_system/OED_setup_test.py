@@ -382,7 +382,7 @@ ax2.plot(t, sol[:, 1], color='red', label='Protein')
 ax2.set_ylabel('Protein #')
 ax2.set_xlabel('Time (min)')
 fig.tight_layout()
-fig.legend(bbox_to_anchor=(0.3, 0.9))
+fig.legend(bbox_to_anchor=(0.8, 0.9))
 
 plt.figure()
 plt.step(t, np.log10(us[0].T), color='black')
