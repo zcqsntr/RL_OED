@@ -46,8 +46,9 @@ def xdot(sym_y, sym_theta, sym_u):
 
     #y, y0, umax, Km, Km0 = [sym_theta[2*i:2*(i+1)] for i in range(len(sym_theta.elements())//2)]
 
-    umax, Km, Km0 = [sym_theta[2*i:2*(i+1)] for i in range(len(sym_theta.elements())//2)]
-
+    umax, Km, Km0 = [sym_theta[2*i:2*(i+1)] for i in range(3)]
+    A = sym_theta[6:]
+    A = reshape(A, (2,2))
     y = np.array([480000., 480000.])
     y0 = np.array([520000., 520000.])
 
@@ -62,8 +63,8 @@ def xdot(sym_y, sym_theta, sym_u):
     R = monod(C, C0, umax, Km, Km0)
     print(R.shape)
     # calculate derivatives
-    #dN = N * (R.astype(float) + mtimes(A, N) - q)  # q term takes account of the dilution
-    dN = N * (R - q)  # q term takes account of the dilution
+    dN = N * (R + mtimes(A, N) - q)  # q term takes account of the dilution
+    #dN = N * (R - q)  # q term takes account of the dilution
     dC = q * (Cin - C) - (1 / y) * R * N  # sometimes dC.shape is (2,2)
     dC0 = q * (C0in - C0) - sum(1 / y0[i] * R[i] * N[i] for i in range(num_species))
 

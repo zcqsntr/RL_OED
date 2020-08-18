@@ -4,6 +4,7 @@ import os
 IMPORT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'imports')
 
 sys.path.append(IMPORT_PATH)
+sys.path.append('/Users/neythen/Desktop/Projects/ROCC/')
 
 import math
 from casadi import *
@@ -54,8 +55,8 @@ if __name__ == '__main__':
     all_returns = []
 
     #y, y0, umax, Km, Km0, A
-    actual_params = DM([480000, 480000, 520000, 520000, 1, 1.1, 0.00048776, 0.000000102115, 0.00006845928, 0.00006845928])#, DM([[0, 0],[0, 0]])]
-    actual_params = DM([1, 1.1, 0.00048776, 0.000000102115, 0.00006845928, 0.00006845928])#, DM([[0, 0],[0, 0]])]
+    #actual_params = DM([480000, 480000, 520000, 520000, 1, 1.1, 0.00048776, 0.000000102115, 0.00006845928, 0.00006845928,0, 0,0, 0])
+    actual_params = DM([1, 1.1, 0.00048776, 0.000000102115, 0.00006845928, 0.00006845928,-0.001,-0.002,-0.001, -0.002])
 
     input_bounds = [0, 0.1]
     n_controlled_inputs = 4
@@ -77,7 +78,7 @@ if __name__ == '__main__':
     agent = KerasFittedQAgent(layer_sizes=[72, 150, 150, 150, num_inputs**n_controlled_inputs])
 
     N_control_intervals = 100
-    control_interval_time = 1
+    control_interval_time = 10
 
     n_observed_variables = 2
 
@@ -164,8 +165,15 @@ if __name__ == '__main__':
     for i in range(5):
         print(i)
         print('system:', env.true_trajectory[:env.n_system_variables, i])
-        print('sensitivities:', reshape(env.true_trajectory[env.n_system_variables:env.n_system_variables+env.n_sensitivities, i], (2, 6)))
-        print('FIM:', env.get_FIM(env.true_trajectory[:, i])) #env.true_trajectory[env.n_system_variables+env.n_sensitivities:env.n_system_variables+env.n_sensitivities +env.n_FIM_elements, i])
+        print('sensitivities:', reshape(env.true_trajectory[env.n_system_variables:env.n_system_variables+env.n_sensitivities, i], (2, 10)))
+        FIM = env.get_FIM(env.true_trajectory[:, i])
+        print('FIM:', FIM) #env.true_trajectory[env.n_system_variables+env.n_sensitivities:env.n_system_variables+env.n_sensitivities +env.n_FIM_elements, i])
+    print(env.detFIMs[-1])
+    print(env.logdetFIMs[-1])
+    eigs = np.linalg.eig(FIM)[0]
+    print('eigs: ', eigs)
+    plt.plot(env.logdetFIMs)
+    plt.show()
     np.save(save_path + 'trajectories.npy', np.array(env.true_trajectory))
 
     np.save(save_path + 'true_trajectory.npy', env.true_trajectory)

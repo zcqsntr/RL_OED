@@ -1,63 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="d4a265c6-eb3f-4c7a-9611-a62750211fde" name="Default Changelist" comment="OEd optimisation working">
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q/actions.npy" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q/all_returns.npy" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q/log_us.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q/prot_trajectories.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q/return.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q/rna_trajectories.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q/trajectories.npy" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q/true_trajectory.npy" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q/us.npy" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q/values.npy" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/actions.npy" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/all_returns.npy" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/fitted_Q_param_inf.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/log_us.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/prot_trajectories.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/return.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/rna_trajectories.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/trajectories.npy" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/true_trajectory.npy" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/us.npy" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/fit_q_2/values.npy" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/results/value_conv/all_value_SSEs.npy" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/results/value_conv/sse.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/results/value_conv/test.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Nates_system/results/value_conv/train.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chemostat_system/fitted_Q_param_inf.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chemostat_system/xdot.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/500eps_logdeltar/all_returns.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500eps_logdeltar/all_returns.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/500eps_logdeltar/log_us.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500eps_logdeltar/log_us.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/500eps_logdeltar/prot_trajectories.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500eps_logdeltar/prot_trajectories.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/500eps_logdeltar/return.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500eps_logdeltar/return.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/500eps_logdeltar/rna_trajectories.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500eps_logdeltar/rna_trajectories.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/500eps_logdeltar/trajectories.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500eps_logdeltar/trajectories.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/500eps_logdeltar/us.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500eps_logdeltar/us.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/500epsdeltalogr/all_returns.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500epsdeltalogr/all_returns.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/500epsdeltalogr/log_us.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500epsdeltalogr/log_us.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/500epsdeltalogr/prot_trajectories.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500epsdeltalogr/prot_trajectories.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/500epsdeltalogr/return.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500epsdeltalogr/return.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/500epsdeltalogr/rna_trajectories.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500epsdeltalogr/rna_trajectories.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/500epsdeltalogr/trajectories.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500epsdeltalogr/trajectories.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/500epsdeltalogr/us.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/500epsdeltalogr/us.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/OED_param_inf.py" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/OED_param_inf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/OED_setup_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/OED_setup_test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/fitted_Q_param_inf.py" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/fitted_Q_param_inf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/data/all_actions.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/reward_prediction/data/all_actions.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/data/all_rewards.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/reward_prediction/data/all_rewards.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/data/all_states.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/reward_prediction/data/all_states.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/data/pred_rewards.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/reward_prediction/data/pred_rewards.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/data/reward_pred.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/reward_prediction/data/reward_pred.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/deltalogdetFIM/all_actions.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/reward_prediction/deltalogdetFIM/all_actions.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/deltalogdetFIM/all_rewards.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/reward_prediction/deltalogdetFIM/all_rewards.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/deltalogdetFIM/all_states.npy" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/reward_prediction/deltalogdetFIM/all_states.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/reward_prediction/deltalogdetFIM/reward_pred.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/results/reward_prediction/deltalogdetFIM/reward_pred.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Nates_system/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imports/OED_env.py" beforeDir="false" afterPath="$PROJECT_DIR$/imports/OED_env.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chemostat_system/fitted_Q_param_inf.py" beforeDir="false" afterPath="$PROJECT_DIR$/chemostat_system/fitted_Q_param_inf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chemostat_system/xdot.py" beforeDir="false" afterPath="$PROJECT_DIR$/chemostat_system/xdot.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -78,9 +43,6 @@
     <expand />
     <select />
   </component>
-  <component name="FavoritesManager">
-    <favorites_list name="RL_OED" />
-  </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -92,9 +54,9 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1RYkvGVj1BNUp9LaIMCwGcQxaeM" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
-    <option name="showExcludedFiles" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
@@ -108,7 +70,7 @@
     <property name="node.js.path.for.package.tslint" value="project" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
-    <property name="settings.editor.selected.configurable" value="settings.github" />
+    <property name="settings.editor.selected.configurable" value="reference.settings.ide.settings.file-colors" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -375,6 +337,9 @@
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Fixed get_FIM and reneralised it to systems with more than one parameter" />
     <MESSAGE value="Nates system coded, need to fix bug in updated sym_Y" />
@@ -422,9 +387,10 @@
     </state>
     <state x="977" y="731" width="780" height="692" key="FileChooserDialogImpl/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1594199921165" />
     <state x="2972" y="304" width="374" height="941" key="FileChooserDialogImpl/0.507.2560.1413/2560.0.1080.1920@2560.0.1080.1920" timestamp="1596703141819" />
-    <state x="769" y="847" key="SettingsEditor" timestamp="1591172774846">
-      <screen x="0" y="507" width="2560" height="1413" />
+    <state x="432" y="178" key="SettingsEditor" timestamp="1597667922773">
+      <screen x="0" y="0" width="1440" height="900" />
     </state>
+    <state x="432" y="178" key="SettingsEditor/0.0.1440.900@0.0.1440.900" timestamp="1597667922773" />
     <state x="769" y="847" key="SettingsEditor/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591172774846" />
     <state x="875" y="660" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1597261371537">
       <screen x="0" y="219" width="2560" height="1413" />
