@@ -243,8 +243,7 @@ class OED_env():
             #self.us.append(10**u)
             self.us.append(u)
 
-        print(action)
-        print(u)
+
 
         N_control_intervals = len(self.us)
         #N_control_intervals = 12
@@ -256,7 +255,7 @@ class OED_env():
         #trajectory_solver = self.get_full_trajectory_solver(N_control_intervals, control_interval_time, self.dt) # the true trajectory of the system
         #trajectory_solver = trajectory_solver(N_control_intervals, control_interval_time, dt ) #this si the symbolic trajectory
         t = time.time()
-        print(np.array(self.us).shape)
+
         self.true_trajectory = sampled_trajectory_solver(self.initial_Y,  self.actual_params, np.array(self.us)[:,:,0].T)
 
         #self.est_trajectory = sampled_trajectory_solver(self.initial_Y, self.param_guesses, self.us )
@@ -310,7 +309,7 @@ class OED_env():
             #print('det adfa: ', det_FIM)
             #print(det_FIM - self.detFIMs[-2])
         except:
-            print('HELLO')
+
             reward = logdet_FIM
 
         if math.isnan(reward):

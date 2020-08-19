@@ -30,7 +30,7 @@ if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 
-    n_episodes = 1
+    n_episodes = 100
     if len(sys.argv) == 3:
         if sys.argv[2] == '1':
 
@@ -77,8 +77,8 @@ if __name__ == '__main__':
 
     agent = KerasFittedQAgent(layer_sizes=[72, 150, 150, 150, num_inputs**n_controlled_inputs])
 
-    N_control_intervals = 100
-    control_interval_time = 10
+    N_control_intervals = 10
+    control_interval_time = 30
 
     n_observed_variables = 2
 
@@ -102,10 +102,8 @@ if __name__ == '__main__':
 
             next_state, reward, done, _ = env.step(action)
 
-
-
             if e == N_control_intervals - 1:
-                next_state = [None]*24
+                next_state = [None]*72
                 done = True
             transition = (state, action, reward, next_state, done)
             trajectory.append(transition)
@@ -120,9 +118,9 @@ if __name__ == '__main__':
         agent.memory.append(trajectory)
 
         #train the agent
-        skip = 200
+        skip = 10
         if episode % skip == 0 or episode == n_episodes - 2:
-            #explore_rate = agent.get_rate(episode, 0, 1, n_episodes / 10)
+            explore_rate = agent.get_rate(episode, 0, 1, n_episodes / 10)
             if explore_rate == 1:
                 n_iters = 0
             elif len(agent.memory[0]) * len(agent.memory) < 10000:
@@ -154,12 +152,12 @@ if __name__ == '__main__':
             print('explore rate: ', explore_rate)
             print('return: ', e_return)
             print('av return: ', np.mean(all_returns[-skip:]))
-            print('actions:', e_actions)
-            print('us: ', env.us)
+            #print('actions:', e_actions)
+            #print('us: ', env.us)
             print('rewards: ', e_rewards)
 
     #print(env.FIMs)
-            print(env.detFIMs)
+            #print(env.detFIMs)
     #print(env.all_param_guesses)
     #print(env.actual_params)
     for i in range(5):

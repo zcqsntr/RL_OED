@@ -33,7 +33,7 @@ if __name__ == '__main__':
     if len(sys.argv) == 3:
         if sys.argv[2] == '1':
 
-            n_episodes = 10000
+            n_episodes = 20000
         elif sys.argv[2] == '2':
             n_episodes = 50000
         else:
