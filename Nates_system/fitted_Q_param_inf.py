@@ -48,7 +48,7 @@ if __name__ == '__main__':
     else:
         save_path = './'
 
-
+    print('START')
     agent = KerasFittedQAgent(layer_sizes = [24, 150, 150, 150, 12])
     print('n_actions', agent.n_actions)
     all_returns = []
