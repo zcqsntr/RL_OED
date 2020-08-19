@@ -29,12 +29,12 @@ if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 
-    n_episodes = 20000
+    n_episodes = 2
     if len(sys.argv) == 3:
-        if sys.argv[2] == '1':
+        if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
 
             n_episodes = 20000
-        elif sys.argv[2] == '2':
+        elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
             n_episodes = 50000
         else:
             n_episodes = 100000
@@ -71,12 +71,14 @@ if __name__ == '__main__':
     param_guesses = actual_params
     y0 = [0.000001, 0.000001]
 
-
+    normaliser = np.array([1e3, 1e4, 1e2, 1e6, 1e10, 1e-3, 1e1, 1e9, 1e9, 1e9, 1e9, 1, 1e9, 1e9, 1e9, 1, 1e9, 1e9, 1, 1e9, 1, 1e7,10, 100])
 
     N_control_intervals = 6
     control_interval_time = 100
+    n_observed_variables = 2
+    n_controlled_inputs = 2
 
-    env = OED_env(y0, xdot, param_guesses, actual_params, num_inputs, input_bounds, dt, control_interval_time)
+    env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time, normaliser)
     explore_rate = 1
     for episode in range(n_episodes):
 
@@ -167,6 +169,8 @@ if __name__ == '__main__':
     np.save(save_path + 'all_returns.npy', np.array(all_returns))
     np.save(save_path + 'actions.npy', np.array(agent.actions))
     np.save(save_path + 'values.npy', np.array(agent.values))
+
+
     t = np.arange(N_control_intervals) * int(control_interval_time)
 
     plt.plot(env.true_trajectory[0, :].elements(), label = 'true')
@@ -185,12 +189,12 @@ if __name__ == '__main__':
     plt.xlabel('time (mins)')
     plt.savefig(save_path + 'prot_trajectories.pdf')
 
-
+    '''
     plt.figure()
-    plt.step(np.arange(len(env.us.T)), np.array(env.us.T))
+    plt.step(np.arange(len(env.us)), np.array(env.us))
     plt.ylabel('u')
     plt.xlabel('time (mins)')
-
+    '''
     plt.ylim(bottom=0)
     plt.ylabel('u')
     plt.xlabel('Timestep')
