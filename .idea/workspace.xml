@@ -22,6 +22,7 @@
     <list default="true" id="d4a265c6-eb3f-4c7a-9611-a62750211fde" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Nates_system/fitted_Q_param_inf.py" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/fitted_Q_param_inf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imports/OED_env.py" beforeDir="false" afterPath="$PROJECT_DIR$/imports/OED_env.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,7 +63,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/Nates_system/fit_q_2" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/chemostat_system" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -72,19 +73,19 @@
     <property name="settings.editor.selected.configurable" value="reference.settings.ide.settings.file-colors" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/chemostat_system" />
+      <recent name="$PROJECT_DIR$/Nates_system/fit_q" />
+      <recent name="$PROJECT_DIR$/Nates_system/results/value_conv" />
+      <recent name="$PROJECT_DIR$/Nates_system/reward_prediction/data" />
+      <recent name="$PROJECT_DIR$/Nates_system/reward_prediction/deltalogdetFIM" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/Nates_system/results" />
       <recent name="$PROJECT_DIR$/Nates_system" />
       <recent name="$PROJECT_DIR$/tests" />
       <recent name="$PROJECT_DIR$/Nates_system/reward_prediction/log(delta_det_FIM)" />
       <recent name="$PROJECT_DIR$/Nates_system/reward_prediction" />
-    </key>
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/Nates_system/fit_q" />
-      <recent name="$PROJECT_DIR$/Nates_system/results/value_conv" />
-      <recent name="$PROJECT_DIR$/Nates_system/reward_prediction/data" />
-      <recent name="$PROJECT_DIR$/Nates_system/reward_prediction/deltalogdetFIM" />
-      <recent name="$PROJECT_DIR$/Nates_system" />
     </key>
   </component>
   <component name="RunManager">
@@ -191,7 +192,8 @@
       <workItem from="1597400585080" duration="12685000" />
       <workItem from="1597738538644" duration="3193000" />
       <workItem from="1597753473388" duration="7353000" />
-      <workItem from="1597822563727" duration="4266000" />
+      <workItem from="1597822563727" duration="19782000" />
+      <workItem from="1597911701468" duration="1145000" />
     </task>
     <task id="LOCAL-00001" summary="Fixed get_FIM and reneralised it to systems with more than one parameter">
       <created>1591172912260</created>
@@ -347,7 +349,21 @@
       <option name="project" value="LOCAL" />
       <updated>1597824191730</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="for cluster">
+      <created>1597830312381</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1597830312381</updated>
+    </task>
+    <task id="LOCAL-00024" summary="single_auxotroph system set up and working">
+      <created>1597912550587</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1597912550587</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -374,7 +390,8 @@
     <MESSAGE value="OEd optimisation working" />
     <MESSAGE value="OEd optimisation added to setup test" />
     <MESSAGE value="for cluster" />
-    <option name="LAST_COMMIT_MESSAGE" value="for cluster" />
+    <MESSAGE value="single_auxotroph system set up and working" />
+    <option name="LAST_COMMIT_MESSAGE" value="single_auxotroph system set up and working" />
   </component>
   <component name="WindowStateProjectService">
     <state x="958" y="729" width="662" height="390" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1597393269536">
@@ -386,11 +403,11 @@
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
     <state x="1013" y="961" width="524" height="502" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1594631866345" />
-    <state x="845" y="315" width="860" height="847" key="CommitChangelistDialog2" timestamp="1597824191630">
+    <state x="845" y="315" width="860" height="847" key="CommitChangelistDialog2" timestamp="1597912550418">
       <screen x="0" y="315" width="2560" height="1413" />
     </state>
     <state x="845" y="219" width="1454" height="847" key="CommitChangelistDialog2/0.219.2560.1413/2560.0.1080.1920@0.219.2560.1413" timestamp="1597261368814" />
-    <state x="845" y="315" width="860" height="847" key="CommitChangelistDialog2/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1597824191630" />
+    <state x="845" y="315" width="860" height="847" key="CommitChangelistDialog2/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1597912550418" />
     <state x="845" y="452" width="1250" height="1179" key="CommitChangelistDialog2/0.480.2560.1440/2560.0.1080.1920@0.480.2560.1440" timestamp="1596792303239" />
     <state x="845" y="789" width="860" height="847" key="CommitChangelistDialog2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1596091257751" />
     <state x="52" y="637" width="2360" height="1215" key="DiffContextDialog" timestamp="1591172827042">
@@ -407,11 +424,11 @@
     </state>
     <state x="432" y="178" key="SettingsEditor/0.0.1440.900@0.0.1440.900" timestamp="1597667922773" />
     <state x="769" y="847" key="SettingsEditor/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591172774846" />
-    <state x="875" y="756" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1597824193095">
+    <state x="875" y="756" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1597912553854">
       <screen x="0" y="315" width="2560" height="1413" />
     </state>
     <state x="875" y="660" width="800" height="528" key="Vcs.Push.Dialog.v2/0.219.2560.1413/2560.0.1080.1920@0.219.2560.1413" timestamp="1597261371537" />
-    <state x="875" y="756" width="800" height="528" key="Vcs.Push.Dialog.v2/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1597824193095" />
+    <state x="875" y="756" width="800" height="528" key="Vcs.Push.Dialog.v2/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1597912553854" />
     <state x="875" y="948" width="800" height="528" key="Vcs.Push.Dialog.v2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1596091268228" />
     <state x="100" y="605" width="2360" height="1215" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1591172794349">
       <screen x="0" y="507" width="2560" height="1413" />

@@ -29,7 +29,7 @@ if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 
-    n_episodes = 2
+    n_episodes = 10
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
 
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     N_control_intervals = 6
     control_interval_time = 100
     n_observed_variables = 2
-    n_controlled_inputs = 2
+    n_controlled_inputs = 1
 
     env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time, normaliser)
     explore_rate = 1
@@ -111,14 +111,7 @@ if __name__ == '__main__':
             state = next_state
             e_return += reward
 
-            print('system:', env.true_trajectory[:env.n_system_variables, e])
-            print('sensitivities:',
-                  reshape(env.true_trajectory[env.n_system_variables:env.n_system_variables + env.n_sensitivities, e],
-                          (2, 5)))
-            FIM = env.get_FIM(env.true_trajectory[:, e])
-            print('FIM: ', FIM)
-            print('detfim: ', env.detFIMs[-1])
-            print('logdetfim: ', env.logdetFIMs[-1])
+
 
 
         agent.memory.append(trajectory)
