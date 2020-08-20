@@ -38,33 +38,34 @@ def xdot(sym_y, sym_theta, sym_u):
         dsol: array of the derivatives for all state variables
     '''
 
-    q = sym_u[0]
-    Cin = sym_u[1:3]
-    C0in = sym_u[3]
-    print(sym_u.shape, q.shape, Cin.shape, C0in.shape)
+    #q = sym_u[0]
+    Cin = sym_u[0]
+    C0in = sym_u[1]
+
     q = 0.5
 
     #y, y0, umax, Km, Km0 = [sym_theta[2*i:2*(i+1)] for i in range(len(sym_theta.elements())//2)]
 
-    umax, Km, Km0 = [sym_theta[2*i:2*(i+1)] for i in range(3)]
-    A = sym_theta[6:]
-    A = reshape(A, (2,2))
-    y = np.array([480000., 480000.])
-    y0 = np.array([520000., 520000.])
+    umax, Km, Km0 = [sym_theta[i] for i in range(3)]
+
+
+    y = np.array([480000.])
+    y0 = np.array([520000.])
 
     print('params:', y, y0, umax, Km, Km0 )
     num_species = Km.size()[0]
+    print('num species:', num_species)
 
     # extract variables
-    N = sym_y[:2]
-    C = sym_y[2:4]
-    C0 = sym_y[4]
+    N = sym_y[0]
+    C = sym_y[1]
+    C0 = sym_y[2]
     print(N.shape, C.shape, C0.shape)
     R = monod(C, C0, umax, Km, Km0)
     print(R.shape)
     # calculate derivatives
-    dN = N * (R + mtimes(A, N) - q)  # q term takes account of the dilution
-    #dN = N * (R - q)  # q term takes account of the dilution
+
+    dN = N * (R - q)  # q term takes account of the dilution
     dC = q * (Cin - C) - (1 / y) * R * N  # sometimes dC.shape is (2,2)
     dC0 = q * (C0in - C0) - sum(1 / y0[i] * R[i] * N[i] for i in range(num_species))
 
@@ -77,9 +78,9 @@ def xdot(sym_y, sym_theta, sym_u):
     xdot = SX.sym('xdot', 2*num_species + 1)
 
 
-    xdot[0:num_species] = dN
-    xdot[num_species:2*num_species] = dC
-    xdot[-1] = dC0
+    xdot[0] = dN
+    xdot[1] = dC
+    xdot[2] = dC0
 
 
     return xdot

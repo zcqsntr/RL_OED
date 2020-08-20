@@ -64,6 +64,9 @@ class DQN_agent():
             rewards.append(reward)
             dones.append(done)
 
+
+
+
         states = np.array(states)
         next_states = np.array(next_states, dtype = np.float64)
         actions = np.array(actions)

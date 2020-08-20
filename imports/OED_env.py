@@ -102,16 +102,16 @@ class OED_env():
         FIM_dot = mtimes(transpose(sensitivities), mtimes(inv_sigma, sensitivities))
         FIM_dot = self.get_unique_elements(FIM_dot)
 
-        RHS[0:len(dx.elements())] = dx
+        RHS[0:self.n_system_variables] = dx
 
         sensitivities_dot = reshape(sensitivities_dot, (sensitivities_dot.size(1) * sensitivities_dot.size(2), 1))
 
 
         print(dx.elements())
 
-        RHS[len(dx.elements()):len(dx.elements()) + len(sensitivities_dot.elements())] = sensitivities_dot
+        RHS[self.n_system_variables:self.n_system_variables + self.n_sensitivities] = sensitivities_dot
 
-        RHS[len(dx.elements()) + len(sensitivities_dot.elements()):] = FIM_dot
+        RHS[self.n_system_variables + self.n_sensitivities:] = FIM_dot
 
         return RHS
 
@@ -240,7 +240,7 @@ class OED_env():
             self.us.append(u)
         else: #RL step
             u = self.action_to_input(action)
-            #self.us.append(10**u)
+            self.us.append(10**u)
             self.us.append(u)
 
 
@@ -403,7 +403,7 @@ class OED_env():
 
 
         # get the current measured system state
-        sys_state = true_trajectory[:self.n_system_variables, -1] #TODO: measurement noise
+        sys_state = true_trajectory[:self.n_observed_variables, -1] #TODO: measurement noise
 
         # get current fim elements
         FIM_start = self.n_system_variables + self.n_sensitivities
@@ -424,7 +424,7 @@ class OED_env():
         return self.normalise_RL_state(state)
 
     def get_initial_RL_state(self):
-        state = np.array(self.x0 + self.param_guesses.elements() + [0] * self.n_FIM_elements)
+        state = np.array(self.x0[0:self.n_observed_variables] + self.param_guesses.elements() + [0] * self.n_FIM_elements)
         state = np.append(state, 0) #time
         state = np.append(state, 0) #logdetFIM
 

@@ -30,7 +30,7 @@ if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 
-    n_episodes = 100
+    n_episodes = 1
     if len(sys.argv) == 3:
         if sys.argv[2] == '1':
 
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     #actual_params = DM([480000, 480000, 520000, 520000, 1, 1.1, 0.00048776, 0.000000102115, 0.00006845928, 0.00006845928,0, 0,0, 0])
     actual_params = DM([1, 1.1, 0.00048776, 0.000000102115, 0.00006845928, 0.00006845928,-0.001,-0.002,-0.001, -0.002])
 
-    input_bounds = [0, 0.1]
+    input_bounds = [0.01, 0.1]
     n_controlled_inputs = 4
 
     n_params = actual_params.size()[0]
@@ -67,7 +67,7 @@ if __name__ == '__main__':
 
     n_tot = n_system_variables + n_params * n_system_variables + n_FIM_elements
     print(n_params, n_system_variables, n_FIM_elements)
-    num_inputs = 5  # number of discrete inputs available to RL
+    num_inputs = 2  # number of discrete inputs available to RL
 
     dt = 1 / 3000
 
@@ -75,12 +75,14 @@ if __name__ == '__main__':
     param_guesses = actual_params
     y0 = [20000, 30000., 0, 0, 1]
 
-    agent = KerasFittedQAgent(layer_sizes=[72, 150, 150, 150, num_inputs**n_controlled_inputs])
+
 
     N_control_intervals = 10
-    control_interval_time = 30
+    control_interval_time = 60
 
     n_observed_variables = 2
+
+    agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 150, 150, 150, num_inputs ** n_controlled_inputs])
 
     env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,1)
     explore_rate = 1
@@ -98,8 +100,6 @@ if __name__ == '__main__':
         for e in range(0, N_control_intervals):
             t = time.time()
             action = agent.get_action(state, explore_rate)
-
-
             next_state, reward, done, _ = env.step(action)
 
             if e == N_control_intervals - 1:
@@ -110,7 +110,16 @@ if __name__ == '__main__':
 
             e_actions.append(action)
             e_rewards.append(reward)
-
+            print()
+            print(e)
+            print('system:', env.true_trajectory[:env.n_system_variables, e])
+            print('sensitivities:',
+                  reshape(env.true_trajectory[env.n_system_variables:env.n_system_variables + env.n_sensitivities, e],
+                          (2, 10)))
+            FIM = env.get_FIM(env.true_trajectory[:, e])
+            print('FIM: ', FIM)
+            print('detfim: ', env.detFIMs[-1])
+            print('logdetfim: ', env.logdetFIMs[-1])
             state = next_state
             e_return += reward
 
@@ -160,12 +169,9 @@ if __name__ == '__main__':
             #print(env.detFIMs)
     #print(env.all_param_guesses)
     #print(env.actual_params)
-    for i in range(5):
-        print(i)
-        print('system:', env.true_trajectory[:env.n_system_variables, i])
-        print('sensitivities:', reshape(env.true_trajectory[env.n_system_variables:env.n_system_variables+env.n_sensitivities, i], (2, 10)))
-        FIM = env.get_FIM(env.true_trajectory[:, i])
-        print('FIM:', FIM) #env.true_trajectory[env.n_system_variables+env.n_sensitivities:env.n_system_variables+env.n_sensitivities +env.n_FIM_elements, i])
+
+
+
     print(env.detFIMs[-1])
     print(env.logdetFIMs[-1])
     eigs = np.linalg.eig(FIM)[0]
