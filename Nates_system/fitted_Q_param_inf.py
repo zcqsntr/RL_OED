@@ -35,9 +35,9 @@ if __name__ == '__main__':
 
             n_episodes = 20000
         elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
-            n_episodes = 50000
+            n_episodes = 30000
         else:
-            n_episodes = 100000
+            n_episodes = 40000
 
         save_path =  sys.argv[1] + sys.argv[2]+'/'
         print(n_episodes)
@@ -110,9 +110,6 @@ if __name__ == '__main__':
 
             state = next_state
             e_return += reward
-
-
-
 
         agent.memory.append(trajectory)
 
