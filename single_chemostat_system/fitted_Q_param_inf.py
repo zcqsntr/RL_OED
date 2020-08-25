@@ -30,35 +30,33 @@ if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 
-    n_episodes = 1000
+    n_episodes = 1
     if len(sys.argv) == 3:
-        if sys.argv[2] == '1':
+        if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
 
-            n_episodes = 10000
-        elif sys.argv[2] == '2':
-            n_episodes = 50000
+            n_episodes = 6000
+        elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
+            n_episodes = 15000
         else:
-            n_episodes = 100000
+            n_episodes = 30000
 
-        save_path =  sys.argv[1] + sys.argv[2]+'/'
+        save_path = sys.argv[1] + sys.argv[2] + '/'
         print(n_episodes)
-        os.makedirs(save_path, exist_ok = True)
+        os.makedirs(save_path, exist_ok=True)
     elif len(sys.argv) == 2:
-        save_path =  sys.argv[1] +'/'
-        os.makedirs(save_path, exist_ok = True)
+        save_path = sys.argv[1] + '/'
+        os.makedirs(save_path, exist_ok=True)
     else:
         save_path = './'
 
-
-
-
+    print(save_path)
     all_returns = []
 
     #y, y0, umax, Km, Km0, A
     #actual_params = DM([480000, 480000, 520000, 520000, 1, 1.1, 0.00048776, 0.000000102115, 0.00006845928, 0.00006845928,0, 0,0, 0])
     actual_params = DM([1,  0.00048776, 0.00006845928])
 
-    input_bounds = [0.01, 0.1]
+    input_bounds = [0.01, 1]
     n_controlled_inputs = 2
 
     n_params = actual_params.size()[0]
@@ -69,10 +67,9 @@ if __name__ == '__main__':
 
     n_tot = n_system_variables + n_params * n_system_variables + n_FIM_elements
     print(n_params, n_system_variables, n_FIM_elements)
-    num_inputs = 2  # number of discrete inputs available to RL
+    num_inputs = 12  # number of discrete inputs available to RL
 
     dt = 1 / 3000
-
 
     param_guesses = actual_params
 
@@ -86,10 +83,11 @@ if __name__ == '__main__':
     agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 150, 150, 150, num_inputs ** n_controlled_inputs])
 
 
-    normaliser = np.array([1e5, 1e1, 1e-3, 1e-4, 1e10, 1e10, 1e8, 1e9, 1e8, 1e7, 1e2, 1e2])
+    normaliser = np.array([1e6, 1e1, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2, 1e2])
     env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser)
     explore_rate = 1
     for episode in range(n_episodes):
+
 
         env.reset()
         state = env.get_initial_RL_state()
@@ -125,7 +123,7 @@ if __name__ == '__main__':
         agent.memory.append(trajectory)
 
         #train the agent
-        skip = 20
+        skip = 200
         if episode % skip == 0 or episode == n_episodes - 2:
             explore_rate = agent.get_rate(episode, 0, 1, n_episodes / 10)
             if explore_rate == 1:
@@ -159,7 +157,7 @@ if __name__ == '__main__':
             print('explore rate: ', explore_rate)
             print('return: ', e_return)
             print('av return: ', np.mean(all_returns[-skip:]))
-            #print('actions:', e_actions)
+            print('actions:', e_actions)
             #print('us: ', env.us)
             print('rewards: ', e_rewards)
 
@@ -172,8 +170,8 @@ if __name__ == '__main__':
 
     print(env.detFIMs[-1])
     print(env.logdetFIMs[-1])
-    eigs = np.linalg.eig(FIM)[0]
-    print('eigs: ', eigs)
+
+
 
     np.save(save_path + 'trajectories.npy', np.array(env.true_trajectory))
 
@@ -198,9 +196,17 @@ if __name__ == '__main__':
     plt.plot( env.true_trajectory[1, :].elements(), label = 'true')
     #plt.plot(env.est_trajectory[1, :].elements(), label = 'est')
     plt.legend()
-    plt.ylabel( 'protein')
+    plt.ylabel( 'C')
     plt.xlabel('time (mins)')
-    plt.savefig(save_path + 'prot_trajectories.pdf')
+    plt.savefig(save_path + 'c_trajectories.pdf')
+
+    plt.figure()
+    plt.plot(env.true_trajectory[2, :].elements(), label='true')
+    # plt.plot(env.est_trajectory[1, :].elements(), label = 'est')
+    plt.legend()
+    plt.ylabel('C0')
+    plt.xlabel('time (mins)')
+    plt.savefig(save_path + 'c0_trajectories.pdf')
 
     '''
     plt.figure()
@@ -208,7 +214,7 @@ if __name__ == '__main__':
     plt.ylabel('u')
     plt.xlabel('time (mins)')
     '''
-
+    plt.figure()
     plt.ylim(bottom=0)
     plt.ylabel('u')
     plt.xlabel('Timestep')
