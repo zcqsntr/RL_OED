@@ -104,16 +104,22 @@ dt = 1 / 100
 y0 = [0.000001, 0.000001]
 control_interval_time = 100
 N_control_intervals = 6
-
+n_observed_variables = 2
+n_controlled_inputs = 1
 
 all_final_params = []
 all_initial_params = []
 
+dt = 1 / 100
+control_interval_time = 100
+normaliser = np.array([1e3, 1e4, 1e2, 1e6, 1e10, 1e-3, 1e1, 1e9, 1e9, 1e9, 1e9, 1, 1e9, 1e9, 1e9, 1, 1e9, 1e9, 1, 1e9, 1, 1e7,10, 100])
 logus = [1,-3,2,-3,3,-3]
 us = 10. ** np.array(logus) # rational design -67.73 optimality score, log(detcov) = 66.96
-us = np.array([2.84803587e+02, 1.23284674e-02, 2.31012970e+01, 3.51119173e-03, 1.23284674e-02, 3.51119173e-03]) #-73.2607748599451 fitted Q
+#us = np.array([9.99995957e+02, 1.00000000e-03, 1.84705323e+00, 1.00000000e-03,1.00000000e-03, 1.00000000e-03]) # 71.00  u optimisation log(det(cov)) = 34.17
+#us = np.array([2.84803587e+02, 1.23284674e-02, 2.31012970e+01, 3.51119173e-03, 1.23284674e-02, 3.51119173e-03]) #-73.2607748599451 fitted Q, log(det(cov)
+us = np.array([1.00000000e+03, 1.00000000e-03, 2.31012970e+01, 1.00000000e-03, 3.51119173e-03, 3.51119173e-03]) # -73.84706840763531 fitted Q log(det(cov) = 28.388134466657768
 
-env = OED_env(y0, xdot, param_guesses, actual_params, num_inputs, input_bounds, dt, control_interval_time)
+env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time, normaliser)
 trajectory_solver = env.get_sampled_trajectory_solver(N_control_intervals)
 
 

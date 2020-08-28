@@ -216,11 +216,11 @@ class OED_env():
 
 
         if test_trajectory is None:
-            trajectory = trajectory_solver(self.initial_Y, self.actual_params, np.array(self.us)[:,:,0].T)
+            trajectory = trajectory_solver(self.initial_Y, self.actual_params, np.array(self.us).T)
         else:
             trajectory = test_trajectory
 
-        est_trajectory_sym = trajectory_solver(self.initial_Y, sym_theta,  np.array(self.us)[:,:,0].T)
+        est_trajectory_sym = trajectory_solver(self.initial_Y, sym_theta,  np.array(self.us).T)
 
         e = ((trajectory[:,0:self.n_system_variables] - est_trajectory_sym[:,0:self.n_system_variables])/(0.05*trajectory[:,0:self.n_system_variables]+0.00000001)) # weighted least squares cut off initial conditions
         nlp = {'x':sym_theta, 'f':0.5*dot(e,e)}
@@ -240,8 +240,8 @@ class OED_env():
             self.us.append(u)
         else: #RL step
             u = self.action_to_input(action)
-            #self.us.append(10**u)
-            self.us.append(u)
+            self.us.append(10**u)
+            #self.us.append(u)
 
 
 
