@@ -240,8 +240,8 @@ class OED_env():
             self.us.append(u)
         else: #RL step
             u = self.action_to_input(action)
-            self.us.append(10**u)
-            #self.us.append(u)
+            #self.us.append(10**u)
+            self.us.append(u)
 
 
 
