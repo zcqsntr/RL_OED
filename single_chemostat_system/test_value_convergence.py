@@ -35,7 +35,7 @@ actual_params = DM([1,  0.00048776, 0.00006845928])
 input_bounds = [0.01, 1]
 param_guesses = actual_params
 y0 = [20000, 0, 1]
-num_inputs = 12  # number of discrete inputs available to RL
+num_inputs = 10  # number of discrete inputs available to RL
 n_controlled_inputs = 2
 dt = 1 / 3000
 N_control_intervals = 10
@@ -45,7 +45,7 @@ save_path = "./"
 n_params = actual_params.size()[0]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
-N_episodes = 500
+N_episodes =50
 
 trajectory = []
 actions = []
@@ -118,7 +118,7 @@ for repeat in range(1,n_repeats+1):
 
                 test_next_state = [None] *agent.layer_sizes[0]
                 test_done = True
-            print(reward)
+
             transition = (state, action, reward, next_state, done)
             trajectory.append(transition)
 
