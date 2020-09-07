@@ -31,6 +31,7 @@ def get_rate( episode, MIN_RATE, MAX_RATE, denominator):
     return rate
 
 path = '/home/neythen/Desktop/Projects/RL_OED/results/single_aux'
+#path = '/home/neythen/Desktop/Projects/RL_OED/single_chemostat_system'
 step = 200
 n_repeats = 3
 all_returns = []
@@ -102,12 +103,12 @@ episodes = np.arange(1, len(returns) + 1)   # int(control_interval_time / dt)) *
 explore_rates = [get_rate(episode, 0, 1, len(returns)/10) for episode in episodes]
 
 fig, ax1 = plt.subplots()
-ax1.errorbar(x, np.mean(all_returns, axis = 0), np.std(all_returns, axis = 0))
+ax1.errorbar(x, np.mean(all_returns, axis = 0), np.std(all_returns, axis = 0), label = 'Return')
 ax1.set_ylabel('Return')
 ax1.set_xlabel('Episode')
 
 ax2 = ax1.twinx()
-ax2.plot(episodes, explore_rates)
+ax2.plot(episodes, explore_rates, color = 'black', label = 'Explore rate')
 ax2.set_ylabel('Explore Rate')
 ax2.set_xlabel('Episode')
 fig.tight_layout()

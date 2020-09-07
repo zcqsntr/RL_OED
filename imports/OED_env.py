@@ -170,7 +170,6 @@ class OED_env():
     def gauss_newton(self, e,nlp,V):
 
         J = jacobian(e,V)
-
         H = triu(mtimes(J.T, J))
 
         sigma = SX.sym("sigma")
