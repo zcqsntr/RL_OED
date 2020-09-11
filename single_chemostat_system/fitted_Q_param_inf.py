@@ -30,15 +30,16 @@ if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 
-    n_episodes = 1000
+    n_episodes = 10000
+    skip = 100
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
 
-            n_episodes = 12500
+            skip = 50
         elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
-            n_episodes = 15000
+            skip = 65
         else:
-            n_episodes = 17500
+            skip = 80
 
         save_path = sys.argv[1] + sys.argv[2] + '/'
         print(n_episodes)
@@ -164,7 +165,7 @@ if __name__ == '__main__':
         agent.memory.append(trajectory)
 
         #train the agent
-        skip = 100
+
         if episode % skip == 0 or episode == n_episodes - 2:
             explore_rate = agent.get_rate(episode, 0, 1, n_episodes / 10)
             #explore_rate = 0
