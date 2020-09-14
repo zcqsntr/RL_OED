@@ -35,11 +35,11 @@ if __name__ == '__main__':
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
 
-            skip = 50
+            skip = 10
         elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
-            skip = 65
+            skip = 20
         else:
-            skip = 80
+            skip = 30
 
         save_path = sys.argv[1] + sys.argv[2] + '/'
         print(n_episodes)

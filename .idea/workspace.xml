@@ -21,8 +21,16 @@
   <component name="ChangeListManager">
     <list default="true" id="d4a265c6-eb3f-4c7a-9611-a62750211fde" name="Default Changelist" comment="for server">
       <change afterPath="$PROJECT_DIR$/Nates_system/results/first_three/first_three.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/single_chemostat_system/OED_param_inf.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/single_chemostat_system/OED_setup_test.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/single_chemostat_system/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Nates_system/OED_param_inf.py" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/OED_param_inf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Nates_system/OED_setup_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/OED_setup_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Nates_system/plot.py" beforeDir="false" afterPath="$PROJECT_DIR$/Nates_system/plot.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/imports/OED_env.py" beforeDir="false" afterPath="$PROJECT_DIR$/imports/OED_env.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/single_chemostat_system/fitted_Q_param_inf.py" beforeDir="false" afterPath="$PROJECT_DIR$/single_chemostat_system/fitted_Q_param_inf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/single_chemostat_system/plot.py" beforeDir="false" afterPath="$PROJECT_DIR$/single_chemostat_system/plot.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,6 +61,7 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="JupyterTrust" id="304cbeca-176d-47b2-9fd6-118fe0606fe6" />
   <component name="ProjectId" id="1RYkvGVj1BNUp9LaIMCwGcQxaeM" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
@@ -63,7 +72,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/Nates_system/results/first_three" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/single_chemostat_system" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -74,18 +83,18 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/Nates_system/results/first_three" />
       <recent name="$PROJECT_DIR$/single_chemostat_system" />
+      <recent name="$PROJECT_DIR$/Nates_system/results/first_three" />
       <recent name="$PROJECT_DIR$/chemostat_system" />
       <recent name="$PROJECT_DIR$/Nates_system/fit_q" />
       <recent name="$PROJECT_DIR$/Nates_system/results/value_conv" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/single_chemostat_system/test_results" />
+      <recent name="$PROJECT_DIR$/single_chemostat_system/value_convergence" />
       <recent name="$PROJECT_DIR$/Nates_system/results" />
       <recent name="$PROJECT_DIR$/Nates_system" />
       <recent name="$PROJECT_DIR$/tests" />
-      <recent name="$PROJECT_DIR$/Nates_system/reward_prediction/log(delta_det_FIM)" />
-      <recent name="$PROJECT_DIR$/Nates_system/reward_prediction" />
     </key>
   </component>
   <component name="RunManager">
@@ -197,7 +206,16 @@
       <workItem from="1598279660894" duration="14171000" />
       <workItem from="1598431117721" duration="3047000" />
       <workItem from="1598533697068" duration="599000" />
-      <workItem from="1598604490737" duration="275000" />
+      <workItem from="1598604490737" duration="2182000" />
+      <workItem from="1598945596960" duration="13100000" />
+      <workItem from="1599031362234" duration="13484000" />
+      <workItem from="1599464431758" duration="11940000" />
+      <workItem from="1599477902559" duration="12446000" />
+      <workItem from="1599549964643" duration="2902000" />
+      <workItem from="1599553233659" duration="406000" />
+      <workItem from="1599553919493" duration="12900000" />
+      <workItem from="1599807336178" duration="1763000" />
+      <workItem from="1600074143466" duration="209000" />
     </task>
     <task id="LOCAL-00001" summary="Fixed get_FIM and reneralised it to systems with more than one parameter">
       <created>1591172912260</created>
@@ -395,7 +413,35 @@
       <option name="project" value="LOCAL" />
       <updated>1598604747315</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="for server">
+      <created>1598604774305</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1598604774305</updated>
+    </task>
+    <task id="LOCAL-00030" summary="value convergence and plotting for single auxotroph">
+      <created>1599041268151</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1599041268151</updated>
+    </task>
+    <task id="LOCAL-00031" summary="for server">
+      <created>1599465524866</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1599465524866</updated>
+    </task>
+    <task id="LOCAL-00032" summary="for server">
+      <created>1599827208748</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1599827208748</updated>
+    </task>
+    <option name="localTasksCounter" value="33" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -423,31 +469,28 @@
     <MESSAGE value="OEd optimisation added to setup test" />
     <MESSAGE value="for cluster" />
     <MESSAGE value="single_auxotroph system set up and working" />
+    <MESSAGE value="value convergence and plotting for single auxotroph" />
     <MESSAGE value="for server" />
     <option name="LAST_COMMIT_MESSAGE" value="for server" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="958" y="825" width="662" height="390" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1598273952441">
+    <state x="958" y="825" width="658" height="390" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1598946440397">
       <screen x="0" y="315" width="2560" height="1413" />
     </state>
     <state x="958" y="729" width="662" height="390" key="#com.intellij.fileTypes.FileTypeChooser/0.219.2560.1413/2560.0.1080.1920@0.219.2560.1413" timestamp="1597393269536" />
-    <state x="958" y="825" key="#com.intellij.fileTypes.FileTypeChooser/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1598273952441" />
+    <state x="958" y="825" width="658" height="390" key="#com.intellij.fileTypes.FileTypeChooser/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1598946440397" />
     <state x="958" y="1017" width="633" height="390" key="#com.intellij.fileTypes.FileTypeChooser/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1595926439563" />
     <state x="1013" y="961" width="524" height="502" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1594631866345">
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
     <state x="1013" y="961" width="524" height="502" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1594631866345" />
-    <state x="845" y="315" width="860" height="847" key="CommitChangelistDialog2" timestamp="1598604747180">
+    <state x="845" y="315" width="1303" height="1381" key="CommitChangelistDialog2" timestamp="1599827208579">
       <screen x="0" y="315" width="2560" height="1413" />
     </state>
     <state x="845" y="219" width="1454" height="847" key="CommitChangelistDialog2/0.219.2560.1413/2560.0.1080.1920@0.219.2560.1413" timestamp="1597261368814" />
-    <state x="845" y="315" width="860" height="847" key="CommitChangelistDialog2/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1598604747180" />
+    <state x="845" y="315" width="1303" height="1381" key="CommitChangelistDialog2/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1599827208579" />
     <state x="845" y="452" width="1250" height="1179" key="CommitChangelistDialog2/0.480.2560.1440/2560.0.1080.1920@0.480.2560.1440" timestamp="1596792303239" />
     <state x="845" y="789" width="860" height="847" key="CommitChangelistDialog2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1596091257751" />
-    <state x="52" y="637" width="2360" height="1215" key="DiffContextDialog" timestamp="1591172827042">
-      <screen x="0" y="507" width="2560" height="1413" />
-    </state>
-    <state x="52" y="637" width="2360" height="1215" key="DiffContextDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591172827042" />
     <state x="2972" y="304" width="374" height="941" key="FileChooserDialogImpl" timestamp="1596703141819">
       <screen x="2560" y="0" width="1080" height="1920" />
     </state>
@@ -457,17 +500,12 @@
       <screen x="0" y="0" width="1440" height="900" />
     </state>
     <state x="432" y="178" key="SettingsEditor/0.0.1440.900@0.0.1440.900" timestamp="1597667922773" />
-    <state x="769" y="847" key="SettingsEditor/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591172774846" />
-    <state x="875" y="756" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1598344134691">
+    <state x="875" y="756" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1599827212433">
       <screen x="0" y="315" width="2560" height="1413" />
     </state>
     <state x="875" y="660" width="800" height="528" key="Vcs.Push.Dialog.v2/0.219.2560.1413/2560.0.1080.1920@0.219.2560.1413" timestamp="1597261371537" />
-    <state x="875" y="756" width="800" height="528" key="Vcs.Push.Dialog.v2/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1598344134691" />
+    <state x="875" y="756" width="800" height="528" key="Vcs.Push.Dialog.v2/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1599827212433" />
     <state x="875" y="948" width="800" height="528" key="Vcs.Push.Dialog.v2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1596091268228" />
-    <state x="100" y="605" width="2360" height="1215" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1591172794349">
-      <screen x="0" y="507" width="2560" height="1413" />
-    </state>
-    <state x="100" y="605" width="2360" height="1215" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1591172794349" />
     <state x="1559" y="811" width="688" height="410" key="com.intellij.ide.util.TipDialog" timestamp="1596014143348">
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
