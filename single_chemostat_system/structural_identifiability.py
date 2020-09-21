@@ -30,7 +30,7 @@ if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 
-    n_episodes = 10000
+    n_episodes = 10
     skip = 100
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
@@ -55,13 +55,14 @@ if __name__ == '__main__':
 
     #y, y0, umax, Km, Km0, A
     #actual_params = DM([480000, 480000, 520000, 520000, 1, 1.1, 0.00048776, 0.000000102115, 0.00006845928, 0.00006845928,0, 0,0, 0])
-    actual_params = DM([1,  0.00048776, 0.00006845928])
-
+    #actual_params = DM([1,  0.00048776, 0.00006845928])
+    #actual_params = DM(np.random.uniform(low=[10000, 10000, 0.1, 0.00001, 0.000001], high=[100000, 100000, 10, 0.001, 0.0001]))
+    actual_params = DM(np.random.uniform(low=[ 10000, 0.1, 0.00001, 0.000001], high=[100000, 10, 0.001, 0.0001]))
     print(actual_params)
     input_bounds = [0.01, 1]
     n_controlled_inputs = 2
-
     n_params = actual_params.size()[0]
+
 
     y0 = [20000, 0, 1]
     n_system_variables = len(y0)
@@ -75,7 +76,7 @@ if __name__ == '__main__':
 
     param_guesses = actual_params
 
-    N_control_intervals = 10
+    N_control_intervals = 5
     control_interval_time = 30
 
     n_observed_variables = 1
@@ -86,7 +87,7 @@ if __name__ == '__main__':
 
 
     normaliser = np.array([1e6, 1e1, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2, 1e2])
-    env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser)
+
     explore_rate = 1
     # reward clamping
     '''
@@ -129,8 +130,12 @@ if __name__ == '__main__':
     '''
 
     for episode in range(n_episodes):
+        #actual_params = DM(np.random.uniform(low=[10000, 10000, 0.1, 0.00001, 0.000001], high=[100000, 100000, 10, 0.001, 0.0001]))
+        actual_params = DM(np.random.uniform(low=[ 10000, 0.1, 0.00001, 0.000001], high=[ 100000, 10, 0.001, 0.0001]))
 
-        env.reset()
+        y0 =  list(np.random.uniform(low=[1000,0,0], high=[100000,0.1,0.1]))
+        print(y0)
+        env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser)
         state = env.get_initial_RL_state()
 
         e_return = 0
@@ -158,14 +163,21 @@ if __name__ == '__main__':
             state = next_state
 
             e_return += reward
-            print(env.actual_params)
-            print(env.FIMs[-1])
+        print(env.actual_params)
+        print(env.FIMs[-1])
 
-            print(env.true_trajectory[-1])
+        sensitivities = env.true_trajectory[env.n_system_variables:env.n_system_variables + env.n_sensitivities,:]
 
+        print()
+        print(sensitivities.shape)
+        print('S:', sensitivities)
 
-
-
+        U,singular_values,V = np.linalg.svd(np.array(sensitivities.T))
+        print(U.shape, singular_values.shape, V.shape)
+        print('V:', V)
+        print(V[-1,:])
+        print(V[:, -1])
+        print('sing: ',singular_values)
         agent.memory.append(trajectory)
 
         #train the agent

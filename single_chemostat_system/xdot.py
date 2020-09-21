@@ -45,6 +45,8 @@ def xdot(sym_y, sym_theta, sym_u):
     q = 0.5
 
     #y, y0, umax, Km, Km0 = [sym_theta[2*i:2*(i+1)] for i in range(len(sym_theta.elements())//2)]
+    #y, y0, umax, Km, Km0 = [sym_theta[i] for i in range(len(sym_theta.elements()))]
+    #y0, umax, Km, Km0 = [sym_theta[i] for i in range(len(sym_theta.elements()))]
 
     umax, Km, Km0 = [sym_theta[i] for i in range(3)]
 

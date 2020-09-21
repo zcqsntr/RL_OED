@@ -176,7 +176,8 @@ class OED_env():
         hessLag = Function('nlp_hess_l',{'x':V,'lam_f':sigma, 'hess_gamma_x_x':sigma*H},
                          ['x','p','lam_f','lam_g'], ['hess_gamma_x_x'],
                          dict(jit=False, compiler='clang', verbose = False))
-        return nlpsol("solver","ipopt", nlp, dict(hess_lag=hessLag, jit=False, compiler='clang', verbose_init = False, verbose = False))
+
+        return nlpsol("solver","ipopt", nlp, dict(ipopt={'max_iter':20}, hess_lag=hessLag, jit=False, compiler='clang', verbose_init = False, verbose = False))
 
     def get_u_solver(self):
         '''
@@ -189,11 +190,14 @@ class OED_env():
         trajectory_solver = self.get_sampled_trajectory_solver(len(self.us) + 1)
         # self.past_trajectory_solver = self.get_trajectory_solver(self.xdot, len(self.us))
 
-        all_us = SX.sym('all_us', len(self.us) + 1)
-        all_us[0: len(self.us)] = self.us
-        all_us[-1] = u
+        all_us = SX.sym('all_us', (len(self.us) + 1, self.n_controlled_inputs))
 
-        est_trajectory = trajectory_solver(self.initial_Y, self.param_guesses, all_us)
+        print('all', all_us.shape)
+        print('us',self.us)
+        all_us[0: len(self.us), :] = np.array(self.us).reshape(-1, self.n_controlled_inputs)
+        all_us[-1, :] = u
+
+        est_trajectory = trajectory_solver(self.initial_Y, self.param_guesses, transpose(all_us))
 
         FIM = self.get_FIM(est_trajectory)
 
@@ -206,6 +210,8 @@ class OED_env():
         #obj = -log(det(FIM))
         nlp = {'x': u, 'f': obj}
         solver = self.gauss_newton(obj, nlp, u)
+        #solver.print_options()
+        #sys.exit()
 
         return solver  # , current_FIM
 
@@ -220,13 +226,16 @@ class OED_env():
             trajectory = test_trajectory
 
         est_trajectory_sym = trajectory_solver(self.initial_Y, sym_theta,  np.array(self.us).T)
+        print('sym trajectory initialised')
 
         e = ((trajectory[:,0:self.n_system_variables] - est_trajectory_sym[:,0:self.n_system_variables])/(0.05*trajectory[:,0:self.n_system_variables]+0.00000001)) # weighted least squares cut off initial conditions
+        print('e initialised')
         nlp = {'x':sym_theta, 'f':0.5*dot(e,e)}
-
+        print('nlp initialised')
         solver = self.gauss_newton(e, nlp, sym_theta)
-
+        print('solver initialised')
         #solver.print_options()
+        #sys.exit()
 
         return solver
 
@@ -235,8 +244,9 @@ class OED_env():
 
         if action is None: # Traditional OED step
             u_solver = self.get_u_solver()
-            u = u_solver(x0=self.u0, lbx = 10**self.input_bounds[0], ubx = 10**self.input_bounds[1])['x']
-            self.us.append(u)
+            #u = u_solver(x0=self.u0, lbx = 10**self.input_bounds[0], ubx = 10**self.input_bounds[1])['x']
+            u = u_solver(x0=self.u0, lbx = [self.input_bounds[0]]*self.n_controlled_inputs, ubx = [self.input_bounds[1]]*self.n_controlled_inputs)['x']
+            self.us.append(u.elements())
         else: #RL step
             u = self.action_to_input(action)
             #self.us.append(10**u)
@@ -255,15 +265,17 @@ class OED_env():
         #trajectory_solver = trajectory_solver(N_control_intervals, control_interval_time, dt ) #this si the symbolic trajectory
         t = time.time()
 
+
         self.true_trajectory = sampled_trajectory_solver(self.initial_Y,  self.actual_params, np.array(self.us)[:,:,0].T)
+
 
         #self.est_trajectory = sampled_trajectory_solver(self.initial_Y, self.param_guesses, self.us )
 
         #param_solver = self.get_param_solver(sampled_trajectory_solver)
         # estimate params based on whole trajectory so far
-        disablePrint()
+        #disablePrint()
         #self.param_guesses = param_solver(x0=self.param_guesses, lbx = 0)['x']
-        enablePrint()
+        #enablePrint()
         #self.all_param_guesses.append(self.param_guesses.elements())
 
         #reward = self.get_reward(self.est_trajectory)
@@ -396,7 +408,7 @@ class OED_env():
         return UE
 
     def normalise_RL_state(self, state):
-        return state / self.normaliser
+        return state #/ self.normaliser
 
     def get_RL_state(self, true_trajectory, est_trajectory):
 

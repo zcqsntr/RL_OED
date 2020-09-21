@@ -53,7 +53,7 @@ for i in range(1, n_repeats +1):
 
 
 
-plt.close('all')
+#plt.close('all')
 all_returns = np.array(all_returns)
 all_us = np.array(all_us)
 all_trajectories = np.array(all_trajectories)

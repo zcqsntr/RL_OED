@@ -366,8 +366,11 @@ print(total_FIM)
 q, r = np.linalg.qr(total_FIM)
 det_FIM = r.diagonal().prod() * np.linalg.det(q)
 print('det: ', det_FIM)
-print('obj: ', -np.log(det_FIM))
 
+q, r = qr(total_FIM)
+
+obj = -trace(log(r))
+print('obj: ', obj)
 
 
 sol = transpose(trajectory)

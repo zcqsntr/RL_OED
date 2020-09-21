@@ -48,8 +48,12 @@ if __name__ == '__main__':
 
     N_control_intervals = 6
     control_interval_time = 100
-
-    env = OED_env(y0, xdot, param_guesses, actual_params, num_inputs, input_bounds, dt, control_interval_time)
+    normaliser = np.array(
+        [1e3, 1e4, 1e2, 1e6, 1e10, 1e-3, 1e1, 1e9, 1e9, 1e9, 1e9, 1, 1e9, 1e9, 1e9, 1, 1e9, 1e9, 1, 1e9, 1, 1e7, 10,
+         100])
+    n_observed_variables = 2
+    n_controlled_inputs = 1
+    env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time, normaliser)
 
 
     e_return = 0
