@@ -30,7 +30,7 @@ if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 
-    n_episodes = 10000
+    n_episodes = 17500
     skip = 100
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
@@ -158,10 +158,7 @@ if __name__ == '__main__':
             state = next_state
 
             e_return += reward
-            print(env.actual_params)
-            print(env.FIMs[-1])
 
-            print(env.true_trajectory[-1])
 
 
 

@@ -408,7 +408,7 @@ class OED_env():
         return UE
 
     def normalise_RL_state(self, state):
-        return state #/ self.normaliser
+        return state / self.normaliser
 
     def get_RL_state(self, true_trajectory, est_trajectory):
 

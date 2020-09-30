@@ -17,6 +17,7 @@ import time
 
 from ROCC import *
 from xdot import xdot
+from multiprocessing import Pool
 
 def disablePrint():
     sys.stdout = open(os.devnull, 'w')
@@ -30,7 +31,7 @@ if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 
-    n_episodes = 10000
+    n_episodes = 30000
     skip = 100
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
@@ -71,7 +72,7 @@ if __name__ == '__main__':
     print(n_params, n_system_variables, n_FIM_elements)
     num_inputs = 10  # number of discrete inputs available to RL
 
-    dt = 1 / 4000
+    dt = 1 / 10000
 
     param_guesses = actual_params
 
@@ -88,20 +89,21 @@ if __name__ == '__main__':
     normaliser = np.array([1e6, 1e1, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2, 1e2])
     env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser)
     explore_rate = 1
-
+    unstable = 0
 
     for episode in range(n_episodes):
-        actual_params = DM(np.random.uniform(low=[0.1, 0.00001, 0.000001], high=[10, 0.001, 0.0001]))
+        print(episode)
+        actual_params = DM(np.random.uniform(low=[0.5, 0.00005, 0.000005], high=[5, 0.0005, 0.00005]))
         env.actual_params = actual_params
         env.reset()
         state = env.get_initial_RL_state()
 
         e_return = 0
-        e_actions =[]
+        e_actions = []
         e_rewards = []
         trajectory = []
         #actions = [9,4,9,4,9,4]
-
+        t = time.time()
         for e in range(0, N_control_intervals):
             t = time.time()
             action = agent.get_action(state, explore_rate)
@@ -120,16 +122,22 @@ if __name__ == '__main__':
 
             state = next_state
 
+            if not np.all([np.all(trajectory[i][0] < 3) for i in range(len(trajectory))]) or math.isnan(np.sum(trajectory[-1][0])): #dont waste time on lost trajectories
+                break
+
             e_return += reward
+        print('episode time: ', time.time() -t)
+        print((trajectory[-1][0]))
 
-
-
-
-        agent.memory.append(trajectory)
+        if np.all( [np.all(trajectory[i][0] < 3) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
+            agent.memory.append(trajectory)
+        else:
+            unstable += 1
+            print('UNSTABLE!!!')
+        print('n unstable ', unstable)
 
         #train the agent
-
-        if episode % skip == 0 or episode == n_episodes - 2:
+        if (episode % skip == 0 and episode != 0) or episode == n_episodes - 2:
             explore_rate = agent.get_rate(episode, 0, 1, n_episodes / 10)
             #explore_rate = 0
             if explore_rate == 1:
@@ -146,10 +154,14 @@ if __name__ == '__main__':
             t = time.time()
             for iter in range(n_iters):
                 print(iter, n_iters)
-                agent.fitted_Q_update()
+                enablePrint()
+                history = agent.fitted_Q_update()
+
                 print()
             print('fitting time: ', time.time() -t)
-
+            print(history.history['loss'])
+            plt.plot(history.history['loss'], label='MAE (training data)')
+            plt.show()
         all_returns.append(e_return)
 
         '''
