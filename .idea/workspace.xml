@@ -19,11 +19,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d4a265c6-eb3f-4c7a-9611-a62750211fde" name="Default Changelist" comment="for server">
-      <change afterPath="$PROJECT_DIR$/Nates_system/results/first_three/first_three.zip" afterDir="false" />
+    <list default="true" id="d4a265c6-eb3f-4c7a-9611-a62750211fde" name="Default Changelist" comment="train on prior stability problems fixed">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imports/OED_env.py" beforeDir="false" afterPath="$PROJECT_DIR$/imports/OED_env.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/single_chemostat_system/fitted_Q_param_inf.py" beforeDir="false" afterPath="$PROJECT_DIR$/single_chemostat_system/fitted_Q_param_inf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/single_chemostat_system/train_on_prior.py" beforeDir="false" afterPath="$PROJECT_DIR$/single_chemostat_system/train_on_prior.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -215,7 +212,7 @@
       <workItem from="1600675890048" duration="11701000" />
       <workItem from="1600843681843" duration="9516000" />
       <workItem from="1601035326013" duration="2278000" />
-      <workItem from="1601278924585" duration="9815000" />
+      <workItem from="1601278924585" duration="12191000" />
     </task>
     <task id="LOCAL-00001" summary="Fixed get_FIM and reneralised it to systems with more than one parameter">
       <created>1591172912260</created>
@@ -455,11 +452,39 @@
       <option name="project" value="LOCAL" />
       <updated>1600692358318</updated>
     </task>
-    <option name="localTasksCounter" value="35" />
+    <task id="LOCAL-00035" summary="train on prior stability problems fixed">
+      <created>1601449742833</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1601449742833</updated>
+    </task>
+    <option name="localTasksCounter" value="36" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
+      <list>
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
+      </list>
+    </option>
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Fixed get_FIM and reneralised it to systems with more than one parameter" />
@@ -486,7 +511,8 @@
     <MESSAGE value="value convergence and plotting for single auxotroph" />
     <MESSAGE value="for server" />
     <MESSAGE value="structural identifiability test and prior training added" />
-    <option name="LAST_COMMIT_MESSAGE" value="structural identifiability test and prior training added" />
+    <MESSAGE value="train on prior stability problems fixed" />
+    <option name="LAST_COMMIT_MESSAGE" value="train on prior stability problems fixed" />
   </component>
   <component name="WindowStateProjectService">
     <state x="958" y="825" width="658" height="390" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1598946440397">
@@ -499,11 +525,11 @@
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
     <state x="1013" y="961" width="524" height="502" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1594631866345" />
-    <state x="845" y="315" width="1303" height="1381" key="CommitChangelistDialog2" timestamp="1600692358161">
+    <state x="845" y="315" width="1303" height="1381" key="CommitChangelistDialog2" timestamp="1601449759780">
       <screen x="0" y="315" width="2560" height="1413" />
     </state>
     <state x="845" y="219" width="1454" height="847" key="CommitChangelistDialog2/0.219.2560.1413/2560.0.1080.1920@0.219.2560.1413" timestamp="1597261368814" />
-    <state x="845" y="315" width="1303" height="1381" key="CommitChangelistDialog2/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1600692358161" />
+    <state x="845" y="315" width="1303" height="1381" key="CommitChangelistDialog2/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1601449759780" />
     <state x="845" y="452" width="1250" height="1179" key="CommitChangelistDialog2/0.480.2560.1440/2560.0.1080.1920@0.480.2560.1440" timestamp="1596792303239" />
     <state x="845" y="789" width="860" height="847" key="CommitChangelistDialog2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1596091257751" />
     <state x="977" y="539" width="374" height="941" key="FileChooserDialogImpl" timestamp="1601279386120">
@@ -512,15 +538,19 @@
     <state x="977" y="539" key="FileChooserDialogImpl/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1601279386120" />
     <state x="977" y="731" width="780" height="692" key="FileChooserDialogImpl/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1594199921165" />
     <state x="2972" y="304" width="374" height="941" key="FileChooserDialogImpl/0.507.2560.1413/2560.0.1080.1920@2560.0.1080.1920" timestamp="1596703141819" />
+    <state x="1035" y="725" width="479" height="590" key="RollbackChangesDialog" timestamp="1601449791361">
+      <screen x="0" y="315" width="2560" height="1413" />
+    </state>
+    <state x="1035" y="725" width="479" height="590" key="RollbackChangesDialog/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1601449791361" />
     <state x="432" y="178" key="SettingsEditor" timestamp="1597667922773">
       <screen x="0" y="0" width="1440" height="900" />
     </state>
     <state x="432" y="178" key="SettingsEditor/0.0.1440.900@0.0.1440.900" timestamp="1597667922773" />
-    <state x="875" y="756" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1600692360715">
+    <state x="875" y="756" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1601449837058">
       <screen x="0" y="315" width="2560" height="1413" />
     </state>
     <state x="875" y="660" width="800" height="528" key="Vcs.Push.Dialog.v2/0.219.2560.1413/2560.0.1080.1920@0.219.2560.1413" timestamp="1597261371537" />
-    <state x="875" y="756" width="800" height="528" key="Vcs.Push.Dialog.v2/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1600692360715" />
+    <state x="875" y="756" width="800" height="528" key="Vcs.Push.Dialog.v2/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1601449837058" />
     <state x="875" y="948" width="800" height="528" key="Vcs.Push.Dialog.v2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1596091268228" />
     <state x="1559" y="811" width="688" height="410" key="com.intellij.ide.util.TipDialog" timestamp="1596014143348">
       <screen x="0" y="507" width="2560" height="1413" />

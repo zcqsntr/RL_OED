@@ -92,7 +92,7 @@ if __name__ == '__main__':
     unstable = 0
 
     for episode in range(n_episodes):
-        print(episode)
+
         actual_params = DM(np.random.uniform(low=[0.5, 0.00005, 0.000005], high=[5, 0.0005, 0.00005]))
         env.actual_params = actual_params
         env.reset()
@@ -138,6 +138,7 @@ if __name__ == '__main__':
 
         #train the agent
         if (episode % skip == 0 and episode != 0) or episode == n_episodes - 2:
+            print('train')
             explore_rate = agent.get_rate(episode, 0, 1, n_episodes / 10)
             #explore_rate = 0
             if explore_rate == 1:
@@ -153,15 +154,13 @@ if __name__ == '__main__':
 
             t = time.time()
             for iter in range(n_iters):
+
                 print(iter, n_iters)
                 enablePrint()
                 history = agent.fitted_Q_update()
 
                 print()
-            print('fitting time: ', time.time() -t)
-            print(history.history['loss'])
-            plt.plot(history.history['loss'], label='MAE (training data)')
-            plt.show()
+
         all_returns.append(e_return)
 
         '''
