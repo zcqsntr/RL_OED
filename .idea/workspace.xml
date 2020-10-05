@@ -20,8 +20,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d4a265c6-eb3f-4c7a-9611-a62750211fde" name="Default Changelist" comment="train on prior stability problems fixed">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/single_chemostat_system/fitted_Q_param_inf.py" beforeDir="false" afterPath="$PROJECT_DIR$/single_chemostat_system/fitted_Q_param_inf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/single_chemostat_system/train_on_prior.py" beforeDir="false" afterPath="$PROJECT_DIR$/single_chemostat_system/train_on_prior.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -214,7 +212,7 @@
       <workItem from="1600843681843" duration="9516000" />
       <workItem from="1601035326013" duration="2278000" />
       <workItem from="1601278924585" duration="12191000" />
-      <workItem from="1601886386112" duration="919000" />
+      <workItem from="1601886386112" duration="1078000" />
     </task>
     <task id="LOCAL-00001" summary="Fixed get_FIM and reneralised it to systems with more than one parameter">
       <created>1591172912260</created>
@@ -461,7 +459,14 @@
       <option name="project" value="LOCAL" />
       <updated>1601449742833</updated>
     </task>
-    <option name="localTasksCounter" value="36" />
+    <task id="LOCAL-00036" summary="train on prior stability problems fixed">
+      <created>1601887836317</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1601887836317</updated>
+    </task>
+    <option name="localTasksCounter" value="37" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -549,9 +554,10 @@
       <screen x="0" y="0" width="1440" height="900" />
     </state>
     <state x="432" y="178" key="SettingsEditor/0.0.1440.900@0.0.1440.900" timestamp="1597667922773" />
-    <state x="875" y="756" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1601449837058">
-      <screen x="0" y="315" width="2560" height="1413" />
+    <state x="-442" y="-991" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1601887843625">
+      <screen x="-1317" y="-1440" width="2560" height="1440" />
     </state>
+    <state x="-442" y="-991" key="Vcs.Push.Dialog.v2/0.0.1440.900/-1317.-1440.2560.1440@-1317.-1440.2560.1440" timestamp="1601887843625" />
     <state x="875" y="660" width="800" height="528" key="Vcs.Push.Dialog.v2/0.219.2560.1413/2560.0.1080.1920@0.219.2560.1413" timestamp="1597261371537" />
     <state x="875" y="756" width="800" height="528" key="Vcs.Push.Dialog.v2/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1601449837058" />
     <state x="875" y="948" width="800" height="528" key="Vcs.Push.Dialog.v2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1596091268228" />

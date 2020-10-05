@@ -125,8 +125,8 @@ if __name__ == '__main__':
                 break
 
             e_return += reward
-        print('episode time: ', time.time() -t)
-        print((trajectory[-1][0]))
+        #print('episode time: ', time.time() -t)
+        #print((trajectory[-1][0]))
 
         if np.all( [np.all(trajectory[i][0] < 3) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
             agent.memory.append(trajectory)
