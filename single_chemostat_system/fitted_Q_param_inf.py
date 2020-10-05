@@ -159,10 +159,6 @@ if __name__ == '__main__':
 
             e_return += reward
 
-
-
-
-
         agent.memory.append(trajectory)
 
         #train the agent

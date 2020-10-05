@@ -12,7 +12,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from OED_env import *
 from DQN_agent import *
-import tensorflow as tf
 import time
 
 from ROCC import *
@@ -122,7 +121,7 @@ if __name__ == '__main__':
 
             state = next_state
 
-            if not np.all([np.all(trajectory[i][0] < 3) for i in range(len(trajectory))]) or math.isnan(np.sum(trajectory[-1][0])): #dont waste time on lost trajectories
+            if not np.all([np.all(trajectory[i][0] < 1) for i in range(len(trajectory))]) or math.isnan(np.sum(trajectory[-1][0])): #dont waste time on lost trajectories
                 break
 
             e_return += reward
