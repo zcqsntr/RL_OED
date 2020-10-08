@@ -37,7 +37,7 @@ param_guesses = actual_params
 y0 = [20000, 0, 1]
 num_inputs = 10  # number of discrete inputs available to RL
 n_controlled_inputs = 2
-dt = 1 / 3000
+dt = 1 / 4000
 N_control_intervals = 10
 control_interval_time = 30
 n_observed_variables = 1
@@ -45,7 +45,7 @@ save_path = "./"
 n_params = actual_params.size()[0]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
-N_episodes =50
+N_episodes =500
 
 trajectory = []
 actions = []
@@ -65,15 +65,15 @@ for repeat in range(1,n_repeats+1):
     test_times = []
     test_rewards = []
 
-    normaliser = np.array([1e6, 1e1, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2, 1e2])
+    normaliser = np.array([1e6, 1e1, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2, 1e2])*10
 
 
 
     env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time, normaliser)
     test_env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time, normaliser)
 
-    agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 150,150, 150,  num_inputs ** n_controlled_inputs])
-    test_agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 150, 150, 150, num_inputs ** n_controlled_inputs])
+    agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 50,50, num_inputs ** n_controlled_inputs])
+    test_agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2,50,50, num_inputs ** n_controlled_inputs])
     all_actions = []
     all_rewards = []
 
@@ -134,14 +134,30 @@ for repeat in range(1,n_repeats+1):
             state = next_state
             test_state = test_next_state
 
+
         all_actions.extend(e_actions)
         all_rewards.append(e_rewards)
 
         all_test_actions.extend(e_actions)
         all_test_rewards.append(e_rewards)
 
-        agent.memory.append(trajectory)
-        test_agent.memory.append(test_trajectory)
+
+        if np.all( [np.all(np.abs(trajectory[i][0]) < 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
+            agent.memory.append(trajectory)
+        else:
+
+            print('UNSTABLE!!!')
+            print((trajectory[-1][0]))
+
+        if np.all( [np.all(np.abs(test_trajectory[i][0]) < 1) for i in range(len(test_trajectory))] ) and not math.isnan(np.sum(test_trajectory[-1][0])): # check for instability
+            test_agent.memory.append(test_trajectory)
+        else:
+
+            print('UNSTABLE!!!')
+            print((test_trajectory[-1][0]))
+
+
+
 
 
     agent.reset_weights()

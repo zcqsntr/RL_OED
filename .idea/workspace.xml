@@ -20,6 +20,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d4a265c6-eb3f-4c7a-9611-a62750211fde" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/single_chemostat_system/test_value_convergence.py" beforeDir="false" afterPath="$PROJECT_DIR$/single_chemostat_system/test_value_convergence.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/single_chemostat_system/train_on_prior.py" beforeDir="false" afterPath="$PROJECT_DIR$/single_chemostat_system/train_on_prior.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -213,6 +215,10 @@
       <workItem from="1601035326013" duration="2278000" />
       <workItem from="1601278924585" duration="12191000" />
       <workItem from="1601886386112" duration="1078000" />
+      <workItem from="1601974134458" duration="5980000" />
+      <workItem from="1601986877944" duration="1064000" />
+      <workItem from="1601989072513" duration="6693000" />
+      <workItem from="1602058441463" duration="11992000" />
     </task>
     <task id="LOCAL-00001" summary="Fixed get_FIM and reneralised it to systems with more than one parameter">
       <created>1591172912260</created>
@@ -466,11 +472,18 @@
       <option name="project" value="LOCAL" />
       <updated>1601887836317</updated>
     </task>
-    <option name="localTasksCounter" value="37" />
+    <task id="LOCAL-00037" summary="train on prior stability problems fixed">
+      <created>1601890269425</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1601890269425</updated>
+    </task>
+    <option name="localTasksCounter" value="38" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
-    <option name="version" value="2" />
+    <option name="version" value="1" />
   </component>
   <component name="Vcs.Log.History.Properties">
     <option name="COLUMN_ORDER">
@@ -534,10 +547,11 @@
       <screen x="0" y="507" width="2560" height="1413" />
     </state>
     <state x="1013" y="961" width="524" height="502" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1594631866345" />
-    <state x="845" y="315" width="1303" height="1381" key="CommitChangelistDialog2" timestamp="1601449759780">
-      <screen x="0" y="315" width="2560" height="1413" />
+    <state x="845" y="27" width="1303" height="1381" key="CommitChangelistDialog2" timestamp="1601890269291">
+      <screen x="0" y="27" width="2560" height="1413" />
     </state>
     <state x="845" y="219" width="1454" height="847" key="CommitChangelistDialog2/0.219.2560.1413/2560.0.1080.1920@0.219.2560.1413" timestamp="1597261368814" />
+    <state x="845" y="27" key="CommitChangelistDialog2/0.27.2560.1413@0.27.2560.1413" timestamp="1601890269291" />
     <state x="845" y="315" width="1303" height="1381" key="CommitChangelistDialog2/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1601449759780" />
     <state x="845" y="452" width="1250" height="1179" key="CommitChangelistDialog2/0.480.2560.1440/2560.0.1080.1920@0.480.2560.1440" timestamp="1596792303239" />
     <state x="845" y="789" width="860" height="847" key="CommitChangelistDialog2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1596091257751" />
@@ -555,11 +569,12 @@
       <screen x="0" y="0" width="1440" height="900" />
     </state>
     <state x="432" y="178" key="SettingsEditor/0.0.1440.900@0.0.1440.900" timestamp="1597667922773" />
-    <state x="-442" y="-991" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1601887843625">
-      <screen x="-1317" y="-1440" width="2560" height="1440" />
+    <state x="875" y="468" width="800" height="528" key="Vcs.Push.Dialog.v2" timestamp="1601890271789">
+      <screen x="0" y="27" width="2560" height="1413" />
     </state>
     <state x="-442" y="-991" key="Vcs.Push.Dialog.v2/0.0.1440.900/-1317.-1440.2560.1440@-1317.-1440.2560.1440" timestamp="1601887843625" />
     <state x="875" y="660" width="800" height="528" key="Vcs.Push.Dialog.v2/0.219.2560.1413/2560.0.1080.1920@0.219.2560.1413" timestamp="1597261371537" />
+    <state x="875" y="468" key="Vcs.Push.Dialog.v2/0.27.2560.1413@0.27.2560.1413" timestamp="1601890271789" />
     <state x="875" y="756" width="800" height="528" key="Vcs.Push.Dialog.v2/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1601449837058" />
     <state x="875" y="948" width="800" height="528" key="Vcs.Push.Dialog.v2/0.507.2560.1413/2560.0.1080.1920@0.507.2560.1413" timestamp="1596091268228" />
     <state x="1559" y="811" width="688" height="410" key="com.intellij.ide.util.TipDialog" timestamp="1596014143348">

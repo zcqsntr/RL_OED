@@ -82,16 +82,16 @@ if __name__ == '__main__':
 
     print('rl state', n_observed_variables + n_params + n_FIM_elements + 2)
 
-    agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 150, 150, 150, num_inputs ** n_controlled_inputs])
+    agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 50,50, num_inputs ** n_controlled_inputs])
 
 
-    normaliser = np.array([1e6, 1e1, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2, 1e2])
+    normaliser = np.array([1e6, 1e1, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2, 1e2])*10
     env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser)
     explore_rate = 1
     unstable = 0
 
     for episode in range(n_episodes):
-
+        print(episode)
         actual_params = DM(np.random.uniform(low=[0.5, 0.00005, 0.000005], high=[5, 0.0005, 0.00005]))
         env.actual_params = actual_params
         env.reset()
@@ -121,18 +121,19 @@ if __name__ == '__main__':
 
             state = next_state
 
-            if not np.all([np.all(trajectory[i][0] < 1) for i in range(len(trajectory))]) or math.isnan(np.sum(trajectory[-1][0])): #dont waste time on lost trajectories
+            if not np.all([np.all(np.abs(trajectory[i][0]) < 1) for i in range(len(trajectory))]) or math.isnan(np.sum(trajectory[-1][0])): #dont waste time on lost trajectories
                 break
 
             e_return += reward
         #print('episode time: ', time.time() -t)
         #print((trajectory[-1][0]))
 
-        if np.all( [np.all(trajectory[i][0] < 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
+        if np.all( [np.all(np.abs(trajectory[i][0]) < 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
             agent.memory.append(trajectory)
         else:
             unstable += 1
             print('UNSTABLE!!!')
+            print((trajectory[-1][0]))
         print('n unstable ', unstable)
 
         #train the agent
