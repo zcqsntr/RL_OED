@@ -30,16 +30,16 @@ if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
 
-    n_episodes = 30000
+    n_episodes = 1
     skip = 100
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
 
-            n_episodes = 17500
-        elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
-            n_episodes = 25000
-        else:
             n_episodes = 30000
+        elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
+            n_episodes = 40000
+        else:
+            n_episodes = 50000
 
         save_path = sys.argv[1] + sys.argv[2] + '/'
         print(n_episodes)
@@ -199,6 +199,8 @@ if __name__ == '__main__':
     np.save(save_path + 'all_returns.npy', np.array(all_returns))
     np.save(save_path + 'actions.npy', np.array(agent.actions))
     np.save(save_path + 'values.npy', np.array(agent.values))
+    agent.save_network(save_path)
+
     t = np.arange(N_control_intervals) * int(control_interval_time)
 
     plt.plot(env.true_trajectory[0, :].elements(), label = 'true')

@@ -1,8 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+RL_root = '/home/neythen/Desktop/Projects/RL_OED/RL_param_inf_results_2'
+RL_root = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_prior'
+
 '''
-us_RL = np.load('/home/neythen/Desktop/Projects/RL_OED/RL_param_inf_results_2/us.npy')
+us_RL = np.load(RL_root + '/us.npy')
+
 
 us_OED = np.load('/home/neythen/Desktop/Projects/RL_OED/OED_param_inf_results_2/us.npy')
 
@@ -13,7 +17,7 @@ us_OED = np.append(us_OED[0], us_OED)
 
 plt.step(range(len(us_RL)), us_RL, label = 'inputs RL')
 
-plt.step(range(len(us_OED)), us_OED, '--', label = 'inputs OED')
+#plt.step(range(len(us_OED)), us_OED, '--', label = 'inputs OED')
 plt.ylabel('u')
 plt.xlabel('Timestep')
 plt.ylim(bottom = 0)
@@ -21,14 +25,14 @@ plt.legend()
 plt.savefig('both_us.pdf')
 
 
-RL_trajectory = np.load('/home/neythen/Desktop/Projects/RL_OED/RL_param_inf_results_2/true_trajectory.npy')
+RL_trajectory = np.load(RL_root + '/true_trajectory.npy')
 
 RL_trajectory = np.append(1, RL_trajectory)
-OED_trajectory = np.load('/home/neythen/Desktop/Projects/RL_OED/OED_param_inf_results/trajectory.npy')
+#OED_trajectory = np.load('/home/neythen/Desktop/Projects/RL_OED/OED_param_inf_results/trajectory.npy')
 print(RL_trajectory)
 plt.figure()
 plt.plot(RL_trajectory, label = 'RL trajectory')
-plt.plot(OED_trajectory, label = 'OED trajectory')
+#plt.plot(OED_trajectory, label = 'OED trajectory')
 
 
 plt.legend()
@@ -38,12 +42,11 @@ plt.savefig('trajectories.pdf')
 
 #OED_return = 14.51719430470262
 '''
-'''
 # plot returns
-for i in range(1,4):
+for i in range(1,10):
 
     plt.figure()
-    RL_returns = np.load('/home/neythen/Desktop/Projects/RL_OED/results/value_inv/Nates_system_fixed/repeat' + str(i) + '/all_returns.npy')
+    RL_returns = np.load(RL_root + '/repeat' + str(i) + '/all_returns.npy')
     print(RL_returns[-1])
     RL_returns = [np.mean(RL_returns[n:n+100]) for n in range(0, len(RL_returns)- 100, 1)]
     plt.plot(RL_returns, label = 'RL return')
@@ -54,6 +57,7 @@ for i in range(1,4):
     plt.legend(loc = 'lower right')
    # plt.savefig('return.pdf')
 plt.show()
+
 '''
 
 for i in range(1,2):
@@ -63,3 +67,4 @@ for i in range(1,2):
 
     plt.plot(values[6:-1:6, 0, :])
     plt.show()
+'''

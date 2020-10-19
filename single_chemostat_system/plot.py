@@ -32,7 +32,9 @@ def get_rate( episode, MIN_RATE, MAX_RATE, denominator):
 
 path = '/home/neythen/Desktop/Projects/RL_OED/results/single_aux_results/fixed_devergence'
 path = '/home/neythen/Desktop/Projects/RL_OED/results/single_aux_results/episode_inv/single_chemostat'
-#path = '/home/neythen/Desktop/Projects/RL_OED/single_chemostat_system'
+path = '/home/neythen/Desktop/Projects/RL_OED/single_chemostat_system'
+path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_prior'
+
 step = 200
 n_repeats = 3
 all_returns = []
@@ -42,7 +44,7 @@ all_us = []
 N_control_intervals = 10
 control_interval_time = 30
 
-for i in range(7,10):
+for i in [7,9]:
     us = np.load(path + '/repeat' + str(i) +'/us.npy')
     print(us.shape)
     all_us.append(us)
