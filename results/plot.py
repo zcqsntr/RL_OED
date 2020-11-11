@@ -3,6 +3,7 @@ import numpy as np
 
 RL_root = '/home/neythen/Desktop/Projects/RL_OED/RL_param_inf_results_2'
 RL_root = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_prior'
+RL_root = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_prior_more_eps'
 
 '''
 us_RL = np.load(RL_root + '/us.npy')

@@ -34,6 +34,7 @@ path = '/home/neythen/Desktop/Projects/RL_OED/results/single_aux_results/fixed_d
 path = '/home/neythen/Desktop/Projects/RL_OED/results/single_aux_results/episode_inv/single_chemostat'
 path = '/home/neythen/Desktop/Projects/RL_OED/single_chemostat_system'
 path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_prior'
+RL_root = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_prior_more_eps'
 
 step = 200
 n_repeats = 3
@@ -44,7 +45,7 @@ all_us = []
 N_control_intervals = 10
 control_interval_time = 30
 
-for i in [7,9]:
+for i in [7,8,9]:
     us = np.load(path + '/repeat' + str(i) +'/us.npy')
     print(us.shape)
     all_us.append(us)
@@ -52,16 +53,17 @@ for i in [7,9]:
     plt.figure()
     print(us[0,:, :].T)
     print(us[:, :, 0].T)
-    us = np.vstack((us[0,:, :].T,us[:, :, 0]))
+    #us = np.vstack((us[0,:, :].T,us[:, :, 0]))
 
     print(us.shape)
-    plt.step(t, us[:,0], ':', color='red', label='$C_{in}$')
-    plt.step(t, us[:,1], ':', color='black', label='$C_{0, in}$')
-    plt.legend()
+    #plt.step(t, us[:,0], ':', color='red', label='$C_{in}$')
+    #plt.step(t, us[:,1], ':', color='black', label='$C_{0, in}$')
+    #plt.legend()
 
-    plt.ylabel('u')
-    plt.xlabel('Time (min)')
+    #plt.ylabel('u')
+    #plt.xlabel('Time (min)')
 
+    '''
     trajectory = np.load(path + '/repeat' + str(i) +'/true_trajectory.npy')
     all_trajectories.append(trajectory)
 
@@ -83,7 +85,7 @@ for i in [7,9]:
     fig.tight_layout()
     fig.legend(bbox_to_anchor=(0.8, 0.9))
 
-
+    '''
 
     returns = np.load(path + '/repeat' + str(i) +'/all_returns.npy')
     print(returns[-1])

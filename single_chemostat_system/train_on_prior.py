@@ -16,6 +16,7 @@ import time
 
 from ROCC import *
 from xdot import xdot
+import tensorflow as tf
 from multiprocessing import Pool
 
 def disablePrint():
@@ -27,7 +28,11 @@ def enablePrint():
 
 
 if __name__ == '__main__':
-    #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+    print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
+
+    tf.debugging.set_log_device_placement(True)
+
+
 
 
     n_episodes = 1
