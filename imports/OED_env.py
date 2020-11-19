@@ -329,7 +329,7 @@ class OED_env():
         #for As in actions:
         #us = [self.action_to_input(action) for action in actions]
         us = self.actions_to_inputs(actions)
- 
+
         #all_us.append(np.array(us)[:,:,0].T)
 
         #print(np.array(all_us).shape)
