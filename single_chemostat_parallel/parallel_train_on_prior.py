@@ -4,6 +4,7 @@ import os
 IMPORT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'imports')
 
 sys.path.append(IMPORT_PATH)
+sys.path.append('../single_chemostat_system')
 sys.path.append('/Users/neythen/Desktop/Projects/ROCC/')
 
 import math
@@ -17,7 +18,9 @@ import time
 from ROCC import *
 from xdot import xdot
 import tensorflow as tf
-from multiprocessing import Pool
+from joblib import Parallel, delayed
+
+import multiprocessing
 
 def disablePrint():
     sys.stdout = open(os.devnull, 'w')
@@ -25,11 +28,31 @@ def disablePrint():
 def enablePrint():
     sys.stdout = sys.__stdout__
 
+def init_wrapper(args):
+
+    return OED_env(*args)
+
+def step_wrapper(args): # wrapper for parallelising
+    env, a = args
+    return env.parallel_step(a)
+
+def reset_wrapper(env):
+    #env.reset()
+    print('done')
+    return 1
+
+def sq(x):
+    return x**2
+
+
+
 
 
 if __name__ == '__main__':
     print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
-
+    n_cores = multiprocessing.cpu_count()
+    print('Num CPU cores:', n_cores)
+    n_cores = 2
     #tf.debugging.set_log_device_placement(True)
     n_episodes = 16
     skip = 16
@@ -88,56 +111,95 @@ if __name__ == '__main__':
 
     agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 50,50, num_inputs ** n_controlled_inputs])
 
-
+    #p = Pool(skip)
     normaliser = np.array([1e6, 1e1, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2, 1e2])*10
-    env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser)
-    explore_rate = 0
-    unstable = 0
-    t = time.time()
-    for episode in range(n_episodes):
-        print(episode)
-        actual_params = DM(np.random.uniform(low=[0.5, 0.00005, 0.000005], high=[5, 0.0005, 0.00005]))
-        env.actual_params = actual_params
-        env.reset()
-        state = env.get_initial_RL_state()
 
-        e_return = 0
+    args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
+
+    env = OED_env(*args)
+
+    def parallel_step_wrapper(args):
+
+        actions, params = args
+        print(actions, params)
+
+        return env.parallel_step(actions, params)
+
+
+
+    explore_rate = 0.5
+    unstable = 0
+
+    # CHEKC ALL THIS IS WORKING
+    env.mapped_trajectory_solver = env.get_control_interval_solver(control_interval_time, dt).map(skip, "thread", 8)
+    t = time.time()
+    for episode in range(int(n_episodes//skip)):
+        print(episode)
+        actual_params = np.random.uniform(low=[0.5, 0.00005, 0.000005], high=[5, 0.0005, 0.00005], size = (skip, 3))
+
+        t1 = time.time()
+        states = [env.get_initial_RL_state() for _ in range(skip)]
+        print('initial states', time.time() - t1)
+        e_returns = [0 for _ in range(skip)]
         e_actions = []
         e_rewards = []
-        trajectory = []
+        trajectories = [[] for _ in range(skip)]
+
         #actions = [9,4,9,4,9,4]
 
         for e in range(0, N_control_intervals):
+            print(e)
+            t1 = time.time()
+            #actions = [agent.get_action(state, explore_rate) for state in states] #parallelise this
+            actions = agent.get_actions(states, explore_rate)
+            print('actions:', time.time() - t1)
+            print(actions.shape)
+            e_actions.append(actions)
 
-            action = agent.get_action(state, explore_rate)
+            #args = list(zip(np.array(e_actions).T, actual_params))
+            #env.mapped_trajectory_solver = env.get_sampled_trajectory_solver(e+1).map(skip, "thread", 8)
+            t1 = time.time()
+            #outputs = env.map_parallel_step(np.array(e_actions).T, actual_params)
+            outputs = env.map_parallel_step(np.array(actions).T, actual_params)
+            print('outputs: ', time.time() - t1)
+            #outputs = env.parallel_step(args[0])
+            print(len(outputs))
+            next_states = []
+
+            t1 = time.time()
+            for i,o in enumerate(outputs):
 
 
-            next_state, reward, done, _ = env.step(action)
+                next_state, reward, done, _ = o
+                next_states.append(next_state)
+                state = states[i]
+                action = actions[i]
 
-            if e == N_control_intervals - 1:
-                next_state = [None]*agent.layer_sizes[0]
-                done = True
-            transition = (state, action, reward, next_state, done)
-            trajectory.append(transition)
+                if e == N_control_intervals - 1:
+                    next_state = [None]*agent.layer_sizes[0]
+                    done = True
 
-            e_actions.append(action)
-            e_rewards.append(reward)
+                transition = (state, action, reward, next_state, done)
+                trajectories[i].append(transition)
 
-            state = next_state
 
-            if not np.all([np.all(np.abs(trajectory[i][0]) < 1) for i in range(len(trajectory))]) or math.isnan(np.sum(trajectory[-1][0])): #dont waste time on lost trajectories
-                break
+                e_rewards.append(reward)
 
-            e_return += reward
+                state = next_state
+                e_returns[i] += reward
+            print('process outputs: ', time.time() - t1)
+            states = next_states
+
+
         #print('episode time: ', time.time() -t)
         #print((trajectory[-1][0]))
-
-        if np.all( [np.all(np.abs(trajectory[i][0]) < 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
-            agent.memory.append(trajectory)
-        else:
-            unstable += 1
-            print('UNSTABLE!!!')
-            print((trajectory[-1][0]))
+        for trajectory in trajectories:
+            if np.all( [np.all(np.abs(trajectory[i][0]) < 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
+                agent.memory.extend(trajectory)
+            else:
+                unstable += 1
+                print('UNSTABLE!!!')
+                print((trajectory[-1][0]))
         print('n unstable ', unstable)
 
         #train the agent
@@ -159,13 +221,13 @@ if __name__ == '__main__':
 
             for iter in range(n_iters):
 
-                print(iter, n_iters)
+                #print(iter, n_iters)
                 enablePrint()
                 history = agent.fitted_Q_update()
 
                 print()
 
-        all_returns.append(e_return)
+        all_returns.extend(e_returns)
 
         '''
         trajectory = trajectory_solver(y0, us, actual_params)
@@ -176,22 +238,21 @@ if __name__ == '__main__':
             print()
             print('EPISODE: ', episode)
             print('explore rate: ', explore_rate)
-            print('return: ', e_return)
-            print('av return: ', np.mean(all_returns[-skip:]))
-            print('actions:', e_actions)
+            #print('return: ', e_returns)
+            #print('av return: ', np.mean(all_returns[-skip:]))
+            #print('actions:', e_actions)
             #print('us: ', env.us)
-            print('rewards: ', e_rewards)
+            #print('rewards: ', e_rewards)
 
     #print(env.FIMs)
             #print(env.detFIMs)
     #print(env.all_param_guesses)
     #print(env.actual_params)
 
+
     print('time:', time.time() - t)
     print(env.detFIMs[-1])
     print(env.logdetFIMs[-1])
-
-
 
     np.save(save_path + 'trajectories.npy', np.array(env.true_trajectory))
 

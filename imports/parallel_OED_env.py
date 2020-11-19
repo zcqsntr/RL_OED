@@ -5,7 +5,6 @@ import copy
 import math
 import time
 import scipy as sp
-from multiprocessing import Pool
 def disablePrint():
     sys.stdout = open(os.devnull, 'w')
 
@@ -61,7 +60,7 @@ class OED_env():
         self.num_inputs = num_inputs
         self.input_bounds = np.array(input_bounds)
 
-        #self.CI_solver  = self.get_control_interval_solver(control_interval_time, dt) # set this up here as it take ages
+        self.CI_solver  = self.get_control_interval_solver(control_interval_time, dt) # set this up here as it take ages
 
     def reset(self):
         self.param_guesses = self.initial_params
@@ -292,81 +291,6 @@ class OED_env():
         self.all_RL_states.append(state)
         return state, reward, done, None
 
-    def parallel_step(self, args): # for parallel training
-
-        actions, actual_params = args
-
-        actual_params = DM(actual_params)
-        us = []
-        for action in actions:
-            u = self.action_to_input(action)
-            #self.us.append(10**u)
-            us.append(u)
-
-        print('os:', np.array(us)[:,:,0].T.shape)
-        print('os:', np.array(us).shape)
-
-        N_control_intervals = len(us)
-
-
-        # set sampled trajectory solver in script to ensure thread safety
-        true_trajectory = self.sampled_trajectory_solver(self.initial_Y,  actual_params, np.array(us)[:,:,0].T)
-
-        reward = self.get_reward(true_trajectory)
-
-        done = False
-
-        #state = self.get_RL_state(self.true_trajectory, self.est_trajectory)
-        state = self.get_RL_state(true_trajectory, true_trajectory)
-
-        return (state, reward, done, None)
-
-    def map_parallel_step(self, actions, actual_params):
-
-        #actions, actual_params = args
-
-        #all_us = []
-        #for As in actions:
-        #us = [self.action_to_input(action) for action in actions]
-        us = self.actions_to_inputs(actions)
- 
-        #all_us.append(np.array(us)[:,:,0].T)
-
-        #print(np.array(all_us).shape)
-
-        #us = np.hstack(all_us)
-        #print('us:', us.shape)
-
-        actual_params = DM(actual_params)
-        #us = np.random.random(tuple([2] + list(actions.T.shape)))
-        #us = np.random.random((2, len(actions)))
-        #print('us:', us.shape)
-       # print('us:', us[:,:,0].T.shape)
-        #print('aparams:', actual_params.T.shape)
-        N_control_intervals = len(us)
-
-        # set sampled trajectory solver in script to ensure thread safety
-        true_trajectories = self.mapped_trajectory_solver(self.Y, actual_params.T, np.array(us))
-
-        #print(np.array(np.hsplit(np.array(true_trajectories), actions.shape[1])).shape)
-
-        #true_trajectories = np.array(np.hsplit(np.array(true_trajectories), actions.shape[1])) # Make sure this reshpe is working properly!!
-        self.Y = true_trajectories
-
-        transitions = []
-        for i in range(true_trajectories.shape[1]):
-            true_trajectory = true_trajectories[:,i]
-
-            reward = self.get_reward(true_trajectory)
-
-            done = False
-
-            # state = self.get_RL_state(self.true_trajectory, self.est_trajectory)
-            state = self.get_RL_state(true_trajectory, true_trajectory)
-            transitions.append((state, reward, done, None))
-
-        return transitions
-
     def get_reward(self, est_trajectory):
         FIM = self.get_FIM(est_trajectory)
 
@@ -434,34 +358,6 @@ class OED_env():
             Cin.append(self.input_bounds[0] + r*(self.input_bounds[1]-self.input_bounds[0])/(self.num_inputs-1))
 
         Cin = np.array(Cin).reshape(-1,1)
-
-        return np.clip(Cin, self.input_bounds[0], self.input_bounds[1])
-
-    def actions_to_inputs(self,actions):
-        '''
-        PARALLEL action to input
-        Takes a discrete action index and returns the corresponding continuous state
-        vector
-
-        Paremeters:
-            action: the descrete action
-            num_species: the number of bacterial populations
-            num_Cin_states: the number of action states the agent can choose from
-                for each species
-            Cin_bounds: list of the upper and lower bounds of the Cin states that
-                can be chosen
-        Returns:
-            state: the continuous Cin concentrations correspoding to the chosen
-                action
-        '''
-
-        # calculate which bucket each eaction belongs in
-
-        buckets = np.unravel_index(actions, [self.num_inputs] *self.n_controlled_inputs)
-        buckets = np.array(buckets)
-        # convert each bucket to a continuous state variable
-
-        Cin = self.input_bounds[0] + buckets*(self.input_bounds[1]-self.input_bounds[0])/(self.num_inputs-1)
 
         return np.clip(Cin, self.input_bounds[0], self.input_bounds[1])
 
@@ -538,17 +434,12 @@ class OED_env():
 
         return self.normalise_RL_state(state)
 
-
-
     def get_initial_RL_state(self):
         state = np.array(self.x0[0:self.n_observed_variables] + self.param_guesses.elements() + [0] * self.n_FIM_elements)
         state = np.append(state, 0) #time
         state = np.append(state, 0) #logdetFIM
 
         return self.normalise_RL_state(state)
-
-
-
 
 
 
