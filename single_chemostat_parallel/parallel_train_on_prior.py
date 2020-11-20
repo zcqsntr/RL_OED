@@ -52,10 +52,10 @@ if __name__ == '__main__':
     print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
     n_cores = multiprocessing.cpu_count()
     print('Num CPU cores:', n_cores)
-    n_cores = 2
+
     #tf.debugging.set_log_device_placement(True)
-    n_episodes = 16
-    skip = 16
+    n_episodes = 10
+    skip = 10
 
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
@@ -127,19 +127,19 @@ if __name__ == '__main__':
 
 
 
-    explore_rate = 0.5
+    explore_rate = 1
     unstable = 0
 
     # CHEKC ALL THIS IS WORKING
-    env.mapped_trajectory_solver = env.get_control_interval_solver(control_interval_time, dt).map(skip, "thread", 8)
+    env.mapped_trajectory_solver = env.get_control_interval_solver(control_interval_time, dt).map(skip, "thread", n_cores)
     t = time.time()
     for episode in range(int(n_episodes//skip)):
-        print(episode)
+        print('episode:', episode*skip)
         actual_params = np.random.uniform(low=[0.5, 0.00005, 0.000005], high=[5, 0.0005, 0.00005], size = (skip, 3))
 
-        t1 = time.time()
+
         states = [env.get_initial_RL_state() for _ in range(skip)]
-        print('initial states', time.time() - t1)
+
         e_returns = [0 for _ in range(skip)]
         e_actions = []
         e_rewards = []
@@ -147,13 +147,15 @@ if __name__ == '__main__':
 
         #actions = [9,4,9,4,9,4]
 
+        env.reset()
+
         for e in range(0, N_control_intervals):
             print(e)
             t1 = time.time()
             #actions = [agent.get_action(state, explore_rate) for state in states] #parallelise this
             actions = agent.get_actions(states, explore_rate)
-            print('actions:', time.time() - t1)
-            print(actions.shape)
+
+
             e_actions.append(actions)
 
             #args = list(zip(np.array(e_actions).T, actual_params))
@@ -161,12 +163,11 @@ if __name__ == '__main__':
             t1 = time.time()
             #outputs = env.map_parallel_step(np.array(e_actions).T, actual_params)
             outputs = env.map_parallel_step(np.array(actions).T, actual_params)
-            print('outputs: ', time.time() - t1)
+
             #outputs = env.parallel_step(args[0])
-            print(len(outputs))
+
             next_states = []
 
-            t1 = time.time()
             for i,o in enumerate(outputs):
 
 
@@ -187,12 +188,13 @@ if __name__ == '__main__':
 
                 state = next_state
                 e_returns[i] += reward
-            print('process outputs: ', time.time() - t1)
+
             states = next_states
 
 
         #print('episode time: ', time.time() -t)
         #print((trajectory[-1][0]))
+        print('traj:', len(trajectories))
         for trajectory in trajectories:
             if np.all( [np.all(np.abs(trajectory[i][0]) < 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
                 agent.memory.extend(trajectory)
@@ -254,16 +256,16 @@ if __name__ == '__main__':
     print(env.detFIMs[-1])
     print(env.logdetFIMs[-1])
 
-    np.save(save_path + 'trajectories.npy', np.array(env.true_trajectory))
+    #np.save(save_path + 'trajectories.npy', np.array(env.true_trajectory))
 
-    np.save(save_path + 'true_trajectory.npy', env.true_trajectory)
+    #np.save(save_path + 'true_trajectory.npy', env.true_trajectory)
     # np.save(save_path + 'est_trajectory.npy', env.est_trajectory)
-    np.save(save_path + 'us.npy', np.array(env.us))
-
-    np.save(save_path + 'all_returns.npy', np.array(all_returns))
-    np.save(save_path + 'actions.npy', np.array(agent.actions))
-    np.save(save_path + 'values.npy', np.array(agent.values))
+    #np.save(save_path + 'us.npy', np.array(env.us))
     agent.save_network(save_path)
+    np.save(save_path + 'all_returns.npy', np.array(all_returns))
+    #np.save(save_path + 'actions.npy', np.array(agent.actions))
+    #np.save(save_path + 'values.npy', np.array(agent.values))
+
 
     t = np.arange(N_control_intervals) * int(control_interval_time)
 
