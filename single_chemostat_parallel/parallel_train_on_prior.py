@@ -54,8 +54,8 @@ if __name__ == '__main__':
     print('Num CPU cores:', n_cores)
 
     #tf.debugging.set_log_device_placement(True)
-    n_episodes = 10
-    skip = 10
+    n_episodes = 10000
+    skip = 100
 
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':

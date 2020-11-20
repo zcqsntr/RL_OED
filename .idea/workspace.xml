@@ -228,7 +228,7 @@
       <workItem from="1605517087267" duration="16446000" />
       <workItem from="1605601859764" duration="9782000" />
       <workItem from="1605687327534" duration="22511000" />
-      <workItem from="1605870977356" duration="1068000" />
+      <workItem from="1605870977356" duration="1708000" />
     </task>
     <task id="LOCAL-00001" summary="Fixed get_FIM and reneralised it to systems with more than one parameter">
       <created>1591172912260</created>
@@ -524,7 +524,14 @@
       <option name="project" value="LOCAL" />
       <updated>1605777570286</updated>
     </task>
-    <option name="localTasksCounter" value="43" />
+    <task id="LOCAL-00043" summary="for server">
+      <created>1605872294106</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1605872294106</updated>
+    </task>
+    <option name="localTasksCounter" value="44" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -574,12 +581,12 @@
     <MESSAGE value="for cluster" />
     <MESSAGE value="single_auxotroph system set up and working" />
     <MESSAGE value="value convergence and plotting for single auxotroph" />
-    <MESSAGE value="for server" />
     <MESSAGE value="structural identifiability test and prior training added" />
     <MESSAGE value="train on prior stability problems fixed" />
     <MESSAGE value="gpu debugging" />
     <MESSAGE value="parallel prior training working, 17.5* speed up" />
-    <option name="LAST_COMMIT_MESSAGE" value="parallel prior training working, 17.5* speed up" />
+    <MESSAGE value="for server" />
+    <option name="LAST_COMMIT_MESSAGE" value="for server" />
   </component>
   <component name="WindowStateProjectService">
     <state x="958" y="825" width="658" height="390" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1598946440397">
@@ -587,13 +594,13 @@
     </state>
     <state x="958" y="729" width="662" height="390" key="#com.intellij.fileTypes.FileTypeChooser/0.219.2560.1413/2560.0.1080.1920@0.219.2560.1413" timestamp="1597393269536" />
     <state x="958" y="825" width="658" height="390" key="#com.intellij.fileTypes.FileTypeChooser/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1598946440397" />
-    <state x="845" y="480" width="1196" height="1010" key="CommitChangelistDialog2" timestamp="1605777570196">
+    <state x="845" y="480" width="1196" height="1010" key="CommitChangelistDialog2" timestamp="1605872293970">
       <screen x="0" y="480" width="2560" height="1440" />
     </state>
     <state x="845" y="219" width="1454" height="847" key="CommitChangelistDialog2/0.219.2560.1413/2560.0.1080.1920@0.219.2560.1413" timestamp="1597261368814" />
     <state x="845" y="27" key="CommitChangelistDialog2/0.27.2560.1413@0.27.2560.1413" timestamp="1601890269291" />
     <state x="845" y="315" width="1303" height="1381" key="CommitChangelistDialog2/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1601449759780" />
-    <state x="845" y="480" width="1250" height="1179" key="CommitChangelistDialog2/0.480.2560.1440/2560.0.1080.1920@0.480.2560.1440" timestamp="1605777570196" />
+    <state x="845" y="480" width="1250" height="1179" key="CommitChangelistDialog2/0.480.2560.1440/2560.0.1080.1920@0.480.2560.1440" timestamp="1605872293970" />
     <state x="708" y="697" width="1196" height="1010" key="CommitChangelistDialog2/0.480.2560.1440/2560.0.1080.1920@2560.0.1080.1920" timestamp="1602170005277" />
     <state x="977" y="539" width="374" height="941" key="FileChooserDialogImpl" timestamp="1601279386120">
       <screen x="0" y="315" width="2560" height="1413" />
@@ -607,14 +614,14 @@
       <screen x="0" y="0" width="1440" height="900" />
     </state>
     <state x="432" y="178" key="SettingsEditor/0.0.1440.900@0.0.1440.900" timestamp="1597667922773" />
-    <state x="875" y="929" width="800" height="535" key="Vcs.Push.Dialog.v2" timestamp="1605777637304">
+    <state x="875" y="929" width="800" height="535" key="Vcs.Push.Dialog.v2" timestamp="1605872298635">
       <screen x="0" y="480" width="2560" height="1440" />
     </state>
     <state x="-442" y="-991" key="Vcs.Push.Dialog.v2/0.0.1440.900/-1317.-1440.2560.1440@-1317.-1440.2560.1440" timestamp="1601887843625" />
     <state x="875" y="660" width="800" height="528" key="Vcs.Push.Dialog.v2/0.219.2560.1413/2560.0.1080.1920@0.219.2560.1413" timestamp="1597261371537" />
     <state x="875" y="468" key="Vcs.Push.Dialog.v2/0.27.2560.1413@0.27.2560.1413" timestamp="1601890271789" />
     <state x="875" y="756" width="800" height="528" key="Vcs.Push.Dialog.v2/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1601449837058" />
-    <state x="875" y="929" width="800" height="535" key="Vcs.Push.Dialog.v2/0.480.2560.1440/2560.0.1080.1920@0.480.2560.1440" timestamp="1605777637304" />
+    <state x="875" y="929" width="800" height="535" key="Vcs.Push.Dialog.v2/0.480.2560.1440/2560.0.1080.1920@0.480.2560.1440" timestamp="1605872298635" />
     <state x="2929" y="599" width="516" height="725" key="Vcs.Push.Dialog.v2/0.480.2560.1440/2560.0.1080.1920@2560.0.1080.1920" timestamp="1602170007738" />
     <state x="980" y="814" width="590" height="413" key="git4idea.merge.GitPullDialog" timestamp="1597738561706">
       <screen x="0" y="315" width="2560" height="1413" />
@@ -624,7 +631,6 @@
     <state x="943" y="806" width="672" height="692" key="search.everywhere.popup" timestamp="1605694921007">
       <screen x="0" y="480" width="2560" height="1440" />
     </state>
-    <state x="943" y="539" width="672" height="678" key="search.everywhere.popup/0.219.2560.1413/2560.0.1080.1920@0.219.2560.1413" timestamp="1597227210089" />
     <state x="943" y="570" width="672" height="540" key="search.everywhere.popup/0.315.2560.1125/2560.0.1080.1920@0.315.2560.1125" timestamp="1597405653192" />
     <state x="943" y="806" width="672" height="692" key="search.everywhere.popup/0.480.2560.1440/2560.0.1080.1920@0.480.2560.1440" timestamp="1605694921007" />
   </component>
