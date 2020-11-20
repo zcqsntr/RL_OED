@@ -18,7 +18,7 @@ import time
 from ROCC import *
 from xdot import xdot
 import tensorflow as tf
-from joblib import Parallel, delayed
+
 
 import multiprocessing
 
