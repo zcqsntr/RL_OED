@@ -89,6 +89,7 @@ for i in [7,8,9]:
 
     returns = np.load(path + '/repeat' + str(i) +'/all_returns.npy')
     print(returns[-1])
+    print(np.max(returns))
 
 
     y = [np.mean(returns[i * step: (i + 1) * step]) for i in range(0, len(returns) // step)]
