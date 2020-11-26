@@ -4,7 +4,7 @@ import os
 IMPORT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'imports')
 
 sys.path.append(IMPORT_PATH)
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'single_chemostat_system'))
+sys.path.append('../single_chemostat_system')
 sys.path.append('/Users/neythen/Desktop/Projects/ROCC/')
 
 import math
@@ -18,7 +18,7 @@ import time
 from ROCC import *
 from xdot import xdot
 import tensorflow as tf
-
+from joblib import Parallel, delayed
 
 import multiprocessing
 
@@ -50,7 +50,7 @@ def sq(x):
 
 if __name__ == '__main__':
     print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
-    n_cores = multiprocessing.cpu_count()
+    n_cores = multiprocessing.cpu_count()//2
     print('Num CPU cores:', n_cores)
 
     #tf.debugging.set_log_device_placement(True)
@@ -118,20 +118,12 @@ if __name__ == '__main__':
 
     env = OED_env(*args)
 
-    def parallel_step_wrapper(args):
-
-        actions, params = args
-        print(actions, params)
-
-        return env.parallel_step(actions, params)
-
-
 
     explore_rate = 1
     unstable = 0
 
     # CHEKC ALL THIS IS WORKING
-    env.mapped_trajectory_solver = env.get_control_interval_solver(control_interval_time, dt).map(skip, "thread", n_cores)
+    env.mapped_trajectory_solver = env.CI_solver.map(skip, "thread", n_cores)
     t = time.time()
     for episode in range(int(n_episodes//skip)):
         print('episode:', episode*skip)
@@ -142,12 +134,14 @@ if __name__ == '__main__':
 
         e_returns = [0 for _ in range(skip)]
         e_actions = []
-        e_rewards = []
+        e_rewards = [[] for _ in range(skip)]
         trajectories = [[] for _ in range(skip)]
 
         #actions = [9,4,9,4,9,4]
 
         env.reset()
+        env.logdetFIMs = [[] for _ in range(skip)]
+        env.detFIMs = [[] for _ in range(skip)]
 
         for e in range(0, N_control_intervals):
             print(e)
@@ -184,28 +178,35 @@ if __name__ == '__main__':
                 trajectories[i].append(transition)
 
 
-                e_rewards.append(reward)
+                e_rewards[i].append(reward)
 
                 state = next_state
                 e_returns[i] += reward
 
             states = next_states
 
-
+        print('retrurn', e_returns)
         #print('episode time: ', time.time() -t)
         #print((trajectory[-1][0]))
         print('traj:', len(trajectories))
         for trajectory in trajectories:
             if np.all( [np.all(np.abs(trajectory[i][0]) < 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
-                agent.memory.extend(trajectory)
+                #plt.figure()
+                #plt.plot([trajectory[i][0][0] for i in range(len(trajectory))])
+
+
+                agent.memory.append(trajectory)
+
+                #print([trajectory[i][0][0] for i in range(len(trajectory))])
             else:
                 unstable += 1
                 print('UNSTABLE!!!')
                 print((trajectory[-1][0]))
+        plt.show()
         print('n unstable ', unstable)
 
         #train the agent
-        if (episode % skip == 0 and episode != 0) or episode == n_episodes - 2:
+        if episode != 0:
             print('train')
             explore_rate = agent.get_rate(episode, 0, 1, n_episodes / 10)
             #explore_rate = 0
@@ -236,15 +237,15 @@ if __name__ == '__main__':
         all_ys.append(trajectory.elements()[-1])
         '''
 
-        if episode %skip == 0 or episode == n_episodes -1:
-            print()
-            print('EPISODE: ', episode)
-            print('explore rate: ', explore_rate)
-            print('return: ', e_returns)
-            print('av return: ', np.mean(all_returns[-skip:]))
-            #print('actions:', e_actions)
-            #print('us: ', env.us)
-            #print('rewards: ', e_rewards)
+
+        print()
+        print('EPISODE: ', episode)
+        print('explore rate: ', explore_rate)
+        print('return: ', e_returns)
+        print('av return: ', np.mean(all_returns[-skip:]))
+        #print('actions:', e_actions)
+        #print('us: ', env.us)
+        #print('rewards: ', e_rewards)
 
     #print(env.FIMs)
             #print(env.detFIMs)

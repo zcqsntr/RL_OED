@@ -48,6 +48,7 @@ for i in range(1,10):
 
     plt.figure()
     RL_returns = np.load(RL_root + '/repeat' + str(i) + '/all_returns.npy')
+    print(np.max(RL_returns))
     print(RL_returns[-1])
     RL_returns = [np.mean(RL_returns[n:n+100]) for n in range(0, len(RL_returns)- 100, 1)]
     plt.plot(RL_returns, label = 'RL return')

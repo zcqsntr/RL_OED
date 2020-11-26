@@ -61,7 +61,7 @@ class OED_env():
         self.num_inputs = num_inputs
         self.input_bounds = np.array(input_bounds)
 
-        #self.CI_solver  = self.get_control_interval_solver(control_interval_time, dt) # set this up here as it take ages
+        self.CI_solver  = self.get_control_interval_solver(control_interval_time, dt) # set this up here as it take ages
 
     def reset(self):
         self.param_guesses = self.initial_params
@@ -351,20 +351,24 @@ class OED_env():
         #print(np.array(np.hsplit(np.array(true_trajectories), actions.shape[1])).shape)
 
         #true_trajectories = np.array(np.hsplit(np.array(true_trajectories), actions.shape[1])) # Make sure this reshpe is working properly!!
-        self.Y = true_trajectories
+
 
         transitions = []
+        t = time.time()
         for i in range(true_trajectories.shape[1]):
+
             true_trajectory = true_trajectories[:,i]
 
-            reward = self.get_reward(true_trajectory)
+            reward = self.get_reward_parallel(true_trajectory, i)
 
             done = False
 
             # state = self.get_RL_state(self.true_trajectory, self.est_trajectory)
-            state = self.get_RL_state(true_trajectory, true_trajectory)
+            state = self.get_RL_state_parallel(true_trajectory, true_trajectory, i)
             transitions.append((state, reward, done, None))
 
+
+        self.Y = true_trajectories
         return transitions
 
     def get_reward(self, est_trajectory):
@@ -393,6 +397,46 @@ class OED_env():
         try:
             #reward = np.log(det_FIM-self.detFIMs[-2])
             reward = logdet_FIM - self.logdetFIMs[-2]
+            #print('det adfa: ', det_FIM)
+            #print(det_FIM - self.detFIMs[-2])
+        except:
+
+            reward = logdet_FIM
+
+        if math.isnan(reward):
+            pass
+            print()
+            print('nan reward, FIM might have negative determinant !!!!')
+
+            reward = -100
+        return reward/100
+
+    def get_reward_parallel(self, est_trajectory, i):
+        FIM = self.get_FIM(est_trajectory)
+
+        #use this method to remove the small negatvie eigenvalues
+
+        # casadi QR seems better,gives same results as np but some -ves in different places and never gives -ve determinant
+        q, r = qr(FIM)
+
+        det_FIM = np.prod(diag(r).elements())
+
+        logdet_FIM = trace(log(r)).elements()[0] # do it like this to protect from numerical errors from multiplying large EVs
+
+        if det_FIM <= 0:
+            print('----------------------------------------smaller than 0')
+            eigs = np.real(np.linalg.eig(FIM)[0])
+            eigs[eigs<0] = 0.00000000000000000000000001
+            det_FIM = np.prod(eigs)
+            logdet_FIM = np.log(det_FIM)
+
+
+        self.detFIMs[i].append(det_FIM)
+        self.logdetFIMs[i].append(logdet_FIM)
+
+        try:
+            #reward = np.log(det_FIM-self.detFIMs[-2])
+            reward = logdet_FIM - self.logdetFIMs[i][-2]
             #print('det adfa: ', det_FIM)
             #print(det_FIM - self.detFIMs[-2])
         except:
@@ -534,6 +578,30 @@ class OED_env():
 
         state = np.append(state, true_trajectory.shape[1])
         state = np.append(state, np.log(self.detFIMs[-1]))
+
+
+        return self.normalise_RL_state(state)
+
+    def get_RL_state_parallel(self, true_trajectory, est_trajectory, i):
+
+
+        # get the current measured system state
+        sys_state = true_trajectory[:self.n_observed_variables, -1] #TODO: measurement noise
+
+        # get current fim elements
+        FIM_start = self.n_system_variables + self.n_sensitivities
+
+        FIM_end = FIM_start + self.n_FIM_elements
+
+        #FIM_elements = true_trajectory[FIM_start:FIM_end]
+        FIM_elements = est_trajectory[FIM_start:FIM_end, -1]
+        #print('----------------------ADDING NOISE TO STATE: ')
+        #sys_state += np.random.normal(sys_state, sys_state/10)
+
+        state = np.append(sys_state, np.append(self.param_guesses, FIM_elements))
+
+        state = np.append(state, true_trajectory.shape[1])
+        state = np.append(state, np.log(self.detFIMs[i][-1]))
 
 
         return self.normalise_RL_state(state)

@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
     normaliser = np.array([1e6, 1e1, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2, 1e2])*10
     env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser)
-    explore_rate = 0
+    explore_rate = 1
     unstable = 0
     t = time.time()
     for episode in range(n_episodes):
@@ -124,16 +124,19 @@ if __name__ == '__main__':
             e_rewards.append(reward)
 
             state = next_state
-
+            e_return += reward
             if not np.all([np.all(np.abs(trajectory[i][0]) < 1) for i in range(len(trajectory))]) or math.isnan(np.sum(trajectory[-1][0])): #dont waste time on lost trajectories
                 break
 
-            e_return += reward
+
         #print('episode time: ', time.time() -t)
         #print((trajectory[-1][0]))
-
+        print('rewards:', e_rewards)
         if np.all( [np.all(np.abs(trajectory[i][0]) < 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
             agent.memory.append(trajectory)
+            #plt.figure()
+            #plt.plot([trajectory[i][0][0] for i in range(len(trajectory))])
+            #plt.show()
         else:
             unstable += 1
             print('UNSTABLE!!!')
