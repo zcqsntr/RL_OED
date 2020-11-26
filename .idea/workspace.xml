@@ -20,7 +20,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7241238f-3d71-478e-b33b-638b84926fe9" name="Default Changelist" comment="for server">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/single_chemostat_parallel/parallel_train_on_prior.py" beforeDir="false" afterPath="$PROJECT_DIR$/single_chemostat_parallel/parallel_train_on_prior.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -581,12 +580,13 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="sym_Y bug fixed. ready for server to test RL" />

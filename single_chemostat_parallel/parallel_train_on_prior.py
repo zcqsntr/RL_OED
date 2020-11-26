@@ -51,7 +51,7 @@ def sq(x):
 
 if __name__ == '__main__':
     print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
-    n_cores = multiprocessing.cpu_count()//2
+    n_cores = multiprocessing.cpu_count()
     print('Num CPU cores:', n_cores)
 
     #tf.debugging.set_log_device_placement(True)
