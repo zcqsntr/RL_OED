@@ -1,3 +1,4 @@
+# noinspection PyInterpreter
 import sys
 import os
 
@@ -18,7 +19,7 @@ import time
 from ROCC import *
 from xdot import xdot
 import tensorflow as tf
-from joblib import Parallel, delayed
+
 
 import multiprocessing
 
@@ -178,14 +179,16 @@ if __name__ == '__main__':
                 trajectories[i].append(transition)
 
 
-                e_rewards[i].append(reward)
+                if reward != -1: # dont include the unstable trajectories as they override the true return
+                    e_rewards[i].append(reward)
+                    e_returns[i] += reward
 
                 state = next_state
-                e_returns[i] += reward
+
 
             states = next_states
 
-        print('retrurn', e_returns)
+        #print('retrurn', e_returns)
         #print('episode time: ', time.time() -t)
         #print((trajectory[-1][0]))
         print('traj:', len(trajectories))
@@ -194,7 +197,7 @@ if __name__ == '__main__':
                 #plt.figure()
                 #plt.plot([trajectory[i][0][0] for i in range(len(trajectory))])
 
-
+                print(trajectory)
                 agent.memory.append(trajectory)
 
                 #print([trajectory[i][0][0] for i in range(len(trajectory))])
@@ -231,7 +234,7 @@ if __name__ == '__main__':
                 print()
 
         all_returns.extend(e_returns)
-
+        print('all returns:', all_returns)
         '''
         trajectory = trajectory_solver(y0, us, actual_params)
         all_ys.append(trajectory.elements()[-1])
