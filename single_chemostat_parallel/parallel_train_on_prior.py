@@ -5,7 +5,8 @@ import os
 IMPORT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'imports')
 
 sys.path.append(IMPORT_PATH)
-sys.path.append('../single_chemostat_system')
+IMPORT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'single_chemostat_system')
+sys.path.append(IMPORT_PATH)
 sys.path.append('/Users/neythen/Desktop/Projects/ROCC/')
 
 import math
