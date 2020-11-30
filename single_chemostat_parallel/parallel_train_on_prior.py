@@ -197,8 +197,6 @@ if __name__ == '__main__':
             if np.all( [np.all(np.abs(trajectory[i][0]) < 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
                 #plt.figure()
                 #plt.plot([trajectory[i][0][0] for i in range(len(trajectory))])
-
-                print(trajectory)
                 agent.memory.append(trajectory)
 
                 #print([trajectory[i][0][0] for i in range(len(trajectory))])
