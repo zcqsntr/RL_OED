@@ -210,7 +210,7 @@ if __name__ == '__main__':
         #train the agent
         if episode != 0:
             print('train')
-            explore_rate = agent.get_rate(episode, 0, 1, n_episodes / 10)
+            explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (10*skip))
             #explore_rate = 0
             if explore_rate == 1:
                 n_iters = 0

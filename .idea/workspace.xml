@@ -19,7 +19,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7241238f-3d71-478e-b33b-638b84926fe9" name="Default Changelist" comment="">
+    <list default="true" id="7241238f-3d71-478e-b33b-638b84926fe9" name="Default Changelist" comment="for server">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/single_chemostat_parallel/parallel_train_on_prior.py" beforeDir="false" afterPath="$PROJECT_DIR$/single_chemostat_parallel/parallel_train_on_prior.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -63,7 +64,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/single_chemostat_parallel" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -73,19 +74,19 @@
     <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/single_chemostat_parallel" />
-      <recent name="$PROJECT_DIR$/imports" />
-      <recent name="$PROJECT_DIR$/single_chemostat_system" />
-      <recent name="$PROJECT_DIR$/Nates_system/results/first_three" />
-      <recent name="$PROJECT_DIR$/chemostat_system" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/single_chemostat_system/test_results" />
       <recent name="$PROJECT_DIR$/single_chemostat_system/value_convergence" />
       <recent name="$PROJECT_DIR$/Nates_system/results" />
       <recent name="$PROJECT_DIR$/Nates_system" />
       <recent name="$PROJECT_DIR$/tests" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/single_chemostat_parallel" />
+      <recent name="$PROJECT_DIR$/imports" />
+      <recent name="$PROJECT_DIR$/single_chemostat_system" />
+      <recent name="$PROJECT_DIR$/Nates_system/results/first_three" />
+      <recent name="$PROJECT_DIR$/chemostat_system" />
     </key>
   </component>
   <component name="RunManager">
@@ -566,7 +567,14 @@
       <option name="project" value="LOCAL" />
       <updated>1606404685386</updated>
     </task>
-    <option name="localTasksCounter" value="48" />
+    <task id="LOCAL-00048" summary="for server">
+      <created>1606729426449</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1606729426449</updated>
+    </task>
+    <option name="localTasksCounter" value="49" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -654,13 +662,13 @@
       <screen x="-671" y="-1440" width="2560" height="1440" />
     </state>
     <state x="118" y="-1081" key="SettingsEditor/0.0.1440.900/-671.-1440.2560.1440@-671.-1440.2560.1440" timestamp="1606403318047" />
-    <state x="875" y="929" width="501" height="335" key="Vcs.Push.Dialog.v2" timestamp="1606404686659">
-      <screen x="0" y="480" width="2560" height="1440" />
+    <state x="492" y="281" width="501" height="335" key="Vcs.Push.Dialog.v2" timestamp="1606729427766">
+      <screen x="0" y="0" width="1440" height="900" />
     </state>
     <state x="492" y="281" key="Vcs.Push.Dialog.v2/0.0.1440.900/-1120.-1440.2560.1440@0.0.1440.900" timestamp="1606130680018" />
     <state x="-442" y="-991" key="Vcs.Push.Dialog.v2/0.0.1440.900/-1317.-1440.2560.1440@-1317.-1440.2560.1440" timestamp="1601887843625" />
     <state x="492" y="281" key="Vcs.Push.Dialog.v2/0.0.1440.900/-671.-1440.2560.1440@0.0.1440.900" timestamp="1606294032370" />
-    <state x="492" y="281" width="501" height="335" key="Vcs.Push.Dialog.v2/0.0.1440.900@0.0.1440.900" timestamp="1605882674837" />
+    <state x="492" y="281" width="501" height="335" key="Vcs.Push.Dialog.v2/0.0.1440.900@0.0.1440.900" timestamp="1606729427766" />
     <state x="875" y="468" key="Vcs.Push.Dialog.v2/0.27.2560.1413@0.27.2560.1413" timestamp="1601890271789" />
     <state x="875" y="756" width="800" height="528" key="Vcs.Push.Dialog.v2/0.315.2560.1413/2560.0.1080.1920@0.315.2560.1413" timestamp="1601449837058" />
     <state x="875" y="929" width="800" height="535" key="Vcs.Push.Dialog.v2/0.480.2560.1440/2560.0.1080.1920@0.480.2560.1440" timestamp="1606404686659" />
