@@ -62,7 +62,7 @@ if __name__ == '__main__':
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
 
-            n_episodes = 30000
+            n_episodes = 50000
         elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
             n_episodes = 40000
         else:
@@ -127,7 +127,9 @@ if __name__ == '__main__':
     # CHEKC ALL THIS IS WORKING
     env.mapped_trajectory_solver = env.CI_solver.map(skip, "thread", n_cores)
     t = time.time()
+
     for episode in range(int(n_episodes//skip)):
+        explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (10 * skip))
         print('episode:', episode*skip)
         actual_params = np.random.uniform(low=[0.5, 0.00005, 0.000005], high=[5, 0.0005, 0.00005], size = (skip, 3))
 
