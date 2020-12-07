@@ -87,7 +87,7 @@ if __name__ == '__main__':
 
     normaliser = np.array([1e6, 1e1, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2, 1e2])
     env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser)
-    explore_rate = 1
+    explore_rate = 0
     # reward clamping
     '''
     reward_clamp = 30
@@ -128,6 +128,8 @@ if __name__ == '__main__':
     agent.memory = []
     '''
 
+    #agent.load_network('/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_parallel/repeat2/')
+
     for episode in range(n_episodes):
 
         env.reset()
@@ -160,6 +162,31 @@ if __name__ == '__main__':
             e_return += reward
 
         agent.memory.append(trajectory)
+
+        t = np.arange(N_control_intervals) * int(control_interval_time)
+
+        plt.plot(env.true_trajectory[0, :].elements(), label='true')
+        # plt.plot(env.est_trajectory[0, :].elements(), label = 'est')
+        plt.legend()
+        plt.ylabel('bacteria')
+        plt.xlabel('time (mins)')
+        plt.savefig(save_path + 'bacteria_trajectories.pdf')
+
+        plt.figure()
+        plt.plot(env.true_trajectory[1, :].elements(), label='true')
+        # plt.plot(env.est_trajectory[1, :].elements(), label = 'est')
+        plt.legend()
+        plt.ylabel('C')
+        plt.xlabel('time (mins)')
+        plt.savefig(save_path + 'c_trajectories.pdf')
+
+        plt.figure()
+        plt.plot(env.true_trajectory[2, :].elements(), label='true')
+        # plt.plot(env.est_trajectory[1, :].elements(), label = 'est')
+        plt.legend()
+        plt.ylabel('C0')
+        plt.xlabel('time (mins)')
+        plt.savefig(save_path + 'c0_trajectories.pdf')
 
         #train the agent
 

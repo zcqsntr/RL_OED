@@ -56,13 +56,13 @@ if __name__ == '__main__':
     print('Num CPU cores:', n_cores)
 
     #tf.debugging.set_log_device_placement(True)
-    n_episodes = 10000
+    n_episodes = 17500
     skip = 100
 
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
 
-            n_episodes = 50000
+            n_episodes = 30000
         elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
             n_episodes = 40000
         else:
@@ -112,6 +112,27 @@ if __name__ == '__main__':
     print('rl state', n_observed_variables + n_params + n_FIM_elements + 2)
 
     agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 50,50, num_inputs ** n_controlled_inputs])
+    if len(sys.argv) == 3:
+        if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
+            agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 50, 50,
+                                                   num_inputs ** n_controlled_inputs])
+            #n_episodes = 30000
+        elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
+            agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 150, 150, 150,
+                                                   num_inputs ** n_controlled_inputs])
+            #n_episodes = 40000
+        else:
+            pass
+            #n_episodes = 50000
+
+        save_path = sys.argv[1] + sys.argv[2] + '/'
+        print(n_episodes)
+        os.makedirs(save_path, exist_ok=True)
+    elif len(sys.argv) == 2:
+        save_path = sys.argv[1] + '/'
+        os.makedirs(save_path, exist_ok=True)
+    else:
+        save_path = './'
 
     #p = Pool(skip)
     normaliser = np.array([1e6, 1e1, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2, 1e2])*10
@@ -123,15 +144,17 @@ if __name__ == '__main__':
 
     explore_rate = 1
     unstable = 0
+    #print(agent.network.layers[1].get_weights())
+    #agent.load_network('/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_parallel/repeat2/')
+    #print(agent.network.layers[1].get_weights())
 
     # CHEKC ALL THIS IS WORKING
     env.mapped_trajectory_solver = env.CI_solver.map(skip, "thread", n_cores)
     t = time.time()
-
     for episode in range(int(n_episodes//skip)):
-        explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (10 * skip))
         print('episode:', episode*skip)
-        actual_params = np.random.uniform(low=[0.5, 0.00005, 0.000005], high=[5, 0.0005, 0.00005], size = (skip, 3))
+        #actual_params = np.random.uniform(low=[0.5, 0.00005, 0.000005], high=[5, 0.0005, 0.00005], size = (skip, 3))
+        actual_params = np.random.uniform(low=[1,  0.00048776, 0.00006845928], high=[1,  0.00048776, 0.00006845928], size = (skip, 3))
 
 
         states = [env.get_initial_RL_state() for _ in range(skip)]
@@ -199,6 +222,8 @@ if __name__ == '__main__':
             if np.all( [np.all(np.abs(trajectory[i][0]) < 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
                 #plt.figure()
                 #plt.plot([trajectory[i][0][0] for i in range(len(trajectory))])
+
+                print(trajectory)
                 agent.memory.append(trajectory)
 
                 #print([trajectory[i][0][0] for i in range(len(trajectory))])
