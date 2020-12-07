@@ -52,7 +52,7 @@ def sq(x):
 
 if __name__ == '__main__':
     print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
-    n_cores = multiprocessing.cpu_count()
+    n_cores = multiprocessing.cpu_count()//2
     print('Num CPU cores:', n_cores)
 
     #tf.debugging.set_log_device_placement(True)
@@ -61,7 +61,7 @@ if __name__ == '__main__':
 
 
     all_returns = []
-
+    n_unstables = []
     #y, y0, umax, Km, Km0, A
     #actual_params = DM([480000, 480000, 520000, 520000, 1, 1.1, 0.00048776, 0.000000102115, 0.00006845928, 0.00006845928,0, 0,0, 0])
     actual_params = DM([1,  0.00048776, 0.00006845928])
@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
     print('rl state', n_observed_variables + n_params + n_FIM_elements + 2)
 
-    agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 50,50, num_inputs ** n_controlled_inputs])
+    agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 150, 150, 150, num_inputs ** n_controlled_inputs])
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
             agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 50, 50,
@@ -133,8 +133,8 @@ if __name__ == '__main__':
     t = time.time()
     for episode in range(int(n_episodes//skip)):
         print('episode:', episode*skip)
-        #actual_params = np.random.uniform(low=[0.5, 0.00005, 0.000005], high=[5, 0.0005, 0.00005], size = (skip, 3))
-        actual_params = np.random.uniform(low=[1,  0.00048776, 0.00006845928], high=[1,  0.00048776, 0.00006845928], size = (skip, 3))
+        actual_params = np.random.uniform(low=[0.5, 0.00005, 0.000005], high=[5, 0.0005, 0.00005], size = (skip, 3))
+        #actual_params = np.random.uniform(low=[1,  0.00048776, 0.00006845928], high=[1,  0.00048776, 0.00006845928], size = (skip, 3))
 
 
         states = [env.get_initial_RL_state() for _ in range(skip)]
@@ -155,7 +155,7 @@ if __name__ == '__main__':
             t1 = time.time()
             #actions = [agent.get_action(state, explore_rate) for state in states] #parallelise this
             actions = agent.get_actions(states, explore_rate)
-
+            print(actions)
 
             e_actions.append(actions)
 
@@ -203,7 +203,7 @@ if __name__ == '__main__':
                 #plt.figure()
                 #plt.plot([trajectory[i][0][0] for i in range(len(trajectory))])
 
-                print(trajectory)
+                #print(trajectory)
                 agent.memory.append(trajectory)
 
                 #print([trajectory[i][0][0] for i in range(len(trajectory))])
@@ -213,6 +213,7 @@ if __name__ == '__main__':
                 print((trajectory[-1][0]))
         plt.show()
         print('n unstable ', unstable)
+        n_unstables.append(unstable)
 
         #train the agent
         if episode != 0:
@@ -240,7 +241,7 @@ if __name__ == '__main__':
                 print()
 
         all_returns.extend(e_returns)
-        print('all returns:', all_returns)
+        #print('all returns:', all_returns)
         '''
         trajectory = trajectory_solver(y0, us, actual_params)
         all_ys.append(trajectory.elements()[-1])
@@ -273,6 +274,7 @@ if __name__ == '__main__':
     #np.save(save_path + 'us.npy', np.array(env.us))
     agent.save_network(save_path)
     np.save(save_path + 'all_returns.npy', np.array(all_returns))
+    np.save(save_path + 'n_unstables.npy', np.array(n_unstables))
     #np.save(save_path + 'actions.npy', np.array(agent.actions))
     #np.save(save_path + 'values.npy', np.array(agent.values))
 
