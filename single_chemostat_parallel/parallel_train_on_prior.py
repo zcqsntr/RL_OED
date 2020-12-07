@@ -59,27 +59,7 @@ if __name__ == '__main__':
     n_episodes = 17500
     skip = 100
 
-    if len(sys.argv) == 3:
-        if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
 
-            n_episodes = 30000
-        elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
-            n_episodes = 40000
-        else:
-            n_episodes = 50000
-
-        save_path = sys.argv[1] + sys.argv[2] + '/'
-        print(n_episodes)
-        os.makedirs(save_path, exist_ok=True)
-    elif len(sys.argv) == 2:
-        save_path = sys.argv[1] + '/'
-        os.makedirs(save_path, exist_ok=True)
-    else:
-        save_path = './'
-
-
-
-    print(save_path)
     all_returns = []
 
     #y, y0, umax, Km, Km0, A
