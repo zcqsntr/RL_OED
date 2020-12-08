@@ -133,8 +133,8 @@ if __name__ == '__main__':
     t = time.time()
     for episode in range(int(n_episodes//skip)):
         print('episode:', episode*skip)
-        actual_params = np.random.uniform(low=[0.5, 0.00005, 0.000005], high=[5, 0.0005, 0.00005], size = (skip, 3))
-        #actual_params = np.random.uniform(low=[1,  0.00048776, 0.00006845928], high=[1,  0.00048776, 0.00006845928], size = (skip, 3))
+        #actual_params = np.random.uniform(low=[0.5, 0.00005, 0.000005], high=[5, 0.0005, 0.00005], size = (skip, 3))
+        actual_params = np.random.uniform(low=[1,  0.00048776, 0.00006845928], high=[1,  0.00048776, 0.00006845928], size = (skip, 3))
 
 
         states = [env.get_initial_RL_state() for _ in range(skip)]
