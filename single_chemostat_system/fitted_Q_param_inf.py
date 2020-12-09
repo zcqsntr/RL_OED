@@ -89,47 +89,11 @@ if __name__ == '__main__':
     env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser)
     explore_rate = 0
     # reward clamping
-    '''
-    reward_clamp = 30
-    for e in range(reward_clamp):
-        env.reset()
-        state = env.get_initial_RL_state()
 
-        e_return = 0
-        e_actions = []
-        e_rewards = []
-        trajectory = []
-        # actions = [9,4,9,4,9,4]
-
-        for e in range(0, N_control_intervals):
-            t = time.time()
-            action = agent.get_action(state, explore_rate)
-
-            next_state, reward, done, _ = env.step(action)
-            reward = 1
-            if e == N_control_intervals - 1:
-                next_state = [None] * agent.layer_sizes[0]
-                done = True
-            transition = (state, action, reward, next_state, done)
-            trajectory.append(transition)
-
-            e_actions.append(action)
-            e_rewards.append(reward)
-
-            state = next_state
-            print(state)
-            e_return += reward
-
-        agent.memory.append(trajectory)
-
-    for i in range(10):
-        agent.fitted_Q_update()
-
-    agent.memory = []
-    '''
 
     #agent.load_network('/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_parallel/repeat2/')
 
+    all_actions = [10, 50, 99, 10, 50, 99, 10, 50, 99,99]
     for episode in range(n_episodes):
 
         env.reset()
@@ -144,7 +108,7 @@ if __name__ == '__main__':
         for e in range(0, N_control_intervals):
             t = time.time()
             action = agent.get_action(state, explore_rate)
-
+            #action = all_actions[e]
 
             next_state, reward, done, _ = env.step(action)
 
@@ -162,7 +126,7 @@ if __name__ == '__main__':
             e_return += reward
 
         agent.memory.append(trajectory)
-
+        print(trajectory)
         t = np.arange(N_control_intervals) * int(control_interval_time)
 
         plt.plot(env.true_trajectory[0, :].elements(), label='true')

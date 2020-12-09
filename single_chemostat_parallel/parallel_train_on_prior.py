@@ -18,7 +18,7 @@ from DQN_agent import *
 import time
 
 from ROCC import *
-from xdot import xdot
+from xdot import *
 import tensorflow as tf
 
 
@@ -73,6 +73,9 @@ if __name__ == '__main__':
     n_params = actual_params.size()[0]
 
     y0 = [20000, 0, 1]
+    y0_scaled = [0.2, 0, 1]
+    #y0 = y0_scaled
+
     n_system_variables = len(y0)
     n_FIM_elements = sum(range(n_params + 1))
 
@@ -81,6 +84,7 @@ if __name__ == '__main__':
     num_inputs = 10  # number of discrete inputs available to RL
 
     dt = 1 / 10000
+    dt = 1 / 4000
 
     param_guesses = actual_params
 
@@ -115,7 +119,7 @@ if __name__ == '__main__':
         save_path = './'
 
     #p = Pool(skip)
-    normaliser = np.array([1e6, 1e1, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2, 1e2])*10
+    normaliser = np.array([1e6, 1e1, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2, 1e2])#*10
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
 
@@ -136,7 +140,6 @@ if __name__ == '__main__':
         #actual_params = np.random.uniform(low=[0.5, 0.00005, 0.000005], high=[5, 0.0005, 0.00005], size = (skip, 3))
         actual_params = np.random.uniform(low=[1,  0.00048776, 0.00006845928], high=[1,  0.00048776, 0.00006845928], size = (skip, 3))
 
-
         states = [env.get_initial_RL_state() for _ in range(skip)]
 
         e_returns = [0 for _ in range(skip)]
@@ -144,7 +147,8 @@ if __name__ == '__main__':
         e_rewards = [[] for _ in range(skip)]
         trajectories = [[] for _ in range(skip)]
 
-        #actions = [9,4,9,4,9,4]
+        all_actions = [10, 50, 99, 10, 50, 99, 10, 50, 99,99]
+
 
         env.reset()
         env.logdetFIMs = [[] for _ in range(skip)]
@@ -156,7 +160,7 @@ if __name__ == '__main__':
             #actions = [agent.get_action(state, explore_rate) for state in states] #parallelise this
             actions = agent.get_actions(states, explore_rate)
             print(actions)
-
+            #actions = [all_actions[e]]
             e_actions.append(actions)
 
             #args = list(zip(np.array(e_actions).T, actual_params))
@@ -199,11 +203,13 @@ if __name__ == '__main__':
         #print((trajectory[-1][0]))
         print('traj:', len(trajectories))
         for trajectory in trajectories:
+
+
             if np.all( [np.all(np.abs(trajectory[i][0]) < 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
                 #plt.figure()
                 #plt.plot([trajectory[i][0][0] for i in range(len(trajectory))])
 
-                #print(trajectory)
+
                 agent.memory.append(trajectory)
 
                 #print([trajectory[i][0][0] for i in range(len(trajectory))])
@@ -218,6 +224,7 @@ if __name__ == '__main__':
         #train the agent
         if episode != 0:
             print('train')
+
             explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (10*skip))
             #explore_rate = 0
             if explore_rate == 1:
@@ -236,9 +243,9 @@ if __name__ == '__main__':
 
                 #print(iter, n_iters)
                 enablePrint()
+                t = time.time()
                 history = agent.fitted_Q_update()
 
-                print()
 
         all_returns.extend(e_returns)
         #print('all returns:', all_returns)

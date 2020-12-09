@@ -62,6 +62,7 @@ class OED_env():
         self.input_bounds = np.array(input_bounds)
 
         self.CI_solver  = self.get_control_interval_solver(control_interval_time, dt) # set this up here as it take ages
+        self.current_tstep = 0 # to keep track of time in parallel
 
     def reset(self):
         self.param_guesses = self.initial_params
@@ -72,6 +73,7 @@ class OED_env():
         self.us = []
         self.true_trajectory = []
         self.est_trajectory = []
+        self.current_tstep = 0
 
     def G(self, Y, theta, u):
         RHS = SX.sym('RHS', len(self.initial_Y.elements()))
@@ -242,7 +244,7 @@ class OED_env():
 
     def step(self, action = None):
 
-
+        self.current_tstep += 1
         if action is None: # Traditional OED step
             u_solver = self.get_u_solver()
             #u = u_solver(x0=self.u0, lbx = 10**self.input_bounds[0], ubx = 10**self.input_bounds[1])['x']
@@ -322,7 +324,7 @@ class OED_env():
         return (state, reward, done, None)
 
     def map_parallel_step(self, actions, actual_params):
-
+        self.current_tstep += 1
         #actions, actual_params = args
 
         #all_us = []
@@ -576,7 +578,7 @@ class OED_env():
 
         state = np.append(sys_state, np.append(self.param_guesses, FIM_elements))
 
-        state = np.append(state, true_trajectory.shape[1])
+        state = np.append(state, self.current_tstep)
         state = np.append(state, np.log(self.detFIMs[-1]))
 
 
@@ -600,7 +602,7 @@ class OED_env():
 
         state = np.append(sys_state, np.append(self.param_guesses, FIM_elements))
 
-        state = np.append(state, true_trajectory.shape[1])
+        state = np.append(state, self.current_tstep)
         state = np.append(state, np.log(self.detFIMs[i][-1]))
 
 
