@@ -84,7 +84,7 @@ if __name__ == '__main__':
     num_inputs = 10  # number of discrete inputs available to RL
 
     dt = 1 / 10000
-    dt = 1 / 4000
+
 
     param_guesses = actual_params
 
@@ -95,19 +95,17 @@ if __name__ == '__main__':
 
     print('rl state', n_observed_variables + n_params + n_FIM_elements + 2)
 
-    agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 150, 150, 150, num_inputs ** n_controlled_inputs])
+    agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 50, 50, num_inputs ** n_controlled_inputs])
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
-            agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 50, 50,
-                                                   num_inputs ** n_controlled_inputs])
-            #n_episodes = 30000
+
+            n_episodes = 40000
         elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
-            agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 150, 150, 150,
-                                                   num_inputs ** n_controlled_inputs])
-            #n_episodes = 40000
+
+            n_episodes = 50000
         else:
-            pass
-            #n_episodes = 50000
+
+            n_episodes = 50000
 
         save_path = sys.argv[1] + sys.argv[2] + '/'
         print(n_episodes)
@@ -135,10 +133,12 @@ if __name__ == '__main__':
     # CHEKC ALL THIS IS WORKING
     env.mapped_trajectory_solver = env.CI_solver.map(skip, "thread", n_cores)
     t = time.time()
+
+
     for episode in range(int(n_episodes//skip)):
         print('episode:', episode*skip)
-        #actual_params = np.random.uniform(low=[0.5, 0.00005, 0.000005], high=[5, 0.0005, 0.00005], size = (skip, 3))
-        actual_params = np.random.uniform(low=[1,  0.00048776, 0.00006845928], high=[1,  0.00048776, 0.00006845928], size = (skip, 3))
+        actual_params = np.random.uniform(low=[0.5, 0.00005, 0.000005], high=[5, 0.0005, 0.00005], size = (skip, 3))
+        #actual_params = np.random.uniform(low=[1,  0.00048776, 0.00006845928], high=[1,  0.00048776, 0.00006845928], size = (skip, 3))
 
         states = [env.get_initial_RL_state() for _ in range(skip)]
 
@@ -153,7 +153,6 @@ if __name__ == '__main__':
         env.reset()
         env.logdetFIMs = [[] for _ in range(skip)]
         env.detFIMs = [[] for _ in range(skip)]
-
         for e in range(0, N_control_intervals):
             print(e)
             t1 = time.time()
@@ -225,7 +224,7 @@ if __name__ == '__main__':
         if episode != 0:
             print('train')
 
-            explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (10*skip))
+            explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11*skip))
             #explore_rate = 0
             if explore_rate == 1:
                 n_iters = 0
@@ -243,7 +242,7 @@ if __name__ == '__main__':
 
                 #print(iter, n_iters)
                 enablePrint()
-                t = time.time()
+
                 history = agent.fitted_Q_update()
 
 

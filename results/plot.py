@@ -6,6 +6,7 @@ RL_root = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_prior'
 RL_root = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_prior_more_eps'# 50000 eps
 RL_root = '/home/neythen/Desktop/Projects/RL_OED/results/parallel/different_nw_sizes/prior/single_chemostat_parallel' # 175000 eps, repeats 1-3 50,50 nw, repeat 4-7, 150,150,150 nw run_OEDP.sh.o2608363.
 RL_root = '/home/neythen/Desktop/Projects/RL_OED/results/parallel_no_prior/single_chemostat_parallel'
+RL_root = '/home/neythen/Desktop/Projects/RL_OED/results/parallel_no_prior_fixed'
 '''
 us_RL = np.load(RL_root + '/us.npy')
 
@@ -52,7 +53,7 @@ for i in range(4,7):
     unstables = np.load(RL_root + '/repeat' + str(i) + '/n_unstables.npy')
     print(np.max(RL_returns))
     print(RL_returns[-1])
-    RL_returns = [np.mean(RL_returns[n:n+100]) for n in range(0, len(RL_returns)- 100, 1)]
+    RL_returns = [np.mean(RL_returns[n:n+1000]) for n in range(0, len(RL_returns)- 1000, 1)]
     plt.plot(RL_returns, label = 'RL return')
     plt.ylabel('Return')
     plt.xlabel('Episode')
