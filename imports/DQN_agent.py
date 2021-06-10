@@ -100,7 +100,7 @@ class DQN_agent():
 
         return states, values
 
-    def get_inputs_targets_MC(self):
+    def get_inputs_targets_MC(self, alpha):
         '''
         gets fitted Q inputs and calculates targets for training the Q-network for episodic training
         '''
@@ -115,8 +115,11 @@ class DQN_agent():
         rewards = []
         dones = []
         all_values = []
-        sample = self.sample(32, 50000)
+        #sample = self.sample(32, 50000)
+        sample = self.memory[-100:]
         # iterate over all exprienc in memory and create fitted Q targets
+
+
         for trajectory in sample:
 
             e_rewards = []
@@ -146,11 +149,12 @@ class DQN_agent():
         values = self.predict(states)
 
 
+
         # update the value for the taken action using cost function and current Q
         for i in range(len(next_states)):
             # print(actions[i], rewards[i])
 
-            values[i, actions[i]] = all_values[i]
+            values[i, actions[i]] = (1-alpha )*values[i, actions[i]] + alpha * all_values[i]
 
         # shuffle inputs and target for IID
         inputs, targets = np.array(states), np.array(values)
@@ -208,14 +212,14 @@ class DQN_agent():
         assert targets.shape[1] == self.n_actions, 'targets for network wrong size'
         return inputs, targets
 
-    def Q_update(self, inputs = None, targets = None):
+    def Q_update(self, inputs = None, targets = None, alpha = 1):
         '''
         Uses a set of inputs and targets to update the Q network
         '''
 
 
         if inputs is None and targets is None:
-            inputs, targets = self.get_inputs_targets_MC()
+            inputs, targets = self.get_inputs_targets_MC(alpha)
 
             #inputs_old, targets_old = self.get_inputs_targets_old()
             #print(inputs ==inputs_old)

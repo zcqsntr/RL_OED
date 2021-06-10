@@ -95,16 +95,16 @@ if __name__ == '__main__':
     #agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
     agent = DQN_agent(layer_sizes=[n_observed_variables + 1, 50, 50, num_inputs ** n_controlled_inputs])
 
-    prior = True
+    prior = False
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
-            prior = True
+            prior = False
             n_episodes = 200000
         elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
-            prior = True
+            prior = False
             n_episodes = 400000
         elif sys.argv[2] == '7' or sys.argv[2] == '8' or sys.argv[2] == '9':
-            prior = True
+            prior = False
             n_episodes = 600000
         elif sys.argv[2] == '10' or sys.argv[2] == '11' or sys.argv[2] == '12':
             prior = True
@@ -144,7 +144,7 @@ if __name__ == '__main__':
     #agent.load_network('/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/single_chem/single_chemostat_fixed/repeat4')
     #print(agent.network.layers[1].get_weights()[0])
 
-
+    alpha = 1
     env.mapped_trajectory_solver = env.CI_solver.map(skip, "thread", n_cores)
     t = time.time()
 
@@ -176,9 +176,10 @@ if __name__ == '__main__':
             #agent.update_target_network()
 
         for e in range(0, N_control_intervals):
-            if explore_rate < 1:
-                for _ in range(20): # equivalent to one update every five steps, minh et al paper is one every four
-                    agent.Q_update()
+            #if explore_rate < 1:
+            if episode > 0:
+                for _ in range(1): # equivalent to one update every five steps, minh et al paper is one every four
+                    agent.Q_update(alpha = alpha)
 
 
             t1 = time.time()
@@ -271,6 +272,7 @@ if __name__ == '__main__':
             print('train')
 
             explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11*skip))
+            alpha = agent.get_rate(episode, 0, 1, n_episodes / (10*skip))
 
 
 
