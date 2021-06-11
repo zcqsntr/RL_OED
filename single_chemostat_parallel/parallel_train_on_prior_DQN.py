@@ -274,7 +274,7 @@ if __name__ == '__main__':
             print('train')
 
             explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11*skip))
-            alpha = agent.get_rate(episode, 0, 1, n_episodes / (10*skip))
+            #alpha = agent.get_rate(episode, 0, 1, n_episodes / (10*skip))
 
 
 
