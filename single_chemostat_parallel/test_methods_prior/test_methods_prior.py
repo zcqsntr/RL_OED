@@ -42,7 +42,7 @@ def check_symmetric(a, rtol=1e-05, atol=1e-08):
 
 network_path = '/results/single_chemostat_fixed_timestep/prior/single_chem_prior/single_chemostat_fixed/repeat4'
 network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps/repeat5'
-actions_from_agent = True
+actions_from_agent = False
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 n_cores = multiprocessing.cpu_count()//2
 print('Num CPU cores:', n_cores)
@@ -54,7 +54,7 @@ n_controlled_inputs = 2
 
 n_params = actual_params.size()[0]
 
-y0 = [200000, 0, 1]
+y0 = [2000, 0., 0.]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
 
@@ -144,19 +144,21 @@ for i in range(30):
         env.us = env.actions_to_inputs(np.array(actions)).T
     print('traj:', trajectory[0,:])
     # add noramlly distributed noise
+    plt.plot(trajectory[0,:].T)
+    plt.show()
     trajectory[0,:] += np.random.normal(loc=0, scale=np.sqrt(0.05 * trajectory[0,:]))
     print('traj:', trajectory.shape)
 
 
     # FOR NOW JUAST USE RETURN, not param estimates
-    param_solver = env.get_param_solver(trajectory_solver, trajectory)
-    sol = param_solver(x0=param_guesses, lbx = lb, ubx = ub)
-    inferred_params = sol['x']
-    print('actual_params: ', actual_params)
-    print('inferred params: ', inferred_params.elements())
-    all_actual_params.append(actual_params)
-    all_inferred_params.append(inferred_params.elements())
-    all_losses.append(sol['f'].elements())
+    #param_solver = env.get_param_solver(trajectory_solver, trajectory)
+    #sol = param_solver(x0=param_guesses, lbx = lb, ubx = ub)
+    #inferred_params = sol['x']
+    #print('actual_params: ', actual_params)
+    #print('inferred params: ', inferred_params.elements())
+    #all_actual_params.append(actual_params)
+    #all_inferred_params.append(inferred_params.elements())
+    #a#ll_losses.append(sol['f'].elements())
 
 print(' all final params: ', np.array(all_inferred_params))
 all_inferred_params = np.array(all_inferred_params)

@@ -80,6 +80,20 @@ if __name__ == '__main__':
  [0.12, 0.56, 1. ,  0.45, 0.12, 0.01, 0.01, 0.01, 0.01, 0.01]] )# DQN return: 20.1493
     '''
 
+    actions = [40, 10, 40, 40, 40, 40,  3,  3,  5,  8] #
+    env.actual_params = DM([7.51832217e-01, 6.13748772e-04, 8.30522689e-05])
+
+    actions =  [10, 10, 10, 10, 10, 40,  3,  3,  5,  8] #
+    env.actual_params = DM([5.51790386e-01, 5.11957456e-04, 5.24020726e-05])
+    actions =  [40, 10, 10, 40, 40, 40, 40, 40,  3,  3]
+    env.actual_params = DM([1.15716024e+00, 2.07137081e-04 ,3.30350394e-05])
+
+
+    us = [env.action_to_input(a) for a in actions]
+
+    env.us = np.array(us)[:,:,0].T
+
+    print(env.us)
     inputs = []
 
 

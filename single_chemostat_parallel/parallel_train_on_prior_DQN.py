@@ -53,7 +53,7 @@ if __name__ == '__main__':
     print('Num CPU cores:', n_cores)
 
     #tf.debugging.set_log_device_placement(True)
-    n_episodes = 500000
+    n_episodes = 50000
     skip = 100
 
 
@@ -130,6 +130,7 @@ if __name__ == '__main__':
     normaliser = np.array([1e3, 1e2])# non prior
 
     if prior:
+        y0 = [2000, 0., 0.]
         #normaliser = np.array([1e8, 1e1, 1e-3, 1e-4, 1e6, 1e6, 1e6, 1e6, 1e6, 1e6, 1e2, 1e2])# prior
         normaliser = np.array([1e8, 1e2])# prior
 
@@ -177,7 +178,9 @@ if __name__ == '__main__':
 
         for e in range(0, N_control_intervals):
             #if explore_rate < 1:
+            if episode >0 :
 
+                agent.Q_update(alpha=alpha)
 
 
             t1 = time.time()
@@ -224,6 +227,20 @@ if __name__ == '__main__':
 
 
 
+        # train the agent
+        if episode != 0:
+            print('train')
+
+            explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11 * skip))
+
+
+            if explore_rate ==0:
+                alpha -= 1/(n_episodes//skip * 0.1)
+            #alpha = 0.5
+
+            #alpha = agent.get_rate(episode, 0, 1, n_episodes / (10 * skip))
+
+
         #print('retrurn', e_returns)
         #print('episode time: ', time.time() -t)
         #print((trajectory[-1][0]))
@@ -267,14 +284,9 @@ if __name__ == '__main__':
         print('n unstable ', unstable)
         n_unstables.append(unstable)
 
-        for _ in range(1):
-            agent.Q_update(alpha=alpha)
-        #train the agent
-        if episode != 0:
-            print('train')
 
-            explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11*skip))
-            #alpha = agent.get_rate(episode, 0, 1, n_episodes / (10*skip))
+
+
 
 
 
@@ -289,6 +301,7 @@ if __name__ == '__main__':
         print()
         print('EPISODE: ', episode)
         print('explore rate: ', explore_rate)
+        print('alpha:', alpha)
         #print('return: ', e_returns)
         print('av return: ', np.mean(all_returns[-skip:]))
         #print('actions:', e_actions)

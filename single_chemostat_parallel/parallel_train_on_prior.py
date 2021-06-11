@@ -72,7 +72,8 @@ if __name__ == '__main__':
     n_system_variables = len(y0)
     n_FIM_elements = sum(range(n_params + 1))
 
-    n_tot = n_system_variables + n_params * n_system_variables + n_FIM_elements
+    #n_tot = n_system_variables + n_params * n_system_variables + n_FIM_elements
+    n_tot = n_system_variables + 1
     print(n_params, n_system_variables, n_FIM_elements)
     num_inputs = 10  # number of discrete inputs available to RL
 
@@ -88,8 +89,10 @@ if __name__ == '__main__':
 
     print('rl state', n_observed_variables + n_params + n_FIM_elements + 2)
 
-    agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 500, 500, num_inputs ** n_controlled_inputs])
+    #agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 50, 50, num_inputs ** n_controlled_inputs])
+    agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + 1, 50, 50, num_inputs ** n_controlled_inputs])
 
+    prior = False
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
 
@@ -111,7 +114,11 @@ if __name__ == '__main__':
         save_path = './'
 
     #p = Pool(skip)
-    normaliser = np.array([1e7, 1e2, 1e-2, 1e-3, 1e6, 1e5, 1e6, 1e5, 1e6, 1e9, 1e2, 1e2])#*10
+    normaliser = np.array([1e3, 1e2])  # non prior
+
+    if prior:
+        # normaliser = np.array([1e8, 1e1, 1e-3, 1e-4, 1e6, 1e6, 1e6, 1e6, 1e6, 1e6, 1e2, 1e2])# prior
+        normaliser = np.array([1e8, 1e2])  # prior
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
 
@@ -128,13 +135,15 @@ if __name__ == '__main__':
     env.mapped_trajectory_solver = env.CI_solver.map(skip, "thread", n_cores)
     t = time.time()
 
+    alpha = 1
+
 
     for episode in range(int(n_episodes//skip)):
 
         #actual_params = np.random.uniform(low=[0.5, 0.0003, 0.00005], high=[1.5, 0.001, 0.0001],  size = (skip, 3))
         #actual_params = np.random.uniform(low=[1,  0.00048776, 0.00006845928], high=[1,  0.00048776, 0.00006845928], size = (skip, 3))
 
-        states = [env.get_initial_RL_state() for _ in range(skip)]
+        states  = [env.get_initial_RL_state_parallel(i) for i in range(skip)]
 
         e_returns = [0 for _ in range(skip)]
         e_actions = []
@@ -234,6 +243,7 @@ if __name__ == '__main__':
             print('train')
 
             explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11*skip))
+            alpha = agent.get_rate(episode, 0, 1, n_episodes / (10*skip))
             #explore_rate = 0
             if explore_rate == 1:
                 n_iters = 0
@@ -252,7 +262,7 @@ if __name__ == '__main__':
                 #print(iter, n_iters)
                 enablePrint()
 
-                history = agent.fitted_Q_update()
+                history = agent.fitted_Q_update(alpha = alpha)
                 print('loss:', history.history['loss'])
                 print('val loss:', history.history['val_loss'])
 

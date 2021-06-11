@@ -46,7 +46,7 @@ all_us = []
 N_control_intervals = 10
 control_interval_time = 30
 
-for i in range(1,10):
+for i in range(1,2):
     '''
     us = np.load(path + '/repeat' + str(i) +'/us.npy')
     print(us.shape)
@@ -141,6 +141,8 @@ ax1.set_xlabel('Episode')
 
 ax2 = ax1.twinx()
 ax2.plot(episodes, explore_rates, color = 'black', label = 'Explore rate')
+
+
 ax2.set_ylabel('Explore Rate')
 ax2.set_xlabel('Episode')
 fig.tight_layout()
