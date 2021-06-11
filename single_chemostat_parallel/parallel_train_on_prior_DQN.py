@@ -53,7 +53,7 @@ if __name__ == '__main__':
     print('Num CPU cores:', n_cores)
 
     #tf.debugging.set_log_device_placement(True)
-    n_episodes = 50000
+    n_episodes = 500000
     skip = 100
 
 
@@ -165,7 +165,7 @@ if __name__ == '__main__':
         e_rewards = [[] for _ in range(skip)]
         trajectories = [[] for _ in range(skip)]
 
-        all_actions = [10, 50, 99, 10, 50, 99, 10, 50, 99,99]
+
 
 
         env.reset()
@@ -177,9 +177,7 @@ if __name__ == '__main__':
 
         for e in range(0, N_control_intervals):
             #if explore_rate < 1:
-            if episode > 0:
-                for _ in range(1): # equivalent to one update every five steps, minh et al paper is one every four
-                    agent.Q_update(alpha = alpha)
+
 
 
             t1 = time.time()
@@ -224,6 +222,8 @@ if __name__ == '__main__':
 
             states = next_states
 
+
+
         #print('retrurn', e_returns)
         #print('episode time: ', time.time() -t)
         #print((trajectory[-1][0]))
@@ -267,6 +267,8 @@ if __name__ == '__main__':
         print('n unstable ', unstable)
         n_unstables.append(unstable)
 
+        for _ in range(1):
+            agent.Q_update(alpha=alpha)
         #train the agent
         if episode != 0:
             print('train')

@@ -1,10 +1,10 @@
 import sys
 import os
 
-IMPORT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'imports')
+IMPORT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'imports')
 sys.path.append('/Users/neythen/Desktop/Projects/ROCC/')
 sys.path.append(IMPORT_PATH)
-IMPORT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'single_chemostat_system')
+IMPORT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'single_chemostat_system')
 sys.path.append(IMPORT_PATH)
 
 import math
@@ -40,8 +40,9 @@ def check_symmetric(a, rtol=1e-05, atol=1e-08):
 # plotted determinant of the observed covariance matrix for the collection of parameter estimates against optimality score
 # plotted prediction error for out oof sample conditions against fit variability
 
-network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/prior/single_chem_prior/single_chemostat_fixed/repeat3'
-actions_from_agent = False
+network_path = '/results/single_chemostat_fixed_timestep/prior/single_chem_prior/single_chemostat_fixed/repeat4'
+network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps/repeat5'
+actions_from_agent = True
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 n_cores = multiprocessing.cpu_count()//2
 print('Num CPU cores:', n_cores)
@@ -89,7 +90,7 @@ all_inferred_params = []
 all_initial_params = []
 
 if actions_from_agent:
-    agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 500, 500, num_inputs ** n_controlled_inputs])
+    agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
     agent.load_network(network_path)
 
 skip = 100
@@ -100,6 +101,8 @@ ub = [2, 0.001, 0.0001]
 
 all_losses = []
 all_actual_params = []
+all_actions = []
+
 for i in range(30):
 
     actual_params = np.random.uniform(low=lb, high=ub)
@@ -108,12 +111,13 @@ for i in range(30):
     print('SAMPLE: ', i)
     #param_guesses = np.random.uniform(low=[0.5, 0.0003, 0.00005], high=[1.5, 0.001, 0.0001])
     #param_guesses = DM(actual_params) + np.random.normal(loc=0, scale=np.sqrt(0.05 * actual_params))
-    env.param_guesses = param_guesses
+
     print('initial params: ', param_guesses)
     env.reset()
+    env.param_guesses = DM(actual_params)
     env.actual_params = actual_params
-    env.logdetFIMs = [[] for _ in range(skip)]
-    env.detFIMs = [[] for _ in range(skip)]
+    #env.logdetFIMs = [[] for _ in range(skip)]
+    #env.detFIMs = [[] for _ in range(skip)]
 
     if not actions_from_agent: # use hardcoded actions from the optimiser
         env.us = us
@@ -136,7 +140,7 @@ for i in range(30):
             actions.append(action)
         trajectory = env.true_trajectory
         print(actions)
-
+        all_actions.append(actions)
         env.us = env.actions_to_inputs(np.array(actions)).T
     print('traj:', trajectory[0,:])
     # add noramlly distributed noise
@@ -173,7 +177,8 @@ print(np.log(np.linalg.det(cov)))
 print('eigen values: ', np.linalg.eig(cov)[0])
 print('log det cov; ',logdet_cov)
 print(all_inferred_params)
-np.save('all_inferred_params.npy', np.array(all_inferred_params))
-np.save('all_actual_params.npy', np.array(all_actual_params))
-np.save('all_losses_opt.npy', np.array(all_losses))
+np.save('../all_inferred_params.npy', np.array(all_inferred_params))
+np.save('../all_actual_params.npy', np.array(all_actual_params))
+np.save('../all_losses_opt.npy', np.array(all_losses))
+np.save('../all_actions.npy', np.array(all_actions))
 

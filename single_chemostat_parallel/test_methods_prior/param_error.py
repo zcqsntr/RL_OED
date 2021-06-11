@@ -5,7 +5,7 @@ lb = [0.5, 0.0001, 0.00001]
 ub = [2, 0.001, 0.0001]
 actual_params = np.array([1,  0.00048776, 0.00006845928])
 
-path = '/home/neythen/Desktop/Projects/RL_OED/single_chemostat_parallel/test_methods_prior/dqn/'
+path = '/home/neythen/Desktop/Projects/RL_OED/single_chemostat_parallel/'
 inferred = np.load(path + 'all_inferred_params.npy')
 actual = np.load(path + 'all_actual_params.npy')
 print((inferred- actual_params).shape)

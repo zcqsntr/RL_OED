@@ -34,9 +34,10 @@ path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_tim
 #path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/one_hour_tstep/no_prior_more_eps'
 #path = '/home/neythen/Desktop/Projects/RL_OED/results/parallel_no_prior_fixed'
 path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/single_chem/single_chemostat_fixed'
-#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/prior/single_chem_prior/single_chemostat_fixed'
-path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/double_eps/single_chemostat_fixed'
-step = 1
+path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/prior/single_chem_prior/single_chemostat_fixed'
+#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/double_eps/single_chemostat_fixed'
+path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps'
+step = 10000
 n_repeats = 3
 all_returns = []
 all_trajectories = []
@@ -45,7 +46,7 @@ all_us = []
 N_control_intervals = 10
 control_interval_time = 30
 
-for i in range(7,10):
+for i in range(1,10):
     '''
     us = np.load(path + '/repeat' + str(i) +'/us.npy')
     print(us.shape)
@@ -94,6 +95,7 @@ for i in range(7,10):
 
 
     y = [np.mean(returns[i * step: (i + 1) * step]) for i in range(0, len(returns) // step)]
+    print(i, 'everage max ', y[-1])
     y.append(returns[-1])
     plt.figure()
     plt.plot(y)

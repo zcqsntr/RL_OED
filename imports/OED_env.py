@@ -462,44 +462,41 @@ class OED_env():
 
     def get_RL_state(self, true_trajectory, est_trajectory):
 
-
         # get the current measured system state
-        sys_state = true_trajectory[:self.n_observed_variables, -1] #TODO: measurement noise
-        sys_state = np.sqrt(sys_state)
+        sys_state = true_trajectory[:self.n_observed_variables, -1]  # TODO: measurement noise
 
+        state = np.sqrt(sys_state)
         # get current fim elements
         FIM_start = self.n_system_variables + self.n_sensitivities
 
         FIM_end = FIM_start + self.n_FIM_elements
 
-        #FIM_elements = true_trajectory[FIM_start:FIM_end]
+        # FIM_elements = true_trajectory[FIM_start:FIM_end]
         FIM_elements = est_trajectory[FIM_start:FIM_end, -1]
-        #print('----------------------ADDING NOISE TO STATE: ')
-        #sys_state += np.random.normal(sys_state, sys_state/10)
-
-        state = np.append(sys_state, np.append(self.param_guesses, FIM_elements))
 
         FIM_signs = np.sign(FIM_elements)
         FIM_elements = FIM_signs * sqrt(fabs(FIM_elements))
 
-        state = np.append(state, self.current_tstep)
-        state = np.append(state, np.log(self.logdetFIMs[-1]))
+        state = np.append(sys_state, np.append(self.param_guesses, FIM_elements))
 
+        state = np.append(state, self.current_tstep)
+
+        state = np.append(state, self.logdetFIMs[-1])
 
         return self.normalise_RL_state(state)
 
     def get_initial_RL_state(self):
-        #state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])) + self.param_guesses.elements() + [0] * self.n_FIM_elements)
-        state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])))
+        state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])) + self.param_guesses.elements() + [0] * self.n_FIM_elements)
+        #state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])))
         state = np.append(state, 0) #time
-        #state = np.append(state, 0) #logdetFIM
+        state = np.append(state, 0) #logdetFIM
 
         return self.normalise_RL_state(state)
 
     def get_initial_RL_state_parallel(self, i):
 
 
-        state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])) + self.param_guesses[i,:].elements() + [0] * self.n_FIM_elements)
+       #state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])) + self.param_guesses[i,:].elements() + [0] * self.n_FIM_elements)
         state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])) )
         state = np.append(state, 0) #time
         #state = np.append(state, 0) #logdetFIM
