@@ -61,7 +61,8 @@ if __name__ == '__main__':
 
     n_params = actual_params.size()[0]
 
-    y0 = [200000, 0, 1]
+    #y0 = [200000, 0, 1]
+    y0 = [2000, 0., 0.]
     n_system_variables = len(y0)
     n_FIM_elements = sum(range(n_params + 1))
 
@@ -71,7 +72,13 @@ if __name__ == '__main__':
 
     dt = 1 / 4000
 
-    param_guesses = actual_params
+    #param_guesses = actual_params
+
+    lb = np.array([0.5, 0.0001, 0.00001])
+    ub = np.array([2, 0.001, 0.0001])
+
+
+    param_guesses = DM((lb + ub)/2)
 
     N_control_intervals = 10
     control_interval_time = 2

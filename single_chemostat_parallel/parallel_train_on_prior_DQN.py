@@ -98,13 +98,13 @@ if __name__ == '__main__':
     prior = False
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
-            prior = False
+            prior = True
             n_episodes = 200000
         elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
-            prior = False
+            prior = True
             n_episodes = 400000
         elif sys.argv[2] == '7' or sys.argv[2] == '8' or sys.argv[2] == '9':
-            prior = False
+            prior = True
             n_episodes = 600000
         elif sys.argv[2] == '10' or sys.argv[2] == '11' or sys.argv[2] == '12':
             prior = True
@@ -130,9 +130,9 @@ if __name__ == '__main__':
     normaliser = np.array([1e3, 1e2])# non prior
 
     if prior:
-        y0 = [2000, 0., 0.]
+        #y0 = [2000, 0., 0.]
         #normaliser = np.array([1e8, 1e1, 1e-3, 1e-4, 1e6, 1e6, 1e6, 1e6, 1e6, 1e6, 1e2, 1e2])# prior
-        normaliser = np.array([1e8, 1e2])# prior
+        normaliser = np.array([1e3, 1e2])# prior
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
 

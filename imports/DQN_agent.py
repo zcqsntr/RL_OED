@@ -255,8 +255,9 @@ class DQN_agent():
             self.network = keras.models.load_model(load_path + '/saved_network.h5') # sometimes this crashes, apparently a bug in keras
             self.target_network = keras.models.load_model(load_path + '/saved_target_network.h5')
         except:
+            print('EXCEPTION IN LOAD NETWORK')
             self.network.load_weights(load_path+ '/saved_network.h5') # this requires model to be initialised exactly the same
-            self.network.load_weights(load_path+ '/saved_target_network.h5')
+            self.target_network.load_weights(load_path+ '/saved_target_network.h5')
 
     def get_action(self, state, explore_rate):
 
@@ -268,6 +269,7 @@ class DQN_agent():
         else:
             values = self.predict(state)
             self.values.append(values)
+            print('values:', values.shape)
             action = np.argmax(values)
             self.actions.append(action)
         return action
