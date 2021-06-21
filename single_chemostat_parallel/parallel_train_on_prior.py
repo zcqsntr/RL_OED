@@ -20,7 +20,7 @@ import time
 from ROCC import *
 from xdot import *
 import tensorflow as tf
-
+import json
 
 import multiprocessing
 
@@ -52,57 +52,44 @@ if __name__ == '__main__':
     n_cores = multiprocessing.cpu_count()
     print('Num CPU cores:', n_cores)
 
-    #tf.debugging.set_log_device_placement(True)
-    n_episodes = 50000
+    params = json.load(open(IMPORT_PATH + '/params.json'))
 
-    all_returns = []
-    n_unstables = []
-    #y, y0, umax, Km, Km0, A
-    #actual_params = DM([480000, 480000, 520000, 520000, 1, 1.1, 0.00048776, 0.000000102115, 0.00006845928, 0.00006845928,0, 0,0, 0])
-    actual_params = DM([1,  0.00048776, 0.00006845928])
-    print(actual_params)
-    input_bounds = [0.01, 1]
-    n_controlled_inputs = 2
+    print(params)
+
+    n_episodes, skip, y0, actual_params, input_bounds, n_controlled_inputs, num_inputs, dt, lb, ub, N_control_intervals, control_interval_time, n_observed_variables, prior, normaliser = \
+        [params[k] for k in params.keys()]
+
+    actual_params = DM(actual_params)
+    normaliser = np.array(normaliser)
+
     n_params = actual_params.size()[0]
-
-    y0 = [200000, 0, 1]
-    y0_scaled = [0.2, 0, 1]
-    #y0 = y0_scaled
-
     n_system_variables = len(y0)
     n_FIM_elements = sum(range(n_params + 1))
-
-    #n_tot = n_system_variables + n_params * n_system_variables + n_FIM_elements
-    n_tot = n_system_variables + 1
+    n_tot = n_system_variables + n_params * n_system_variables + n_FIM_elements
     print(n_params, n_system_variables, n_FIM_elements)
-    num_inputs = 10  # number of discrete inputs available to RL
-
-    dt = 1 / 4000
-
-
-    param_guesses = actual_params
-
-    N_control_intervals = 10
-    control_interval_time = 2
-
-    n_observed_variables = 1
 
     print('rl state', n_observed_variables + n_params + n_FIM_elements + 2)
 
-    #agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 50, 50, num_inputs ** n_controlled_inputs])
-    agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + 1, 50, 50, num_inputs ** n_controlled_inputs])
-
-    prior = False
+    param_guesses = actual_params
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
-
-            n_episodes = 50000
+            prior = True
+            n_episodes = 200000
         elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
-
-            n_episodes = 50000
-        else:
-
-            n_episodes = 50000
+            prior = True
+            n_episodes = 400000
+        elif sys.argv[2] == '7' or sys.argv[2] == '8' or sys.argv[2] == '9':
+            prior = True
+            n_episodes = 600000
+        elif sys.argv[2] == '10' or sys.argv[2] == '11' or sys.argv[2] == '12':
+            prior = True
+            n_episodes = 200000
+        elif sys.argv[2] == '13' or sys.argv[2] == '14' or sys.argv[2] == '15':
+            prior = True
+            n_episodes = 400000
+        elif sys.argv[2] == '16' or sys.argv[2] == '17' or sys.argv[2] == '18':
+            prior = True
+            n_episodes = 600000
 
         save_path = sys.argv[1] + sys.argv[2] + '/'
         print(n_episodes)
@@ -113,36 +100,25 @@ if __name__ == '__main__':
     else:
         save_path = './'
 
-    #p = Pool(skip)
-    normaliser = np.array([1e3, 1e2])  # non prior
+    # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
+    agent = DQN_agent(layer_sizes=[n_observed_variables + 1, 50, 50, num_inputs ** n_controlled_inputs])
 
-    if prior:
-        # normaliser = np.array([1e8, 1e1, 1e-3, 1e-4, 1e6, 1e6, 1e6, 1e6, 1e6, 1e6, 1e2, 1e2])# prior
-        normaliser = np.array([1e8, 1e2])  # prior
-
-    args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
-
+    args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time, normaliser
     env = OED_env(*args)
-    skip = int(n_episodes/500)
 
-    explore_rate = 1
     unstable = 0
-    #print(agent.network.layers[1].get_weights())
-    #agent.load_network('/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_parallel/repeat2/')
-    #print(agent.network.layers[1].get_weights())
-
-    # CHEKC ALL THIS IS WORKING
+    explore_rate = 1
+    alpha = 1
     env.mapped_trajectory_solver = env.CI_solver.map(skip, "thread", n_cores)
     t = time.time()
 
-    alpha = 1
-
-
+    n_unstables = []
+    all_returns = []
     for episode in range(int(n_episodes//skip)):
 
         #actual_params = np.random.uniform(low=[0.5, 0.0003, 0.00005], high=[1.5, 0.001, 0.0001],  size = (skip, 3))
         #actual_params = np.random.uniform(low=[1,  0.00048776, 0.00006845928], high=[1,  0.00048776, 0.00006845928], size = (skip, 3))
-
+        #actual_params = np.random.uniform(low=lb, high=ub, size=(skip, 3))
         states  = [env.get_initial_RL_state_parallel(i) for i in range(skip)]
 
         e_returns = [0 for _ in range(skip)]

@@ -1,7 +1,13 @@
 import tensorflow as tf
+physical_devices = tf.config.list_physical_devices('GPU')
+tf.config.experimental.set_memory_growth(physical_devices[0], True)
 from tensorflow import keras
 import numpy as np
 import math
+from tensorflow.keras import layers
+import copy
+from keras.preprocessing.sequence import pad_sequences
+import time
 
 class DQN_agent():
 
@@ -37,6 +43,7 @@ class DQN_agent():
         #opt = keras.optimizers.Adam()
         #opt = tf.keras.optimizers.SGD(learning_rate=0.1)
         #opt = tf.keras.optimizers.RMSprop()
+        keras.utils.plot_model(network, "multi_input_and_output_model.png", show_shapes=True)
         network.compile(optimizer=opt, loss='mean_squared_error')  # TRY DIFFERENT OPTIMISERS
         # try clipnorm=1
         return network
@@ -126,7 +133,6 @@ class DQN_agent():
             for transition in trajectory:
 
                 state, action, reward, next_state, done = transition
-
                 states.append(state)
                 next_states.append(next_state)
                 actions.append(action)
@@ -323,7 +329,7 @@ class DQN_agent():
 
         if len(exploit_inds) > 0:
             values = self.predict(np.array(states)[exploit_inds])
-
+            print(values.shape)
 
             if np.isnan(values).any():
                 print('NAN IN VALUES!')
@@ -357,6 +363,271 @@ class DQN_agent():
 
         return np.array(sample)
 
+class DRQN_agent(DQN_agent):
+    def __init__(self,layer_sizes ):
+        self.memory = []
+        self.layer_sizes = layer_sizes
+        self.gamma = 1.
+        self.state_size = layer_sizes[0]
+        self.n_actions = layer_sizes[-1]
+        self.network = self.initialise_network(layer_sizes)
+        self.target_network = self.initialise_network(layer_sizes)
+        self.buffer = ExperienceBuffer()
+        self.values = []
+        self.actions = []
+
+
+    def initialise_network(self, layer_sizes):
+
+        '''
+        Creates Q network for value function approximation
+        '''
+
+        initialiser = keras.initializers.RandomUniform(minval=-0.5, maxval=0.5, seed=None)
+        lstm_size = layer_sizes[2]
+
+        S_input = keras.Input(shape = (self.layer_sizes[0],), name = "S_input")
+        sequence_input = keras.Input(shape = (None,self.layer_sizes[1]), name = 'sequence_input')
+
+        #lstm_out = layers.LSTM(lstm_size, input_shape = (None,self.layer_sizes[1]), return_sequences=True)(sequence_input)
+
+        lstm_out = layers.LSTM(lstm_size)(sequence_input)
+
+        concat = layers.concatenate([S_input, lstm_out])
+
+        hl = concat
+
+        for i, hl_size in enumerate(layer_sizes[3:-1]):
+            hl = layers.Dense(hl_size,activation=tf.nn.relu, name = 'hidden_' + str(i))(hl)
+
+        out = layers.Dense(layer_sizes[-1], name = 'output')(hl)
+
+        network = keras.Model(
+            inputs = [S_input, sequence_input],
+            outputs = [out]
+        )
+        keras.utils.plot_model(network, "multi_input_and_output_model.png", show_shapes=True)
+
+        opt = keras.optimizers.Adam()
+        network.compile(optimizer=opt, loss='mean_squared_error')
+
+        return network
+
+
+    def get_inputs_targets_MC(self, alpha=1, fitted_q = False, monte_carlo = False):
+        '''
+        gets fitted Q inputs and calculates targets for training the Q-network for episodic training
+        '''
+
+        '''
+                gets fitted Q inputs and calculates targets for training the Q-network for episodic training
+                '''
+        targets = []
+        states = []
+
+
+        next_states = []
+        actions = []
+        rewards = []
+        dones = []
+        all_values = []
+
+        if fitted_q:
+            sample = self.memory
+        else:
+            sample = self.sample(32, 50000)
+        #sample = self.memory[-100:]
+        # iterate over all exprienc in memory and create fitted Q targets
+
+        sequences = []
+        next_sequences = []
+
+        t = time.time()
+        for i, trajectory in enumerate(sample):
+
+            e_rewards = []
+            sequence = [[0, 0, 0]]
+            next_sequence = [[0, 0, 0]]
+
+            for j, transition in enumerate(trajectory):
+                if j > 0: # this needs to be one behind
+                    sequence.append(np.append(state, action/self.layer_sizes[-1]))
+
+
+                sequences.append(copy.deepcopy(sequence))
+                state, action, reward, next_state, done = transition
+
+
+
+                next_sequence.append(np.append(state, action/self.layer_sizes[-1]))
+                next_sequences.append(copy.deepcopy(next_sequence))
+
+
+
+                states.append(state)
+                next_states.append(next_state)
+                actions.append(action)
+                rewards.append(reward)
+                e_rewards.append(reward)
+                dones.append(done)
+
+
+            if monte_carlo:
+                e_values = [e_rewards[-1]]
+
+                for i in range(2, len(e_rewards) + 1):
+                    e_values.insert(0, e_rewards[-i] + e_values[0] * self.gamma)
+                all_values.extend(e_values)
+        print('sequence time', time.time() -t)
+
+
+        padded = pad_sequences(sequences, maxlen = 11)
+        next_padded = pad_sequences(next_sequences, maxlen = 11)
+        states = np.array(states)
+
+        next_states = np.array(next_states, dtype=np.float64)
+        actions = np.array(actions)
+        rewards = np.array(rewards)
+
+        # construct target
+        print(len(sample))
+        print(states.shape, padded.shape)
+        print(next_states.shape, next_padded.shape)
+        t = time.time()
+        values = self.predict([states, padded])
+        if not monte_carlo:
+            all_values = self.predict([next_states, next_padded])
+        print('values time', time.time() - t)
+        print(values.shape)
+
+        # update the value for the taken action using cost function and current Q
+        for i in range(len(next_states)):
+            # print(actions[i], rewards[i])
+            #print('-------------------')
+            #print(values[i, actions[i]])
+            #print(all_values[i])
+
+
+            if monte_carlo:
+                values[i, actions[i]] = (1-alpha )*values[i, actions[i]] + alpha * all_values[i]
+            else:
+                #print(rewards[i], self.gamma *all_values[i, actions[i]])
+
+
+
+                if dones[i]:
+                    values[i, actions[i]] = rewards[i]
+
+                else:
+                    #values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma * np.max(all_values[i])) #Q learning
+                    values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma *all_values[i, actions[i]]) #SARSA
+
+
+            #print(values[i, actions[i]])
+            #print()
+        # shuffle inputs and target for IID
+
+
+        randomize = np.arange(len(states))
+        np.random.shuffle(randomize)
+        states = states[randomize]
+        padded = padded[randomize]
+        values = values[randomize]
+
+        inputs = [states, padded]
+        targets = values
+        if np.isnan(targets).any():
+            print('NAN IN TARGETS!')
+
+        return inputs, targets
+
+
+
+    def predict(self, inputs):
+
+        return self.network.predict({'S_input': inputs[0], 'sequence_input':inputs[1]})
+
+    def Q_update(self, inputs = None, targets = None, alpha = 1, fitted_q = False, verbose = True, monte_carlo = False):
+        '''
+        Uses a set of inputs and targets to update the Q network
+        '''
+
+
+        if inputs is None and targets is None:
+            inputs, targets = self.get_inputs_targets_MC(alpha =alpha, fitted_q=fitted_q, monte_carlo=monte_carlo)
+            #print(inputs, targets)
+
+            #inputs_old, targets_old = self.get_inputs_targets_old()
+            #print(inputs ==inputs_old)
+            #print(np.isclose(targets, targets_old))
+        #print('inputs: ', inputs)
+        #print('target: ', targets)
+        #print('target old: ', targets_old)
+
+        if fitted_q:
+            epochs = 500
+            batch_size = 256
+            self.reset_weights()
+            callback = tf.keras.callbacks.EarlyStopping(monitor = 'loss')
+            callbacks = [callback]
+        else:
+            epochs = 1
+            batch_size = 32
+            callbacks = []
+        history = self.network.fit({'S_input': inputs[0], 'sequence_input':inputs[1]}, targets, epochs = epochs, verbose = verbose, validation_split =0.1, batch_size=batch_size, callbacks = callbacks)
+        return history
+
+    def get_actions(self, inputs, explore_rate):
+        '''
+        PARALLEL version of get action
+        Choses action based on enivormental state, explore rate and current value estimates
+
+        Parameters:
+            state: environmental state
+            explore_rate
+        Returns:
+            action
+        '''
+
+        states, sequences = inputs
+
+        rng = np.random.random(len(states))
+
+        explore_inds = np.where(rng < explore_rate)[0]
+
+        exploit_inds = np.where(rng >= explore_rate)[0]
+
+        explore_actions = np.random.choice(range(self.layer_sizes[-1]), len(explore_inds))
+        actions = np.zeros((len(states)), dtype=np.int32)
+
+        if len(exploit_inds) > 0:
+
+            sequences = pad_sequences(sequences, maxlen=10)
+            values = self.predict([np.array(states)[exploit_inds], np.array(sequences)[exploit_inds]/self.layer_sizes[0]])
+
+
+            if np.isnan(values).any():
+                print('NAN IN VALUES!')
+                print('states that gave nan:', states)
+            self.values.extend(values)
+
+
+            exploit_actions = np.argmax(values, axis = 1)
+            actions[exploit_inds] = exploit_actions
+
+
+        actions[explore_inds] = explore_actions
+        self.actions.extend(actions)
+        return actions
+
+    def reset_weights(self):
+        '''
+        Reinitialises weights to random values
+        '''
+        #sess = tf.keras.backend.get_session()
+        #sess.run(tf.global_variables_initializer())
+
+        self.network = self.initialise_network(self.layer_sizes)
 
 
 class ExperienceBuffer():

@@ -19,6 +19,7 @@ from xdot import xdot
 from ROCC import *
 
 import multiprocessing
+import json
 
 def disablePrint():
     sys.stdout = open(os.devnull, 'w')
@@ -44,36 +45,32 @@ network_path = '/results/single_chemostat_fixed_timestep/prior/single_chem_prior
 network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps/repeat5'
 
 network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps_new_ICS_reduced_state/repeat13'
+network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps_reduced_state/repeat4'
 actions_from_agent = True
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 n_cores = multiprocessing.cpu_count()//2
 print('Num CPU cores:', n_cores)
 
-actual_params = DM([1,  0.00048776, 0.00006845928])
+params = json.load(open(IMPORT_PATH + '/params.json'))
 
-input_bounds = [0.01, 1]
-n_controlled_inputs = 2
+print(params)
+
+n_episodes, skip, y0, actual_params, input_bounds, n_controlled_inputs, num_inputs, dt, lb, ub, N_control_intervals, control_interval_time, n_observed_variables, prior, normaliser = \
+    [params[k] for k in params.keys()]
+
+actual_params = DM(actual_params)
+normaliser = np.array(normaliser)
 
 n_params = actual_params.size()[0]
-
-y0 = [2000, 0., 0.]
-#y0 = [200000, 0, 1]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
-
 n_tot = n_system_variables + n_params * n_system_variables + n_FIM_elements
 print(n_params, n_system_variables, n_FIM_elements)
-num_inputs = 10  # number of discrete inputs available to RL
 
-dt = 1 / 4000
+print('rl state', n_observed_variables + n_params + n_FIM_elements + 2)
 
 param_guesses = actual_params
 
-N_control_intervals = 10
-control_interval_time = 2
-
-n_observed_variables = 1
-normaliser = np.array([1e8, 1e2])#*10
 us = np.array([[0.999689, 0.33334, 0.997734, 0.0100728, 0.768316, 0.288047, 0.010472, 0.211805, 0.0100995, 0.0477429, 0.0110883, 0.0100006, 0.0100019, 0.0100003, 0.0113684, 0.952852, 0.0100003, 0.909282, 0.0100001, 0.714238]]) #MPC return = 19.78, middle of prior with y0 = [2000, 0, 0]
 us = np.array([0.999867, 0.934508, 0.558757, 0.297468, 0.060432, 0.0556838, 0.0110066, 0.0100698, 0.0111597, 0.010017, 0.0117102, 0.0100075, 0.0331355, 0.0100085, 0.956229, 0.0100054, 0.940603, 0.0100027, 0.894397, 0.894773]) #MPC return = 20.79, middle of prior with y0 = [200000, 0, 1]
 us = np.array([0.560999, 0.54773, 0.255089, 0.0104364, 0.0109389, 0.0100051, 0.0111674, 0.0100002, 0.012649, 0.0100002, 0.996536,

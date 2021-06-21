@@ -20,6 +20,8 @@ import time
 from ROCC import *
 from xdot import *
 import tensorflow as tf
+physical_devices = tf.config.list_physical_devices('GPU')
+tf.config.experimental.set_memory_growth(physical_devices[0], True)
 import multiprocessing
 import json
 
@@ -53,13 +55,13 @@ if __name__ == '__main__':
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
             prior = False
-            n_episodes = 200000
+            n_episodes = 20000
         elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
             prior = False
-            n_episodes = 400000
+            n_episodes = 40000
         elif sys.argv[2] == '7' or sys.argv[2] == '8' or sys.argv[2] == '9':
             prior = False
-            n_episodes = 600000
+            n_episodes = 60000
         elif sys.argv[2] == '10' or sys.argv[2] == '11' or sys.argv[2] == '12':
             prior = True
             n_episodes = 200000
@@ -80,7 +82,7 @@ if __name__ == '__main__':
         save_path = './'
 
     # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
-    agent = DQN_agent(layer_sizes=[n_observed_variables + 1, 100, 100, num_inputs ** n_controlled_inputs])
+    agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + n_controlled_inputs, 100, 100, 100, num_inputs ** n_controlled_inputs])
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
     env = OED_env(*args)
@@ -89,6 +91,7 @@ if __name__ == '__main__':
     unstable = 0
     explore_rate = 1
     alpha = 1
+    #n_episodes = 10000
     env.mapped_trajectory_solver = env.CI_solver.map(skip, "thread", n_cores)
     t = time.time()
 
@@ -109,6 +112,9 @@ if __name__ == '__main__':
         e_rewards = [[] for _ in range(skip)]
         trajectories = [[] for _ in range(skip)]
 
+
+        sequences = [[[0,0,0]] for _ in range(skip)]
+
         env.reset()
         env.param_guesses = DM(actual_params)
         env.logdetFIMs = [[] for _ in range(skip)]
@@ -118,11 +124,11 @@ if __name__ == '__main__':
 
         for e in range(0, N_control_intervals):
             #if explore_rate < 1:
-            if episode >0 :
+            #if episode >0 :
 
-                agent.Q_update(alpha=alpha)
+                #agent.Q_update(alpha=alpha) DQN Monte carlo
 
-            actions = agent.get_actions(states, explore_rate)
+            actions = agent.get_actions([states, sequences], explore_rate)
 
             e_actions.append(actions)
 
@@ -141,6 +147,7 @@ if __name__ == '__main__':
 
                 transition = (state, action, reward, next_state, done)
                 trajectories[i].append(transition)
+                sequences[i].append(np.append(state, action))
 
 
                 if reward != -1: # dont include the unstable trajectories as they override the true return
@@ -150,24 +157,13 @@ if __name__ == '__main__':
                 state = next_state
             states = next_states
 
-        # train the agent
-        if episode != 0:
-            print('train')
-
-            explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11 * skip))
-
-
-            if explore_rate ==0:
-                alpha -= 1/(n_episodes//skip * 0.1)
-
-
         print('traj:', len(trajectories))
         for trajectory in trajectories:
             if np.all( [np.all(np.abs(trajectory[i][0]) < 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
                 #plt.figure()
                 #plt.plot([trajectory[i][0][0] for i in range(len(trajectory))])
                 #agent.memory.extend(trajectory) #DQN
-                agent.memory.append(trajectory) # monte carlo
+                agent.memory.append(trajectory) # monte carlo, fitted
 
                 #print([trajectory[i][0][0] for i in range(len(trajectory))])
             else:
@@ -193,7 +189,16 @@ if __name__ == '__main__':
 
                 print('new traj: ',len(new_traj))
                 '''
+        # train the agent
+        if explore_rate > 1:
+            print('train')
 
+            explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11 * skip))
+
+            if explore_rate == 0:
+                alpha -= 1 / (n_episodes // skip * 0.1)
+
+            agent.Q_update(fitted_q = True, monte_carlo = False)
 
         print('n unstable ', unstable)
         n_unstables.append(unstable)

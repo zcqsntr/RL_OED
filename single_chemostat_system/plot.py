@@ -38,7 +38,7 @@ path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_tim
 #path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/double_eps/single_chemostat_fixed'
 path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps'
 path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps_new_ICS_reduced_state'
-
+path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps_reduced_state'
 step = 10000
 n_repeats = 3
 all_returns = []
@@ -48,7 +48,7 @@ all_us = []
 N_control_intervals = 10
 control_interval_time = 30
 
-for i in range(13,15):
+for i in range(4,7):
     '''
     us = np.load(path + '/repeat' + str(i) +'/us.npy')
     print(us.shape)

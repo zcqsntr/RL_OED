@@ -82,11 +82,11 @@ if __name__ == '__main__':
  [0.12, 0.56, 1. ,  0.45, 0.12, 0.01, 0.01, 0.01, 0.01, 0.01]] )# DQN return: 20.1493
     '''
 
-    actions = [40, 10, 40, 40, 40, 40,  3,  3,  5,  8] #
-    env.actual_params = DM([7.51832217e-01, 6.13748772e-04, 8.30522689e-05])
+    #actions = [40, 10, 40, 40, 40, 40,  3,  3,  5,  8] #
+    #env.actual_params = DM([7.51832217e-01, 6.13748772e-04, 8.30522689e-05])
 
-    actions =  [10, 10, 10, 10, 10, 40,  3,  3,  5,  8] #
-    env.actual_params = DM([5.51790386e-01, 5.11957456e-04, 5.24020726e-05])
+    #actions =  [40, 10, 10, 10, 10, 40,  3,  3,  5,  8] #
+    #env.actual_params = DM([5.51790386e-01, 5.11957456e-04, 5.24020726e-05])
     actions =  [40, 10, 10, 40, 40, 40, 40, 40,  3,  3]
     env.actual_params = DM([1.15716024e+00, 2.07137081e-04 ,3.30350394e-05])
 
@@ -127,13 +127,14 @@ if __name__ == '__main__':
     ax2.set_ylabel('C ($g/L$)')
     ax2.set_xlabel('Time (min)')
 
+
     ax2.plot(t, sol[:, 2],':', color='black', label='$C_0$')
     ax2.set_ylabel('Concentration ($g/L$)')
     ax2.set_xlabel('Time (min)')
     fig.tight_layout()
     fig.legend(bbox_to_anchor=(0.95, 0.95))
 
-    plt.figure()
+    plt.figure(figsize=(5,4))
 
     t = np.arange(0, N_control_intervals + 1) * control_interval_time
 
@@ -144,6 +145,7 @@ if __name__ == '__main__':
     us = np.vstack((env.us[:, 0], env.us.T))
     plt.step(t, us[:, 0], ':', color='red', label='$C_{in}$')
     plt.step(t, us[:, 1], ':', color='black', label='$C_{0, in}$')
+    plt.ylim(bottom=0, top=1)
     plt.ylabel('u')
     plt.xlabel('Time (min)')
     plt.legend()

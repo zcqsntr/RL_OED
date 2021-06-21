@@ -496,7 +496,7 @@ class OED_env():
     def get_initial_RL_state_parallel(self, i):
 
 
-       #state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])) + self.param_guesses[i,:].elements() + [0] * self.n_FIM_elements)
+        #state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])) + self.param_guesses[i,:].elements() + [0] * self.n_FIM_elements)
         state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])) )
         state = np.append(state, 0) #time
         #state = np.append(state, 0) #logdetFIM
@@ -625,6 +625,7 @@ class OED_env():
         sys_state = true_trajectory[:self.n_observed_variables, -1]  # TODO: measurement noise
 
         state = np.sqrt(sys_state)
+
         # get current fim elements
         FIM_start = self.n_system_variables + self.n_sensitivities
 
@@ -637,7 +638,7 @@ class OED_env():
         FIM_elements = FIM_signs * sqrt(fabs(FIM_elements))
 
 
-        #state = np.append(sys_state, np.append(self.param_guesses[i, :], FIM_elements))
+        #state = np.append(state, np.append(self.param_guesses[i, :], FIM_elements))
 
         state = np.append(state, self.current_tstep)
 
