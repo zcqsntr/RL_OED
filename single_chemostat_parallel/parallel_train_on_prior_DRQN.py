@@ -191,10 +191,12 @@ if __name__ == '__main__':
                 print('new traj: ',len(new_traj))
                 '''
         # train the agent
+
+        explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11 * skip))
         if explore_rate < 1:
             print('train')
 
-            explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11 * skip))
+
             alpha = 1 - episode/int(n_episodes//skip)
             '''
             if explore_rate == 0:
