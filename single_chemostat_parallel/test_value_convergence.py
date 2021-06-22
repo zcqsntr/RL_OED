@@ -53,7 +53,7 @@ N_episodes = 1000
 trajectory = []
 actions = []
 rewards = []
-n_iters = 500
+n_iters = 1000
 n_repeats = 1
 
 n_cores = multiprocessing.cpu_count()//2
@@ -92,7 +92,7 @@ for repeat in range(1,n_repeats+1):
 
     if DRQN:
         agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + n_controlled_inputs, 100, 100, 100, num_inputs ** n_controlled_inputs])
-        test_agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + n_controlled_inputs, 100, 100, 100, num_inputs ** n_controlled_inputs])
+        test_agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + n_controlled_inputs, 100,100, 100, num_inputs ** n_controlled_inputs])
     else:
         agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 50, 50,  num_inputs ** n_controlled_inputs])
         #agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + 1, 50, 50,  num_inputs ** n_controlled_inputs])
@@ -347,8 +347,9 @@ for repeat in range(1,n_repeats+1):
         t = time()
 
         if DRQN:
-
-            agent.Q_update(fitted_q = True, monte_carlo = monte_carlo)
+            alpha = 1 - iter/n_iters
+            print('alpha:', alpha)
+            agent.Q_update(fitted_q = True, monte_carlo = monte_carlo, alpha = alpha)
             '''
             for i in range(100):
                 agent.Q_update(verbose = False)

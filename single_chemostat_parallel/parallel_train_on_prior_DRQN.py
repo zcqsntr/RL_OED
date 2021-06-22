@@ -97,6 +97,7 @@ if __name__ == '__main__':
 
     n_unstables = []
     all_returns = []
+
     for episode in range(int(n_episodes//skip)):
         print('episode:', episode*skip)
         if prior:
@@ -190,14 +191,15 @@ if __name__ == '__main__':
                 print('new traj: ',len(new_traj))
                 '''
         # train the agent
-        if explore_rate > 1:
+        if explore_rate < 1:
             print('train')
 
             explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11 * skip))
-
+            alpha = 1 - episode/int(n_episodes//skip)
+            '''
             if explore_rate == 0:
                 alpha -= 1 / (n_episodes // skip * 0.1)
-
+            '''
             agent.Q_update(fitted_q = True, monte_carlo = False)
 
         print('n unstable ', unstable)

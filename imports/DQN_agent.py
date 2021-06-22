@@ -520,8 +520,8 @@ class DRQN_agent(DQN_agent):
                     values[i, actions[i]] = rewards[i]
 
                 else:
-                    #values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma * np.max(all_values[i])) #Q learning
-                    values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma *all_values[i, actions[i]]) #SARSA
+                    values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma * np.max(all_values[i])) #Q learning
+                    #values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma *all_values[i, actions[i]]) #SARSA
 
 
             #print(values[i, actions[i]])
