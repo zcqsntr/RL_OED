@@ -23,7 +23,9 @@ from keras.preprocessing.sequence import pad_sequences
 import copy
 import tensorflow as tf
 physical_devices = tf.config.list_physical_devices('GPU')
+print(physical_devices)
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
+
 print()
 print()
 
@@ -46,7 +48,7 @@ save_path = "./"
 n_params = actual_params.size()[0]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
-N_episodes = 10000
+N_episodes = 1000
 
 trajectory = []
 actions = []

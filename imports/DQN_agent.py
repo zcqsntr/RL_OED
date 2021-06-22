@@ -1,5 +1,6 @@
 import tensorflow as tf
 physical_devices = tf.config.list_physical_devices('GPU')
+print(physical_devices)
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 from tensorflow import keras
 import numpy as np
@@ -533,6 +534,7 @@ class DRQN_agent(DQN_agent):
         states = states[randomize]
         padded = padded[randomize]
         values = values[randomize]
+
 
         inputs = [states, padded]
         targets = values

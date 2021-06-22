@@ -55,22 +55,22 @@ if __name__ == '__main__':
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
             prior = False
-            n_episodes = 20000
+            n_episodes = 60000
         elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
             prior = False
-            n_episodes = 40000
+            n_episodes = 80000
         elif sys.argv[2] == '7' or sys.argv[2] == '8' or sys.argv[2] == '9':
             prior = False
-            n_episodes = 60000
+            n_episodes = 100000
         elif sys.argv[2] == '10' or sys.argv[2] == '11' or sys.argv[2] == '12':
-            prior = True
-            n_episodes = 200000
+            prior = False
+            n_episodes = 1500000
         elif sys.argv[2] == '13' or sys.argv[2] == '14' or sys.argv[2] == '15':
-            prior = True
-            n_episodes = 400000
+            prior = False
+            n_episodes = 200000
         elif sys.argv[2] == '16' or sys.argv[2] == '17' or sys.argv[2] == '18':
-            prior = True
-            n_episodes = 600000
+            prior = False
+            n_episodes = 300000
 
         save_path = sys.argv[1] + sys.argv[2] + '/'
         print(n_episodes)
