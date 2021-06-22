@@ -197,7 +197,7 @@ if __name__ == '__main__':
             print('train')
 
 
-            alpha = 1 - episode/int(n_episodes//skip)
+            #alpha = 1 - episode/int(n_episodes//skip)
             '''
             if explore_rate == 0:
                 alpha -= 1 / (n_episodes // skip * 0.1)
