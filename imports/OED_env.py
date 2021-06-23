@@ -624,7 +624,7 @@ class OED_env():
         # get the current measured system state
         sys_state = true_trajectory[:self.n_observed_variables, -1]  # TODO: measurement noise
 
-        state = np.sqrt(sys_state)
+        state = np.log(sys_state)
 
         # get current fim elements
         FIM_start = self.n_system_variables + self.n_sensitivities

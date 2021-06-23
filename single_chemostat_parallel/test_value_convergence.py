@@ -53,7 +53,7 @@ N_episodes = 1000
 trajectory = []
 actions = []
 rewards = []
-n_iters = 1000
+n_iters = 500
 n_repeats = 1
 
 n_cores = multiprocessing.cpu_count()//2
@@ -66,7 +66,7 @@ all_value_SSEs = []
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 print('number of cores available: ', multiprocessing.cpu_count())
 
-fitted_q = False
+fitted_q = True
 DQN = False
 DRQN = True
 monte_carlo = False
@@ -80,7 +80,6 @@ for repeat in range(1,n_repeats+1):
     test_rewards = []
 
     # normaliser = np.array([1e3, 1e1, 1e-3, 1e-4, 1e4, 1e4, 1e4, 1e4, 1e4, 1e4, 1e2, 1e2])# non prior
-    normaliser = np.array([1e8, 1e2])  #  prior
 
     #normaliser = np.array([1e8, 1e2, 1e-2, 1e-3, 1e6, 1e5, 1e6, 1e5, 1e6, 1e9, 1e2, 1e2])
 
@@ -91,8 +90,8 @@ for repeat in range(1,n_repeats+1):
 
 
     if DRQN:
-        agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + n_controlled_inputs, 100, 100, 100, num_inputs ** n_controlled_inputs])
-        test_agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + n_controlled_inputs, 100,100, 100, num_inputs ** n_controlled_inputs])
+        agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + num_inputs ** n_controlled_inputs, 32, 100, 100, num_inputs ** n_controlled_inputs])
+        test_agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + num_inputs ** n_controlled_inputs,  32, 100, 100,  num_inputs ** n_controlled_inputs])
     else:
         agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 50, 50,  num_inputs ** n_controlled_inputs])
         #agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + 1, 50, 50,  num_inputs ** n_controlled_inputs])
@@ -139,8 +138,8 @@ for repeat in range(1,n_repeats+1):
 
         os.makedirs(save_path, exist_ok = True)
 
-        sequences = [[[0, 0, 0]] for _ in range(skip)]
-        test_sequences = [[[0, 0, 0]] for _ in range(skip)]
+        sequences = [ [[0]*agent.layer_sizes[1]] for _ in range(skip)]
+        test_sequences = [ [[0]*test_agent.layer_sizes[1]] for _ in range(skip)]
         # actions = [9,4,9,4,9,4]
         trajectories = [[] for _ in range(skip)]
         test_trajectories = [[] for _ in range(skip)]
@@ -187,8 +186,12 @@ for repeat in range(1,n_repeats+1):
 
                 transition = (state, action, reward, next_state, done)
                 trajectories[i].append(transition)
-                sequences[i].append(np.append(state, action/agent.layer_sizes[-1]))
-                test_sequences[i].append(np.append(test_state, test_action/agent.layer_sizes[-1]))
+
+                one_hot_a = np.array([int(i == action) for i in range(agent.layer_sizes[-1])])/100
+                sequences[i].append(np.concatenate((state, one_hot_a)))
+
+                one_hot_test_a = np.array([int(i == test_action) for i in range(test_agent.layer_sizes[-1])])/100
+                test_sequences[i].append(np.concatenate((test_state, one_hot_test_a)))
 
                 e_actions[i].append(action)
                 e_rewards[i].append(reward)
@@ -212,7 +215,7 @@ for repeat in range(1,n_repeats+1):
 
 
 
-            if np.all( [np.all(np.abs(trajectory[i][0]) < 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
+            if np.all( [np.all(np.abs(trajectory[i][0]) <= 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
                 agent.memory.append(trajectory)
                 all_actions.extend(e_actions[j])
                 all_rewards.append(e_rewards[j])
@@ -228,7 +231,7 @@ for repeat in range(1,n_repeats+1):
                 print('UNSTABLE!!!')
                 print((trajectory[-1][0]))
 
-            if np.all( [np.all(np.abs(test_trajectory[i][0]) < 1) for i in range(len(test_trajectory))] ) and not math.isnan(np.sum(test_trajectory[-1][0])): # check for instability
+            if np.all( [np.all(np.abs(test_trajectory[i][0]) <= 1) for i in range(len(test_trajectory))] ) and not math.isnan(np.sum(test_trajectory[-1][0])): # check for instability
                 test_agent.memory.append(test_trajectory)
 
 
@@ -241,10 +244,6 @@ for repeat in range(1,n_repeats+1):
 
                 print('UNSTABLE!!!')
                 print((test_trajectory[-1][0]))
-
-
-
-
 
     #agent.reset_weights()
     #test_agent.reset_weights()
@@ -293,6 +292,7 @@ for repeat in range(1,n_repeats+1):
 
         for transition in trajectory:
             state, action, reward, next_state, done = transition
+            print('state:', state)
 
             test_states.append(state)
 
@@ -300,8 +300,8 @@ for repeat in range(1,n_repeats+1):
     test_actions = np.array(all_test_actions)
 
 
-    sequences = pad_sequences(all_sequences, maxlen=11)
-    test_sequences = pad_sequences(all_test_sequences, maxlen=11)
+    sequences = pad_sequences(all_sequences, maxlen=N_control_intervals+1)
+    test_sequences = pad_sequences(all_test_sequences, maxlen=N_control_intervals+1)
 
     print(states.shape)
     #print(sequences.shape)
@@ -345,15 +345,20 @@ for repeat in range(1,n_repeats+1):
         print('ITER: ' + str(iter), '------------------------------------')
 
         t = time()
-
+        alpha = 1
         if DRQN:
-            alpha = 1 - iter/n_iters
-            print('alpha:', alpha)
-            agent.Q_update(fitted_q = True, monte_carlo = monte_carlo, alpha = alpha)
+            #alpha = 1 - iter/n_iters
+            #print('alpha:', alpha)
+            history = agent.Q_update(fitted_q = fitted_q, monte_carlo = monte_carlo, alpha = alpha, verbose = False)
+            print('n epochs:', len(history.history['loss']))
+            print('Loss:', history.history['loss'][0], history.history['loss'][-1])
+            print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
             '''
             for i in range(100):
                 agent.Q_update(verbose = False)
             '''
+
+
 
         else:
             history = agent.fitted_Q_update()

@@ -43,6 +43,8 @@ if __name__ == '__main__':
     actual_params = DM(actual_params)
     normaliser = np.array(normaliser)
 
+
+
     n_params = actual_params.size()[0]
     n_system_variables = len(y0)
     n_FIM_elements = sum(range(n_params + 1))
@@ -55,22 +57,22 @@ if __name__ == '__main__':
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
             prior = False
-            n_episodes = 60000
+            n_episodes = 10000
         elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
             prior = False
-            n_episodes = 80000
+            n_episodes = 20000
         elif sys.argv[2] == '7' or sys.argv[2] == '8' or sys.argv[2] == '9':
             prior = False
-            n_episodes = 100000
+            n_episodes = 30000
         elif sys.argv[2] == '10' or sys.argv[2] == '11' or sys.argv[2] == '12':
             prior = False
-            n_episodes = 1500000
+            n_episodes = 40000
         elif sys.argv[2] == '13' or sys.argv[2] == '14' or sys.argv[2] == '15':
             prior = False
-            n_episodes = 200000
+            n_episodes = 50000
         elif sys.argv[2] == '16' or sys.argv[2] == '17' or sys.argv[2] == '18':
             prior = False
-            n_episodes = 300000
+            n_episodes = 60000
 
         save_path = sys.argv[1] + sys.argv[2] + '/'
         print(n_episodes)
@@ -82,10 +84,12 @@ if __name__ == '__main__':
         save_path = './'
 
     # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
-    agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + n_controlled_inputs, 100, 100, 100, num_inputs ** n_controlled_inputs])
+    agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + num_inputs ** n_controlled_inputs, 128,128,128, num_inputs ** n_controlled_inputs])
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
     env = OED_env(*args)
+
+
 
 
     unstable = 0
@@ -114,7 +118,7 @@ if __name__ == '__main__':
         trajectories = [[] for _ in range(skip)]
 
 
-        sequences = [[[0,0,0]] for _ in range(skip)]
+        sequences = [ [[0]*agent.layer_sizes[1]] for _ in range(skip)]
 
         env.reset()
         env.param_guesses = DM(actual_params)
@@ -142,14 +146,19 @@ if __name__ == '__main__':
                 state = states[i]
                 action = actions[i]
 
+
+
                 if e == N_control_intervals - 1 or np.all(np.abs(next_state) >= 1) or math.isnan(np.sum(next_state)):
                     next_state = [None]*agent.layer_sizes[0]
                     done = True
 
                 transition = (state, action, reward, next_state, done)
                 trajectories[i].append(transition)
-                sequences[i].append(np.append(state, action))
 
+                one_hot_a = np.array([int(i == action) for i in range(agent.layer_sizes[-1])])/100
+
+
+                sequences[i].append(np.concatenate((state, one_hot_a)))
 
                 if reward != -1: # dont include the unstable trajectories as they override the true return
                     e_rewards[i].append(reward)
@@ -160,7 +169,7 @@ if __name__ == '__main__':
 
         print('traj:', len(trajectories))
         for trajectory in trajectories:
-            if np.all( [np.all(np.abs(trajectory[i][0]) < 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
+            if np.all( [np.all(np.abs(trajectory[i][0]) <= 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
                 #plt.figure()
                 #plt.plot([trajectory[i][0][0] for i in range(len(trajectory))])
                 #agent.memory.extend(trajectory) #DQN
@@ -202,7 +211,10 @@ if __name__ == '__main__':
             if explore_rate == 0:
                 alpha -= 1 / (n_episodes // skip * 0.1)
             '''
-            agent.Q_update(fitted_q = True, monte_carlo = False)
+            history = agent.Q_update(fitted_q = True, monte_carlo = False, verbose = False)
+
+            print('Loss:', history.history['loss'][0], history.history['loss'][-1])
+            print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
 
         print('n unstable ', unstable)
         n_unstables.append(unstable)

@@ -377,6 +377,15 @@ class DRQN_agent(DQN_agent):
         self.values = []
         self.actions = []
 
+        self.states = []
+        self.next_states = []
+        self.actions = []
+        self.rewards = []
+        self.dones = []
+        self.sequences = []
+        self.next_sequences = []
+        self.all_values = []
+
 
     def initialise_network(self, layer_sizes):
 
@@ -392,7 +401,7 @@ class DRQN_agent(DQN_agent):
 
         #lstm_out = layers.LSTM(lstm_size, input_shape = (None,self.layer_sizes[1]), return_sequences=True)(sequence_input)
 
-        lstm_out = layers.LSTM(lstm_size)(sequence_input)
+        lstm_out = layers.GRU(lstm_size)(sequence_input)
 
         concat = layers.concatenate([S_input, lstm_out])
 
@@ -415,7 +424,7 @@ class DRQN_agent(DQN_agent):
         return network
 
 
-    def get_inputs_targets_MC(self, alpha=1, fitted_q = False, monte_carlo = False):
+    def get_inputs_targets(self, alpha=1, fitted_q = False, monte_carlo = False):
         '''
         gets fitted Q inputs and calculates targets for training the Q-network for episodic training
         '''
@@ -423,14 +432,8 @@ class DRQN_agent(DQN_agent):
         '''
                 gets fitted Q inputs and calculates targets for training the Q-network for episodic training
                 '''
-        targets = []
-        states = []
 
 
-        next_states = []
-        actions = []
-        rewards = []
-        dones = []
         all_values = []
 
         if fitted_q:
@@ -440,37 +443,44 @@ class DRQN_agent(DQN_agent):
         #sample = self.memory[-100:]
         # iterate over all exprienc in memory and create fitted Q targets
 
-        sequences = []
-        next_sequences = []
+
 
         t = time.time()
         for i, trajectory in enumerate(sample):
 
             e_rewards = []
-            sequence = [[0, 0, 0]]
-            next_sequence = [[0, 0, 0]]
+            sequence = [[0]*self.layer_sizes[1]]
+            next_sequence = [[0]*self.layer_sizes[1]]
 
             for j, transition in enumerate(trajectory):
+
+
                 if j > 0: # this needs to be one behind
-                    sequence.append(np.append(state, action/self.layer_sizes[-1]))
+
+                    one_hot_a = np.array([int(i == action) for i in range(self.layer_sizes[-1])])/100
+
+                    sequence.append(np.concatenate((state, one_hot_a)))
 
 
-                sequences.append(copy.deepcopy(sequence))
+
+                self.sequences.append(copy.deepcopy(sequence))
                 state, action, reward, next_state, done = transition
 
-
-
-                next_sequence.append(np.append(state, action/self.layer_sizes[-1]))
-                next_sequences.append(copy.deepcopy(next_sequence))
+                one_hot_a = np.array([int(i == action) for i in range(self.layer_sizes[-1])])/100
 
 
 
-                states.append(state)
-                next_states.append(next_state)
-                actions.append(action)
-                rewards.append(reward)
+
+                next_sequence.append(np.concatenate((state, one_hot_a)))
+                self.next_sequences.append(copy.deepcopy(next_sequence))
+
+
+                self.states.append(state)
+                self.next_states.append(next_state)
+                self.actions.append(action)
+                self.rewards.append(reward)
                 e_rewards.append(reward)
-                dones.append(done)
+                self.dones.append(done)
 
 
             if monte_carlo:
@@ -478,17 +488,19 @@ class DRQN_agent(DQN_agent):
 
                 for i in range(2, len(e_rewards) + 1):
                     e_values.insert(0, e_rewards[-i] + e_values[0] * self.gamma)
-                all_values.extend(e_values)
+                self.all_values.extend(e_values)
         print('sequence time', time.time() -t)
 
+        self.memory = [] # reset memory after this information has been extracted
 
-        padded = pad_sequences(sequences, maxlen = 11)
-        next_padded = pad_sequences(next_sequences, maxlen = 11)
-        states = np.array(states)
+        padded = pad_sequences(self.sequences, maxlen = 11)
+        next_padded = pad_sequences(self.next_sequences, maxlen = 11)
+        states = np.array(self.states)
 
-        next_states = np.array(next_states, dtype=np.float64)
-        actions = np.array(actions)
-        rewards = np.array(rewards)
+        next_states = np.array(self.next_states, dtype=np.float64)
+        actions = np.array(self.actions)
+        rewards = np.array(self.rewards)
+        dones = self.dones
 
         # construct target
         print(len(sample))
@@ -496,11 +508,18 @@ class DRQN_agent(DQN_agent):
         print(next_states.shape, next_padded.shape)
         t = time.time()
         values = self.predict([states, padded])
-        if not monte_carlo:
-            all_values = self.predict([next_states, next_padded])
-        print('values time', time.time() - t)
         print(values.shape)
 
+        if monte_carlo:
+            all_values = self.all_values
+        else:
+
+            all_values = self.predict([next_states, next_padded])
+
+        print('values time', time.time() - t)
+
+
+        t = time.time()
         # update the value for the taken action using cost function and current Q
         for i in range(len(next_states)):
             # print(actions[i], rewards[i])
@@ -517,7 +536,7 @@ class DRQN_agent(DQN_agent):
 
 
                 if dones[i]:
-                    values[i, actions[i]] = rewards[i]
+                    values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha*rewards[i]
 
                 else:
                     values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma * np.max(all_values[i])) #Q learning
@@ -527,11 +546,13 @@ class DRQN_agent(DQN_agent):
             #print(values[i, actions[i]])
             #print()
         # shuffle inputs and target for IID
-
+        print('targets time:', time.time()-t)
 
         randomize = np.arange(len(states))
         np.random.shuffle(randomize)
+
         states = states[randomize]
+
         padded = padded[randomize]
         values = values[randomize]
 
@@ -556,7 +577,7 @@ class DRQN_agent(DQN_agent):
 
 
         if inputs is None and targets is None:
-            inputs, targets = self.get_inputs_targets_MC(alpha =alpha, fitted_q=fitted_q, monte_carlo=monte_carlo)
+            inputs, targets = self.get_inputs_targets(alpha =alpha, fitted_q=fitted_q, monte_carlo=monte_carlo)
             #print(inputs, targets)
 
             #inputs_old, targets_old = self.get_inputs_targets_old()
@@ -576,7 +597,9 @@ class DRQN_agent(DQN_agent):
             epochs = 1
             batch_size = 32
             callbacks = []
+        t = time.time()
         history = self.network.fit({'S_input': inputs[0], 'sequence_input':inputs[1]}, targets, epochs = epochs, verbose = verbose, validation_split =0.1, batch_size=batch_size, callbacks = callbacks)
+        print('fit time:', time.time()-t)
         return history
 
     def get_actions(self, inputs, explore_rate):
@@ -604,8 +627,8 @@ class DRQN_agent(DQN_agent):
 
         if len(exploit_inds) > 0:
 
-            sequences = pad_sequences(sequences, maxlen=10)
-            values = self.predict([np.array(states)[exploit_inds], np.array(sequences)[exploit_inds]/self.layer_sizes[0]])
+            sequences = pad_sequences(sequences, maxlen=11)
+            values = self.predict([np.array(states)[exploit_inds], np.array(sequences)[exploit_inds]])
 
 
             if np.isnan(values).any():
