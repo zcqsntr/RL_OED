@@ -1,6 +1,6 @@
 {
-    "n_episodes": 10000,
-    "skip": 100,
+    "n_episodes": 50000,
+    "skip": 50,
     "y0": [200000, 0, 1],
     "actual_params": [1, 0.00048776, 0.00006845928],
     "input_bounds": [0.01, 1],
@@ -13,5 +13,5 @@
     "control_interval_time":2,
     "n_observed_variables":1,
     "prior":false,
-    "normaliser":[1e3, 1e2]
+    "normaliser":[1e4, 1e2]
 }

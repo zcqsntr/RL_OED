@@ -84,7 +84,7 @@ if __name__ == '__main__':
         save_path = './'
 
     # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
-    agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + num_inputs ** n_controlled_inputs, 128,128,128, num_inputs ** n_controlled_inputs])
+    agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, 32,100, 100, num_inputs ** n_controlled_inputs])
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
     env = OED_env(*args)
@@ -141,10 +141,12 @@ if __name__ == '__main__':
             next_states = []
 
             for i,o in enumerate(outputs):
-                next_state, reward, done, _ = o
+                next_state, reward, done, _, u  = o
                 next_states.append(next_state)
                 state = states[i]
                 action = actions[i]
+
+
 
 
 
@@ -152,13 +154,13 @@ if __name__ == '__main__':
                     next_state = [None]*agent.layer_sizes[0]
                     done = True
 
-                transition = (state, action, reward, next_state, done)
+                transition = (state, action, reward, next_state, done, u)
                 trajectories[i].append(transition)
 
-                one_hot_a = np.array([int(i == action) for i in range(agent.layer_sizes[-1])])/100
+                #one_hot_a = np.array([int(i == action) for i in range(agent.layer_sizes[-1])])/10
 
 
-                sequences[i].append(np.concatenate((state, one_hot_a)))
+                sequences[i].append(np.concatenate((state, u/10)))
 
                 if reward != -1: # dont include the unstable trajectories as they override the true return
                     e_rewards[i].append(reward)
@@ -200,6 +202,7 @@ if __name__ == '__main__':
                 print('new traj: ',len(new_traj))
                 '''
         # train the agent
+
 
         explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11 * skip))
         if explore_rate < 1:

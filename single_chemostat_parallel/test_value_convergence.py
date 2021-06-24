@@ -33,7 +33,7 @@ print()
 
 
 
-# last experiment sse: 0.01484384064796367 test: 0.014923431485594083
+
 params = json.load(open(IMPORT_PATH + '/params.json'))
 
 print(params)
@@ -90,8 +90,10 @@ for repeat in range(1,n_repeats+1):
 
 
     if DRQN:
-        agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + num_inputs ** n_controlled_inputs, 32, 100, 100, num_inputs ** n_controlled_inputs])
-        test_agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + num_inputs ** n_controlled_inputs,  32, 100, 100,  num_inputs ** n_controlled_inputs])
+        #agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + num_inputs ** n_controlled_inputs, 32, 100, 100, num_inputs ** n_controlled_inputs])
+        agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, 32, 100, 100, num_inputs ** n_controlled_inputs])
+        #test_agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + num_inputs ** n_controlled_inputs,  32, 100, 100,  num_inputs ** n_controlled_inputs])
+        test_agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 +n_controlled_inputs,  32, 100, 100,  num_inputs ** n_controlled_inputs])
     else:
         agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 50, 50,  num_inputs ** n_controlled_inputs])
         #agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + 1, 50, 50,  num_inputs ** n_controlled_inputs])
@@ -162,8 +164,8 @@ for repeat in range(1,n_repeats+1):
 
 
             for i, o in enumerate(outputs):
-                next_state, reward, done, _ = o
-                test_next_state, test_reward, test_done, _ = test_outputs[i]
+                next_state, reward, done, _, u = o
+                test_next_state, test_reward, test_done, _, test_u = test_outputs[i]
 
                 next_states.append(next_state)
                 test_next_states.append(test_next_state)
@@ -184,19 +186,22 @@ for repeat in range(1,n_repeats+1):
                     test_next_state = [None] *agent.layer_sizes[0]
                     test_done = True
 
-                transition = (state, action, reward, next_state, done)
+                transition = (state, action, reward, next_state, done, u)
                 trajectories[i].append(transition)
 
-                one_hot_a = np.array([int(i == action) for i in range(agent.layer_sizes[-1])])/100
-                sequences[i].append(np.concatenate((state, one_hot_a)))
+                #one_hot_a = np.array([int(i == action) for i in range(agent.layer_sizes[-1])])/10
+                sequences[i].append(np.concatenate((state, u/10)))
 
-                one_hot_test_a = np.array([int(i == test_action) for i in range(test_agent.layer_sizes[-1])])/100
-                test_sequences[i].append(np.concatenate((test_state, one_hot_test_a)))
+
+
+                #one_hot_test_a = np.array([int(i == test_action) for i in range(test_agent.layer_sizes[-1])])/10
+                test_sequences[i].append(np.concatenate((test_state, test_u/10)))
 
                 e_actions[i].append(action)
                 e_rewards[i].append(reward)
 
-                test_transition = (test_state, test_action, test_reward, test_next_state, test_done)
+
+                test_transition = (test_state, test_action, test_reward, test_next_state, test_done, u)
                 test_trajectories[i].append(test_transition)
 
                 e_test_actions[i].append(test_action)
@@ -280,7 +285,7 @@ for repeat in range(1,n_repeats+1):
     for trajectory in agent.memory:
 
         for transition in trajectory:
-            state, action, reward, next_state, done = transition
+            state, action, reward, next_state, done, u = transition
 
             states.append(state)
     states = np.array(states)
@@ -291,8 +296,8 @@ for repeat in range(1,n_repeats+1):
     for trajectory in test_agent.memory:
 
         for transition in trajectory:
-            state, action, reward, next_state, done = transition
-            print('state:', state)
+            state, action, reward, next_state, done, u = transition
+
 
             test_states.append(state)
 

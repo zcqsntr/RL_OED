@@ -10,6 +10,21 @@ import copy
 from keras.preprocessing.sequence import pad_sequences
 import time
 
+def OneHot(input_dim=None, input_length=None):
+    # Check if inputs were supplied correctly
+    if input_dim is None or input_length is None:
+        raise TypeError("input_dim or input_length is not set")
+
+    # Helper method (not inlined for clarity)
+    def _one_hot(x, num_classes):
+        return K.one_hot(K.cast(x, 'uint8'),
+                          num_classes=num_classes)
+
+    # Final layer representation as a Lambda layer
+    return Lambda(_one_hot,
+                  arguments={'num_classes': input_dim},
+                  input_shape=(input_length,))
+
 class DQN_agent():
 
     def __init__(self,layer_sizes ):
@@ -387,6 +402,7 @@ class DRQN_agent(DQN_agent):
         self.all_values = []
 
 
+
     def initialise_network(self, layer_sizes):
 
         '''
@@ -416,7 +432,7 @@ class DRQN_agent(DQN_agent):
             inputs = [S_input, sequence_input],
             outputs = [out]
         )
-        keras.utils.plot_model(network, "multi_input_and_output_model.png", show_shapes=True)
+        #keras.utils.plot_model(network, "multi_input_and_output_model.png", show_shapes=True)
 
         opt = keras.optimizers.Adam()
         network.compile(optimizer=opt, loss='mean_squared_error')
@@ -457,21 +473,23 @@ class DRQN_agent(DQN_agent):
 
                 if j > 0: # this needs to be one behind
 
-                    one_hot_a = np.array([int(i == action) for i in range(self.layer_sizes[-1])])/100
+                    #one_hot_a = np.array([int(i == action) for i in range(self.layer_sizes[-1])])/10
 
-                    sequence.append(np.concatenate((state, one_hot_a)))
+
+
+                    sequence.append(np.concatenate((state, u/10)))
 
 
 
                 self.sequences.append(copy.deepcopy(sequence))
-                state, action, reward, next_state, done = transition
+                state, action, reward, next_state, done, u = transition
 
-                one_hot_a = np.array([int(i == action) for i in range(self.layer_sizes[-1])])/100
-
-
+                #one_hot_a = np.array([int(i == action) for i in range(self.layer_sizes[-1])])/10
 
 
-                next_sequence.append(np.concatenate((state, one_hot_a)))
+                next_sequence.append(np.concatenate((state, u/10)))
+
+
                 self.next_sequences.append(copy.deepcopy(next_sequence))
 
 

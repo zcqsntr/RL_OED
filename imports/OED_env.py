@@ -308,34 +308,6 @@ class OED_env():
         self.all_RL_states.append(state)
         return state, reward, done, None
 
-    def parallel_step(self, args): # for parallel training
-
-        actions, actual_params = args
-
-        actual_params = DM(actual_params)
-        us = []
-        for action in actions:
-            u = self.action_to_input(action)
-            #self.us.append(10**u)
-            us.append(u)
-
-        print('os:', np.array(us)[:,:,0].T.shape)
-        print('os:', np.array(us).shape)
-
-        N_control_intervals = len(us)
-
-
-        # set sampled trajectory solver in script to ensure thread safety
-        true_trajectory = self.sampled_trajectory_solver(self.initial_Y,  actual_params, np.array(us)[:,:,0].T)
-
-        reward = self.get_reward(true_trajectory)
-
-        done = False
-
-        #state = self.get_RL_state(self.true_trajectory, self.est_trajectory)
-        state = self.get_RL_state(true_trajectory, true_trajectory)
-
-        return (state, reward, done, None)
 
     def get_reward(self, est_trajectory):
         FIM = self.get_FIM(est_trajectory)
@@ -545,7 +517,8 @@ class OED_env():
 
             # state = self.get_RL_state(self.true_trajectory, self.est_trajectory)
             state = self.get_RL_state_parallel(true_trajectory, true_trajectory, i)
-            transitions.append((state, reward, done, None))
+
+            transitions.append((state, reward, done, None, us[:,i]))
 
         self.Y = true_trajectories
         return transitions
@@ -624,7 +597,7 @@ class OED_env():
         # get the current measured system state
         sys_state = true_trajectory[:self.n_observed_variables, -1]  # TODO: measurement noise
 
-        state = np.log(sys_state)
+        state = np.sqrt(sys_state)
 
         # get current fim elements
         FIM_start = self.n_system_variables + self.n_sensitivities
