@@ -53,7 +53,7 @@ N_episodes = 1000
 trajectory = []
 actions = []
 rewards = []
-n_iters = 2000
+n_iters = 1000
 n_repeats = 1
 
 n_cores = multiprocessing.cpu_count()//2
@@ -390,7 +390,7 @@ for iter in range(1,n_iters+1):
     else:
         history = agent.fitted_Q_update()
     print('time: ', time()-t)
-    '''
+
     if iter % 10 ==0:
         plt.figure()
         plt.plot(all_true_values[0:100], label='true')
@@ -409,10 +409,15 @@ for iter in range(1,n_iters+1):
     #print('loss:', history.history['loss'])
 
     #print('val loss:', history.history['val_loss'])
-    '''
 
 
 
+all_value_SSEs.append(value_SSEs)
+
+all_value_SSEs = np.array(all_value_SSEs)
+print(all_value_SSEs.shape)
+np.save(save_path + 'all_value_SSEs.npy', all_value_SSEs)
+print(all_value_SSEs)
 
 plt.figure()
 plt.plot(all_true_values[0:100], label = 'true')
@@ -440,12 +445,7 @@ plt.title('SSEs')
 plt.legend()
 plt.savefig(save_path + 'sse.png')
 
-all_value_SSEs.append(value_SSEs)
 
-all_value_SSEs = np.array(all_value_SSEs)
-print(all_value_SSEs.shape)
-np.save(save_path + 'all_value_SSEs.npy', all_value_SSEs)
-print(all_value_SSEs)
 
 
 
