@@ -531,11 +531,9 @@ class DRQN_agent(DQN_agent):
         values = self.predict([states, padded])
         print(values.shape)
 
-        if monte_carlo:
-            all_values = self.all_values
-        else:
+        if not monte_carlo:
 
-            all_values = self.predict([next_states, next_padded])
+            next_values = self.predict([next_states, next_padded])
 
         print('values time', time.time() - t)
 
@@ -550,7 +548,7 @@ class DRQN_agent(DQN_agent):
 
 
             if monte_carlo:
-                values[i, actions[i]] = (1-alpha )*values[i, actions[i]] + alpha * all_values[i]
+                values[i, actions[i]] = (1-alpha )*values[i, actions[i]] + alpha * self.all_values[i]
             else:
                 #print(rewards[i], self.gamma *all_values[i, actions[i]])
 
@@ -561,8 +559,8 @@ class DRQN_agent(DQN_agent):
                     values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha*rewards[i]
 
                 else:
-                    #values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma * np.max(all_values[i])) #Q learning
-                    values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma *all_values[i, actions[i]]) #SARSA
+                    #values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma * np.max(next_values[i])) #Q learning
+                    values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma *next_values[i, np.argmax(next_values[i])]) #SARSA
 
 
             #print(values[i, actions[i]])

@@ -48,7 +48,7 @@ normaliser = np.array(normaliser)
 n_params = actual_params.size()[0]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
-N_episodes = 10000
+N_episodes = 1000
 
 trajectory = []
 actions = []
@@ -390,9 +390,26 @@ for iter in range(1,n_iters+1):
     else:
         history = agent.fitted_Q_update()
     print('time: ', time()-t)
+    '''
+    if iter % 10 ==0:
+        plt.figure()
+        plt.plot(all_true_values[0:100], label='true')
+        plt.plot(training_pred[0:100], label='pred')
+        plt.legend()
+        plt.title('training')
+        plt.savefig(save_path + 'value_graphs/train' + str(iter) + '.png')
+
+        plt.figure()
+        plt.plot(all_test_true_values[0:100], label='true')
+        plt.plot(testing_pred[0:100], label='pred')
+        plt.title('testing')
+
+        plt.legend()
+        plt.savefig(save_path + 'value_graphs/test' + str(iter) + '.png')
     #print('loss:', history.history['loss'])
 
     #print('val loss:', history.history['val_loss'])
+    '''
 
 
 
@@ -402,7 +419,7 @@ plt.plot(all_true_values[0:100], label = 'true')
 plt.plot(training_pred[0:100], label = 'pred')
 plt.legend()
 plt.title('training')
-plt.savefig(save_path + 'train.png')
+plt.savefig(save_path + 'train_final.png')
 
 plt.figure()
 plt.plot(all_test_true_values[0:100], label='true')
@@ -410,7 +427,7 @@ plt.plot(testing_pred[0:100], label='pred')
 plt.title('testing')
 
 plt.legend()
-plt.savefig(save_path + 'test.png')
+plt.savefig(save_path + 'test_final.png')
 
 
 
