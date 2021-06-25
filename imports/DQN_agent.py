@@ -10,20 +10,7 @@ import copy
 from keras.preprocessing.sequence import pad_sequences
 import time
 
-def OneHot(input_dim=None, input_length=None):
-    # Check if inputs were supplied correctly
-    if input_dim is None or input_length is None:
-        raise TypeError("input_dim or input_length is not set")
 
-    # Helper method (not inlined for clarity)
-    def _one_hot(x, num_classes):
-        return K.one_hot(K.cast(x, 'uint8'),
-                          num_classes=num_classes)
-
-    # Final layer representation as a Lambda layer
-    return Lambda(_one_hot,
-                  arguments={'num_classes': input_dim},
-                  input_shape=(input_length,))
 
 class DQN_agent():
 
@@ -511,6 +498,9 @@ class DRQN_agent(DQN_agent):
 
         self.memory = [] # reset memory after this information has been extracted
 
+
+
+
         padded = pad_sequences(self.sequences, maxlen = 11)
         next_padded = pad_sequences(self.next_sequences, maxlen = 11)
         states = np.array(self.states)
@@ -519,6 +509,19 @@ class DRQN_agent(DQN_agent):
         actions = np.array(self.actions)
         rewards = np.array(self.rewards)
         dones = self.dones
+
+
+        '''
+        mem_size = 100000
+        if states.shape[0] > mem_size:
+            states = states[-mem_size:]
+            padded = padded[-mem_size:]
+            next_padded = next_padded[-mem_size:]
+            next_states = next_states[-mem_size:]
+            actions = actions[-mem_size:]
+            rewards = rewards[-mem_size:]
+            dones = dones[-mem_size:]
+        '''
 
         # construct target
         print(len(sample))
@@ -554,17 +557,19 @@ class DRQN_agent(DQN_agent):
 
 
                 if dones[i]:
+
                     values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha*rewards[i]
 
                 else:
-                    values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma * np.max(all_values[i])) #Q learning
-                    #values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma *all_values[i, actions[i]]) #SARSA
+                    #values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma * np.max(all_values[i])) #Q learning
+                    values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma *all_values[i, actions[i]]) #SARSA
 
 
             #print(values[i, actions[i]])
             #print()
         # shuffle inputs and target for IID
         print('targets time:', time.time()-t)
+
 
         randomize = np.arange(len(states))
         np.random.shuffle(randomize)
@@ -574,9 +579,9 @@ class DRQN_agent(DQN_agent):
         padded = padded[randomize]
         values = values[randomize]
 
-
         inputs = [states, padded]
         targets = values
+
         if np.isnan(targets).any():
             print('NAN IN TARGETS!')
 
@@ -607,9 +612,9 @@ class DRQN_agent(DQN_agent):
 
         if fitted_q:
             epochs = 500
-            batch_size = 256
+            batch_size = 512
             self.reset_weights()
-            callback = tf.keras.callbacks.EarlyStopping(monitor = 'loss')
+            callback = tf.keras.callbacks.EarlyStopping(monitor = 'loss', patience=2, restore_best_weights=True)
             callbacks = [callback]
         else:
             epochs = 1
@@ -620,7 +625,7 @@ class DRQN_agent(DQN_agent):
         print('fit time:', time.time()-t)
         return history
 
-    def get_actions(self, inputs, explore_rate):
+    def get_actions(self, inputs, explore_rate, test_episode = False):
         '''
         PARALLEL version of get action
         Choses action based on enivormental state, explore rate and current value estimates
@@ -640,6 +645,8 @@ class DRQN_agent(DQN_agent):
 
         exploit_inds = np.where(rng >= explore_rate)[0]
 
+        if test_episode: exploit_inds[-1] = 1
+
         explore_actions = np.random.choice(range(self.layer_sizes[-1]), len(explore_inds))
         actions = np.zeros((len(states)), dtype=np.int32)
 
@@ -658,10 +665,12 @@ class DRQN_agent(DQN_agent):
             exploit_actions = np.argmax(values, axis = 1)
             actions[exploit_inds] = exploit_actions
 
-
         actions[explore_inds] = explore_actions
+
+        exploit_flags = np.zeros((len(states)), dtype=np.int32) #just for interest
+        exploit_flags[exploit_inds] = 1
         self.actions.extend(actions)
-        return actions
+        return actions, exploit_flags
 
     def reset_weights(self):
         '''

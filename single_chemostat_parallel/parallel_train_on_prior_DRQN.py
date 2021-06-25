@@ -101,7 +101,7 @@ if __name__ == '__main__':
 
     n_unstables = []
     all_returns = []
-
+    test_episode = True # if true agent will take greedy actions for the last episode in the skip, to test current policy
     for episode in range(int(n_episodes//skip)):
         print('episode:', episode*skip)
         if prior:
@@ -114,6 +114,7 @@ if __name__ == '__main__':
 
         e_returns = [0 for _ in range(skip)]
         e_actions = []
+        e_exploit_flags =[]
         e_rewards = [[] for _ in range(skip)]
         trajectories = [[] for _ in range(skip)]
 
@@ -133,26 +134,27 @@ if __name__ == '__main__':
 
                 #agent.Q_update(alpha=alpha) DQN Monte carlo
 
-            actions = agent.get_actions([states, sequences], explore_rate)
+            actions, exploit_flags = agent.get_actions([states, sequences], explore_rate, test_episode)
 
             e_actions.append(actions)
+            e_exploit_flags.append(exploit_flags)
 
             outputs = env.map_parallel_step(np.array(actions).T, actual_params)
             next_states = []
 
             for i,o in enumerate(outputs):
                 next_state, reward, done, _, u  = o
+
+
                 next_states.append(next_state)
                 state = states[i]
+
                 action = actions[i]
 
-
-
-
-
                 if e == N_control_intervals - 1 or np.all(np.abs(next_state) >= 1) or math.isnan(np.sum(next_state)):
-                    next_state = [None]*agent.layer_sizes[0]
+                    next_state = [None]*agent.layer_sizes[0] # maybe dont need this
                     done = True
+
 
                 transition = (state, action, reward, next_state, done, u)
                 trajectories[i].append(transition)
@@ -166,8 +168,23 @@ if __name__ == '__main__':
                     e_rewards[i].append(reward)
                     e_returns[i] += reward
 
-                state = next_state
+
             states = next_states
+
+        #run single test episode
+
+
+        #print((e_rewards))
+        print('actions:', np.array(e_actions).shape)
+        print('actions:', np.array(e_actions)[:, 0])
+        print('exploit:', np.array(e_exploit_flags)[:,0])
+        print('rewards:', np.array(e_rewards)[0,:])
+        print('return:', np.sum(np.array(e_rewards)[0,:]))
+
+        print('test actions:', np.array(e_actions)[:, -1])
+        print('test exploit:', np.array(e_exploit_flags)[:, -1])
+        print('test rewards:', np.array(e_rewards)[-1, :])
+        print('test return:', np.sum(np.array(e_rewards)[-1, :]))
 
         print('traj:', len(trajectories))
         for trajectory in trajectories:
@@ -205,7 +222,8 @@ if __name__ == '__main__':
 
 
         explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11 * skip))
-        if explore_rate < 1:
+        #explore_rate = 1
+        if episode > 10:
             print('train')
 
 
