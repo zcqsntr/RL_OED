@@ -70,16 +70,17 @@ fitted_q = True
 DQN = False
 DRQN = True
 monte_carlo = False
-
+cluster = False
 if len(sys.argv) == 3:
+    cluster = True
     if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
-        prior = False
+
         n_episodes = 10000
     elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
-        prior = False
+
         n_episodes = 20000
     elif sys.argv[2] == '7' or sys.argv[2] == '8' or sys.argv[2] == '9':
-        prior = False
+
         n_episodes = 30000
 
 
@@ -391,7 +392,8 @@ for iter in range(1,n_iters+1):
         history = agent.fitted_Q_update()
     print('time: ', time()-t)
 
-    if iter % 10 ==0:
+
+    if iter % 10 ==0 and not cluster:
         plt.figure()
         plt.plot(all_true_values[0:100], label='true')
         plt.plot(training_pred[0:100], label='pred')
@@ -412,11 +414,12 @@ for iter in range(1,n_iters+1):
 
 
 
-all_value_SSEs.append(value_SSEs)
 
-all_value_SSEs = np.array(all_value_SSEs)
+
+
 print(all_value_SSEs.shape)
-np.save(save_path + 'all_value_SSEs.npy', all_value_SSEs)
+np.save(save_path + 'value_SSEs.npy', value_SSEs)
+np.save(save_path + 'test_value_SSEs.npy', test_value_SSEs)
 print(all_value_SSEs)
 
 plt.figure()
