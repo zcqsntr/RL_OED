@@ -48,7 +48,7 @@ normaliser = np.array(normaliser)
 n_params = actual_params.size()[0]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
-N_episodes = 1000
+N_episodes = 10000
 
 trajectory = []
 actions = []
@@ -75,11 +75,23 @@ if len(sys.argv) == 3:
     cluster = True
     if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
 
-        n_episodes = 10000
+        n_episodes = 1000
     elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
 
-        n_episodes = 20000
+        n_episodes = 2000
     elif sys.argv[2] == '7' or sys.argv[2] == '8' or sys.argv[2] == '9':
+
+        n_episodes = 5000
+
+    elif sys.argv[2] == '10' or sys.argv[2] == '11' or sys.argv[2] == '12':
+
+        n_episodes = 10000
+
+    elif sys.argv[2] == '13' or sys.argv[2] == '14' or sys.argv[2] == '15':
+
+        n_episodes = 20000
+
+    elif sys.argv[2] == '16' or sys.argv[2] == '17' or sys.argv[2] == '18':
 
         n_episodes = 30000
 
@@ -393,18 +405,20 @@ for iter in range(1,n_iters+1):
     print('time: ', time()-t)
 
 
+
+
     if iter % 10 ==0 and not cluster:
         plt.figure()
         plt.plot(all_true_values[0:100], label='true')
         plt.plot(training_pred[0:100], label='pred')
         plt.legend()
-        plt.title('training')
+        plt.title('training ' + str(iter))
         plt.savefig(save_path + 'value_graphs/train' + str(iter) + '.png')
 
         plt.figure()
         plt.plot(all_test_true_values[0:100], label='true')
         plt.plot(testing_pred[0:100], label='pred')
-        plt.title('testing')
+        plt.title('testing ' + str(iter))
 
         plt.legend()
         plt.savefig(save_path + 'value_graphs/test' + str(iter) + '.png')
@@ -417,42 +431,42 @@ for iter in range(1,n_iters+1):
 
 
 
-print(all_value_SSEs.shape)
+
 np.save(save_path + 'value_SSEs.npy', value_SSEs)
 np.save(save_path + 'test_value_SSEs.npy', test_value_SSEs)
 print(all_value_SSEs)
+if not cluster:
+    plt.figure()
+    plt.plot(all_true_values[0:100], label = 'true')
+    plt.plot(training_pred[0:100], label = 'pred')
+    plt.legend()
+    plt.title('training')
+    plt.savefig(save_path + 'train_final.png')
 
-plt.figure()
-plt.plot(all_true_values[0:100], label = 'true')
-plt.plot(training_pred[0:100], label = 'pred')
-plt.legend()
-plt.title('training')
-plt.savefig(save_path + 'train_final.png')
+    plt.figure()
+    plt.plot(all_test_true_values[0:100], label='true')
+    plt.plot(testing_pred[0:100], label='pred')
+    plt.title('testing')
 
-plt.figure()
-plt.plot(all_test_true_values[0:100], label='true')
-plt.plot(testing_pred[0:100], label='pred')
-plt.title('testing')
-
-plt.legend()
-plt.savefig(save_path + 'test_final.png')
-
-
-
-print(value_SSEs)
-plt.figure()
-plt.ylim(bottom = 0, top = np.max(value_SSEs))
-plt.plot(value_SSEs, label = 'train')
-plt.plot(test_value_SSEs, label = 'test')
-plt.title('SSEs')
-plt.legend()
-plt.savefig(save_path + 'sse.png')
+    plt.legend()
+    plt.savefig(save_path + 'test_final.png')
 
 
 
+    print(value_SSEs)
+    plt.figure()
+    plt.ylim(bottom = 0, top = np.max(value_SSEs))
+    plt.plot(value_SSEs, label = 'train')
+    plt.plot(test_value_SSEs, label = 'test')
+    plt.title('SSEs')
+    plt.legend()
+    plt.savefig(save_path + 'sse.png')
 
 
-plt.show()
+
+
+
+    plt.show()
 
 
 
