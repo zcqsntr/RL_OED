@@ -48,7 +48,7 @@ normaliser = np.array(normaliser)
 n_params = actual_params.size()[0]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
-N_episodes = 10000
+n_episodes = 10000
 
 trajectory = []
 actions = []
@@ -145,7 +145,7 @@ all_test_sequences = []
 
 env.mapped_trajectory_solver = env.CI_solver.map(skip, "thread", n_cores)
 test_env.mapped_trajectory_solver = test_env.CI_solver.map(skip, "thread", n_cores)
-for ep in range(int(N_episodes//skip)):
+for ep in range(int(n_episodes//skip)):
     print('episode:', ep)
     print('length:', len(agent.memory))
 
