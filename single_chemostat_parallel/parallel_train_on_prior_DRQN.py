@@ -213,13 +213,7 @@ if __name__ == '__main__':
 
         explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11 * skip))
         #explore_rate = 1
-        if explore_rate == 1:
-            history = agent.Q_update(fitted_q=True, monte_carlo=True, verbose=False)
-
-            print('Loss:', history.history['loss'][0], history.history['loss'][-1])
-            print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
-
-        else:
+        if explore_rate < 1:
             print('train')
 
 
