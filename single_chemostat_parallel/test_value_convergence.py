@@ -33,7 +33,6 @@ print()
 
 
 
-
 params = json.load(open(IMPORT_PATH + '/params.json'))
 
 print(params)
@@ -48,12 +47,12 @@ normaliser = np.array(normaliser)
 n_params = actual_params.size()[0]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
-n_episodes = 10000
+n_episodes = 100
 
 trajectory = []
 actions = []
 rewards = []
-n_iters = 1000
+n_iters = 2
 n_repeats = 1
 
 n_cores = multiprocessing.cpu_count()//2
@@ -387,6 +386,7 @@ for iter in range(1,n_iters+1):
     t = time()
     alpha = 1
     if DRQN:
+        monte_carlo = iter <= 200
         #alpha = 1 - iter/n_iters
         #print('alpha:', alpha)
         history = agent.Q_update(fitted_q = fitted_q, monte_carlo = monte_carlo, alpha = alpha, verbose = False)
@@ -434,7 +434,8 @@ for iter in range(1,n_iters+1):
 
 np.save(save_path + 'value_SSEs.npy', value_SSEs)
 np.save(save_path + 'test_value_SSEs.npy', test_value_SSEs)
-print(all_value_SSEs)
+print(value_SSEs)
+print(test_value_SSEs)
 if not cluster:
     plt.figure()
     plt.plot(all_true_values[0:100], label = 'true')

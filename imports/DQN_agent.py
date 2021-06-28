@@ -437,7 +437,7 @@ class DRQN_agent(DQN_agent):
                 '''
 
 
-        all_values = []
+
 
         if fitted_q:
             sample = self.memory
@@ -461,25 +461,16 @@ class DRQN_agent(DQN_agent):
                 if j > 0: # this needs to be one behind
 
                     #one_hot_a = np.array([int(i == action) for i in range(self.layer_sizes[-1])])/10
-
-
-
                     sequence.append(np.concatenate((state, u/10)))
-
-
 
                 self.sequences.append(copy.deepcopy(sequence))
                 state, action, reward, next_state, done, u = transition
 
                 #one_hot_a = np.array([int(i == action) for i in range(self.layer_sizes[-1])])/10
 
-
                 next_sequence.append(np.concatenate((state, u/10)))
 
-
                 self.next_sequences.append(copy.deepcopy(next_sequence))
-
-
                 self.states.append(state)
                 self.next_states.append(next_state)
                 self.actions.append(action)
@@ -495,6 +486,7 @@ class DRQN_agent(DQN_agent):
                     e_values.insert(0, e_rewards[-i] + e_values[0] * self.gamma)
                 self.all_values.extend(e_values)
         print('sequence time', time.time() -t)
+
 
         self.memory = [] # reset memory after this information has been extracted
 
@@ -540,6 +532,7 @@ class DRQN_agent(DQN_agent):
 
         t = time.time()
         # update the value for the taken action using cost function and current Q
+        print(next_states.shape, values.shape, len(self.all_values))
         for i in range(len(next_states)):
             # print(actions[i], rewards[i])
             #print('-------------------')
@@ -559,8 +552,8 @@ class DRQN_agent(DQN_agent):
                     values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha*rewards[i]
 
                 else:
-                    #values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma * np.max(next_values[i])) #Q learning
-                    values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma *next_values[i, np.argmax(next_values[i])]) #SARSA
+                    values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma * np.max(next_values[i])) #Q learning
+                    #values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma *next_values[i, np.argmax(next_values[i])]) #SARSA
 
 
             #print(values[i, actions[i]])
@@ -637,13 +630,17 @@ class DRQN_agent(DQN_agent):
 
         states, sequences = inputs
 
-        rng = np.random.random(len(states))
+        if test_episode:
+            rng = np.random.random(len(states)-1)
+        else:
+            rng = np.random.random(len(states))
 
         explore_inds = np.where(rng < explore_rate)[0]
 
+
         exploit_inds = np.where(rng >= explore_rate)[0]
 
-        if test_episode: exploit_inds[-1] = 1
+        if test_episode: exploit_inds = np.append(exploit_inds, len(states)-1)
 
         explore_actions = np.random.choice(range(self.layer_sizes[-1]), len(explore_inds))
         actions = np.zeros((len(states)), dtype=np.int32)

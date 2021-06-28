@@ -103,7 +103,7 @@ if __name__ == '__main__':
     all_returns = []
     test_episode = True # if true agent will take greedy actions for the last episode in the skip, to test current policy
     for episode in range(int(n_episodes//skip)):
-        print('episode:', episode*skip)
+
         if prior:
             actual_params = np.random.uniform(low=lb, high=ub,  size = (skip, 3))
         else :
@@ -175,16 +175,6 @@ if __name__ == '__main__':
 
 
         #print((e_rewards))
-        print('actions:', np.array(e_actions).shape)
-        print('actions:', np.array(e_actions)[:, 0])
-        print('exploit:', np.array(e_exploit_flags)[:,0])
-        print('rewards:', np.array(e_rewards)[0,:])
-        print('return:', np.sum(np.array(e_rewards)[0,:]))
-
-        print('test actions:', np.array(e_actions)[:, -1])
-        print('test exploit:', np.array(e_exploit_flags)[:, -1])
-        print('test rewards:', np.array(e_rewards)[-1, :])
-        print('test return:', np.sum(np.array(e_rewards)[-1, :]))
 
         print('traj:', len(trajectories))
         for trajectory in trajectories:
@@ -223,7 +213,13 @@ if __name__ == '__main__':
 
         explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11 * skip))
         #explore_rate = 1
-        if episode > 10:
+        if explore_rate == 1:
+            history = agent.Q_update(fitted_q=True, monte_carlo=True, verbose=False)
+
+            print('Loss:', history.history['loss'][0], history.history['loss'][-1])
+            print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
+
+        else:
             print('train')
 
 
@@ -241,10 +237,22 @@ if __name__ == '__main__':
         n_unstables.append(unstable)
         all_returns.extend(e_returns)
         print()
-        print('EPISODE: ', episode)
+        print('EPISODE: ', episode, episode*skip)
         print('explore rate: ', explore_rate)
         print('alpha:', alpha)
         print('av return: ', np.mean(all_returns[-skip:]))
+        print()
+        print('actions:', np.array(e_actions).shape)
+        print('actions:', np.array(e_actions)[:, 0])
+        print('exploit:', np.array(e_exploit_flags)[:, 0])
+        print('rewards:', np.array(e_rewards)[0, :])
+        print('return:', np.sum(np.array(e_rewards)[0, :]))
+        print()
+        print('test actions:', np.array(e_actions)[:, -1])
+        print('test exploit:', np.array(e_exploit_flags)[:, -1])
+        print('test rewards:', np.array(e_rewards)[-1, :])
+        print('test return:', np.sum(np.array(e_rewards)[-1, :]))
+        print()
 
     print('time:', time.time() - t)
     print(env.detFIMs[-1])
