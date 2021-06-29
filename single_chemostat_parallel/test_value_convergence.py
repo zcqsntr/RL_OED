@@ -47,12 +47,12 @@ normaliser = np.array(normaliser)
 n_params = actual_params.size()[0]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
-n_episodes = 10000
+n_episodes = 5000
 
 trajectory = []
 actions = []
 rewards = []
-n_iters = 1000
+n_iters = 2000
 n_repeats = 1
 
 n_cores = multiprocessing.cpu_count()//2
@@ -386,7 +386,7 @@ for iter in range(1,n_iters+1):
     t = time()
     alpha = 1
     if DRQN:
-        monte_carlo = iter <= 200
+        #monte_carlo = iter <= 200
         #alpha = 1 - iter/n_iters
         #print('alpha:', alpha)
         history = agent.Q_update(fitted_q = fitted_q, monte_carlo = monte_carlo, alpha = alpha, verbose = False)
@@ -422,6 +422,7 @@ for iter in range(1,n_iters+1):
 
         plt.legend()
         plt.savefig(save_path + 'value_graphs/test' + str(iter) + '.png')
+        plt.close()
     #print('loss:', history.history['loss'])
 
     #print('val loss:', history.history['val_loss'])

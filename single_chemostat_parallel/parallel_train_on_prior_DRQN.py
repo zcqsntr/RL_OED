@@ -57,13 +57,16 @@ if __name__ == '__main__':
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
             prior = False
-            n_episodes = 10000
+            n_episodes = 25000
+            skip = 25
         elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
             prior = False
-            n_episodes = 20000
+            n_episodes = 50000
+            skip = 50
         elif sys.argv[2] == '7' or sys.argv[2] == '8' or sys.argv[2] == '9':
             prior = False
-            n_episodes = 30000
+            n_episodes = 50000
+            skip = 25
         elif sys.argv[2] == '10' or sys.argv[2] == '11' or sys.argv[2] == '12':
             prior = False
             n_episodes = 40000

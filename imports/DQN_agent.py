@@ -2,6 +2,7 @@ import tensorflow as tf
 physical_devices = tf.config.list_physical_devices('GPU')
 print(physical_devices)
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
+#tf.compat.v1.disable_eager_execution()
 from tensorflow import keras
 import numpy as np
 import math
@@ -9,7 +10,7 @@ from tensorflow.keras import layers
 import copy
 from keras.preprocessing.sequence import pad_sequences
 import time
-
+import gc
 
 
 class DQN_agent():
@@ -673,7 +674,10 @@ class DRQN_agent(DQN_agent):
         '''
         #sess = tf.keras.backend.get_session()
         #sess.run(tf.global_variables_initializer())
-
+        del self.network
+        gc.collect()
+        tf.keras.backend.clear_session()
+        tf.compat.v1.reset_default_graph()
         self.network = self.initialise_network(self.layer_sizes)
 
 
