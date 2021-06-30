@@ -112,7 +112,7 @@ for i in range(7,10):
     n_unstable =  np.load(path + '/repeat' + str(i) +'/n_unstables.npy')
     print('unstable:', n_unstable[-1])
     #plt.plot(n_unstable)
-    plt.show()
+    #plt.show()
 
 
 #print(values[-1,0,:])
@@ -132,7 +132,7 @@ print(len(x), len(y))
 
 
 episodes = np.arange(1, len(returns) + 1)   # int(control_interval_time / dt)) * dt
-explore_rates = [get_rate(episode, 0, 1, len(returns)/11) for episode in episodes]
+explore_rates = [get_rate(episode, 0, 1, len(returns)/12) for episode in episodes]
 
 fig, ax1 = plt.subplots()
 plt.errorbar(x, np.mean(all_returns, axis = 0), np.std(all_returns, axis = 0), label = 'Average Return')

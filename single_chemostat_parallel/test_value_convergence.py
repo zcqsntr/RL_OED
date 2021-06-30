@@ -414,7 +414,7 @@ for iter in range(1,n_iters+1):
         plt.legend()
         plt.title('training ' + str(iter))
         plt.savefig(save_path + 'value_graphs/train' + str(iter) + '.png')
-
+        plt.close()
         plt.figure()
         plt.plot(all_test_true_values[0:100], label='true')
         plt.plot(testing_pred[0:100], label='pred')

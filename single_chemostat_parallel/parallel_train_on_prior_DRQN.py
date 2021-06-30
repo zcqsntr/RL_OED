@@ -57,25 +57,46 @@ if __name__ == '__main__':
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
             prior = False
+            done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
             n_episodes = 25000
             skip = 25
         elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
             prior = False
+            done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
             n_episodes = 50000
             skip = 50
         elif sys.argv[2] == '7' or sys.argv[2] == '8' or sys.argv[2] == '9':
             prior = False
+            done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
             n_episodes = 50000
             skip = 25
         elif sys.argv[2] == '10' or sys.argv[2] == '11' or sys.argv[2] == '12':
             prior = False
-            n_episodes = 40000
+            done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
+            n_episodes = 50000
+            skip = 100
         elif sys.argv[2] == '13' or sys.argv[2] == '14' or sys.argv[2] == '15':
             prior = False
-            n_episodes = 50000
+            done_MC = False  # have we done the initial MC fitting? et to true to turn off MC fitting
+            n_episodes = 25000
+            skip = 25
         elif sys.argv[2] == '16' or sys.argv[2] == '17' or sys.argv[2] == '18':
             prior = False
-            n_episodes = 60000
+            done_MC = False  # have we done the initial MC fitting? et to true to turn off MC fitting
+            n_episodes = 50000
+            skip = 50
+
+        elif sys.argv[2] == '19' or sys.argv[2] == '20' or sys.argv[2] == '21':
+            prior = False
+            done_MC = False  # have we done the initial MC fitting? et to true to turn off MC fitting
+            n_episodes = 50000
+            skip = 25
+
+        elif sys.argv[2] == '22' or sys.argv[2] == '23' or sys.argv[2] == '24':
+            prior = False
+            done_MC = False  # have we done the initial MC fitting? et to true to turn off MC fitting
+            n_episodes = 50000
+            skip = 100
 
         save_path = sys.argv[1] + sys.argv[2] + '/'
         print(n_episodes)
@@ -87,7 +108,7 @@ if __name__ == '__main__':
         save_path = './'
 
     # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
-    agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, 32,100, 100, num_inputs ** n_controlled_inputs])
+    agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, 32, 100, 100, num_inputs ** n_controlled_inputs])
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
     env = OED_env(*args)
@@ -104,6 +125,7 @@ if __name__ == '__main__':
 
     n_unstables = []
     all_returns = []
+    all_test_returns = []
     test_episode = True # if true agent will take greedy actions for the last episode in the skip, to test current policy
     for episode in range(int(n_episodes//skip)):
 
@@ -116,6 +138,7 @@ if __name__ == '__main__':
         states = [env.get_initial_RL_state_parallel(i) for i in range(skip)]
 
         e_returns = [0 for _ in range(skip)]
+
         e_actions = []
         e_exploit_flags =[]
         e_rewards = [[] for _ in range(skip)]
@@ -132,10 +155,12 @@ if __name__ == '__main__':
             #agent.update_target_network()
 
         for e in range(0, N_control_intervals):
+
             #if explore_rate < 1:
             #if episode >0 :
 
                 #agent.Q_update(alpha=alpha) DQN Monte carlo
+
 
             actions, exploit_flags = agent.get_actions([states, sequences], explore_rate, test_episode)
 
@@ -146,8 +171,8 @@ if __name__ == '__main__':
             next_states = []
 
             for i,o in enumerate(outputs):
-                next_state, reward, done, _, u  = o
 
+                next_state, reward, done, _, u  = o
 
                 next_states.append(next_state)
                 state = states[i]
@@ -173,6 +198,7 @@ if __name__ == '__main__':
 
 
             states = next_states
+
 
         #run single test episode
 
@@ -214,10 +240,25 @@ if __name__ == '__main__':
         # train the agent
 
 
-        explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11 * skip))
+        explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (12 * skip))
+
+        #if episode*skip <5000: # 5000 eps minimum to do MC fitting
+        #   explore_rate = 1
         #explore_rate = 1
         if explore_rate < 1:
-            print('train')
+
+            if not done_MC:
+                print('starting Monte Carlo')
+                for i in range(200):
+                    print()
+                    print('Monte Carlo iter: ' + str(i))
+                    history = agent.Q_update(fitted_q=True, monte_carlo=True, verbose=False)
+                    print('Loss:', history.history['loss'][0], history.history['loss'][-1])
+                    print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
+                    print('epochs:', len(history.history['val_loss']))
+                done_MC = True
+            else:
+                history = agent.Q_update(fitted_q=True, monte_carlo=False, verbose=False)
 
 
             #alpha = 1 - episode/int(n_episodes//skip)
@@ -225,14 +266,16 @@ if __name__ == '__main__':
             if explore_rate == 0:
                 alpha -= 1 / (n_episodes // skip * 0.1)
             '''
-            history = agent.Q_update(fitted_q = True, monte_carlo = False, verbose = False)
+
 
             print('Loss:', history.history['loss'][0], history.history['loss'][-1])
             print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
+            print('epochs:', len(history.history['val_loss']))
 
         print('n unstable ', unstable)
         n_unstables.append(unstable)
         all_returns.extend(e_returns)
+        all_test_returns.append(np.sum(np.array(e_rewards)[-1, :]))
         print()
         print('EPISODE: ', episode, episode*skip)
         print('explore rate: ', explore_rate)
@@ -257,6 +300,7 @@ if __name__ == '__main__':
 
     agent.save_network(save_path)
     np.save(save_path + 'all_returns.npy', np.array(all_returns))
+    np.save(save_path + 'all_test_returns.npy', np.array(all_test_returns))
     np.save(save_path + 'n_unstables.npy', np.array(n_unstables))
     np.save(save_path + 'actions.npy', np.array(agent.actions))
     #np.save(save_path + 'values.npy', np.array(agent.values))

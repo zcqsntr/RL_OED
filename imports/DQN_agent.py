@@ -403,7 +403,7 @@ class DRQN_agent(DQN_agent):
         S_input = keras.Input(shape = (self.layer_sizes[0],), name = "S_input")
         sequence_input = keras.Input(shape = (None,self.layer_sizes[1]), name = 'sequence_input')
 
-        #lstm_out = layers.LSTM(lstm_size, input_shape = (None,self.layer_sizes[1]), return_sequences=True)(sequence_input)
+        #lstm_out = layers.GRU(lstm_size, input_shape = (None,self.layer_sizes[1]), return_sequences=True)(sequence_input)
 
         lstm_out = layers.GRU(lstm_size)(sequence_input)
 
@@ -452,32 +452,39 @@ class DRQN_agent(DQN_agent):
         t = time.time()
         for i, trajectory in enumerate(sample):
 
+
             e_rewards = []
             sequence = [[0]*self.layer_sizes[1]]
-            next_sequence = [[0]*self.layer_sizes[1]]
+
 
             for j, transition in enumerate(trajectory):
 
 
-                if j > 0: # this needs to be one behind
-
-                    #one_hot_a = np.array([int(i == action) for i in range(self.layer_sizes[-1])])/10
-                    sequence.append(np.concatenate((state, u/10)))
 
                 self.sequences.append(copy.deepcopy(sequence))
+
+
+
                 state, action, reward, next_state, done, u = transition
+
+                sequence.append(np.concatenate((state, u / 10)))
 
                 #one_hot_a = np.array([int(i == action) for i in range(self.layer_sizes[-1])])/10
 
-                next_sequence.append(np.concatenate((state, u/10)))
 
-                self.next_sequences.append(copy.deepcopy(next_sequence))
+
+                self.next_sequences.append(copy.deepcopy(sequence))
+
+
+
                 self.states.append(state)
                 self.next_states.append(next_state)
                 self.actions.append(action)
                 self.rewards.append(reward)
                 e_rewards.append(reward)
                 self.dones.append(done)
+
+
 
 
             if monte_carlo:
@@ -545,17 +552,12 @@ class DRQN_agent(DQN_agent):
                 values[i, actions[i]] = (1-alpha )*values[i, actions[i]] + alpha * self.all_values[i]
             else:
                 #print(rewards[i], self.gamma *all_values[i, actions[i]])
-
-
-
                 if dones[i]:
 
                     values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha*rewards[i]
 
                 else:
                     values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma * np.max(next_values[i])) #Q learning
-                    #values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma *next_values[i, np.argmax(next_values[i])]) #SARSA
-
 
             #print(values[i, actions[i]])
             #print()
@@ -604,8 +606,9 @@ class DRQN_agent(DQN_agent):
 
         if fitted_q:
             epochs = 500
-            batch_size = 512
-            self.reset_weights()
+            batch_size = 256
+            if not monte_carlo:
+                self.reset_weights()
             callback = tf.keras.callbacks.EarlyStopping(monitor = 'loss', patience=2, restore_best_weights=True)
             callbacks = [callback]
         else:

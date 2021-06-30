@@ -560,8 +560,7 @@ class OED_env():
 
         det_FIM = np.prod(diag(r).elements())
 
-        logdet_FIM = trace(log(r)).elements()[
-            0]  # do it like this to protect from numerical errors from multiplying large EVs
+        logdet_FIM = trace(log(r)).elements()[0]  # do it like this to protect from numerical errors from multiplying large EVs
 
         if det_FIM <= 0:
             print('----------------------------------------smaller than 0')
