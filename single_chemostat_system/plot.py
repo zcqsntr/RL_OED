@@ -40,7 +40,8 @@ path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_tim
 path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps_new_ICS_reduced_state'
 path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps_reduced_state'
 path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/single_chemostat_rec_fitted_q'
-step = 10000
+path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/rec_fitted_q_050721/single_chemostat_prior'
+step = 1000
 n_repeats = 3
 all_returns = []
 all_trajectories = []
@@ -49,7 +50,7 @@ all_us = []
 N_control_intervals = 10
 control_interval_time = 30
 
-for i in range(7,10):
+for i in range(22, 25):
     '''
     us = np.load(path + '/repeat' + str(i) +'/us.npy')
     print(us.shape)
@@ -112,7 +113,7 @@ for i in range(7,10):
     n_unstable =  np.load(path + '/repeat' + str(i) +'/n_unstables.npy')
     print('unstable:', n_unstable[-1])
     #plt.plot(n_unstable)
-    #plt.show()
+    plt.show()
 
 
 #print(values[-1,0,:])

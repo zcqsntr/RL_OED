@@ -53,50 +53,32 @@ if __name__ == '__main__':
 
     print('rl state', n_observed_variables + n_params + n_FIM_elements + 2)
 
+
+    done_MC = True
+    done_inital_fit = False # fit on the data gathered during random explore phase before explore rate < 1
     param_guesses = actual_params
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
             prior = False
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 25000
+            n_episodes = 50000
             skip = 25
         elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
             prior = False
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
             n_episodes = 50000
-            skip = 50
+            skip = 10
         elif sys.argv[2] == '7' or sys.argv[2] == '8' or sys.argv[2] == '9':
             prior = False
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 50000
+            n_episodes = 100000
             skip = 25
         elif sys.argv[2] == '10' or sys.argv[2] == '11' or sys.argv[2] == '12':
             prior = False
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 50000
-            skip = 100
-        elif sys.argv[2] == '13' or sys.argv[2] == '14' or sys.argv[2] == '15':
-            prior = False
-            done_MC = False  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 25000
-            skip = 25
-        elif sys.argv[2] == '16' or sys.argv[2] == '17' or sys.argv[2] == '18':
-            prior = False
-            done_MC = False  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 50000
-            skip = 50
+            n_episodes = 10000
+            skip = 1
 
-        elif sys.argv[2] == '19' or sys.argv[2] == '20' or sys.argv[2] == '21':
-            prior = False
-            done_MC = False  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 50000
-            skip = 25
-
-        elif sys.argv[2] == '22' or sys.argv[2] == '23' or sys.argv[2] == '24':
-            prior = False
-            done_MC = False  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 50000
-            skip = 100
 
         save_path = sys.argv[1] + sys.argv[2] + '/'
         print(n_episodes)
@@ -126,7 +108,7 @@ if __name__ == '__main__':
     n_unstables = []
     all_returns = []
     all_test_returns = []
-    test_episode = True # if true agent will take greedy actions for the last episode in the skip, to test current policy
+    test_episode = False # if true agent will take greedy actions for the last episode in the skip, to test current policy
     for episode in range(int(n_episodes//skip)):
 
         if prior:
@@ -246,6 +228,15 @@ if __name__ == '__main__':
         #   explore_rate = 1
         #explore_rate = 1
         if explore_rate < 1:
+            if not done_inital_fit:
+                for  i in range(int(episode//skip)):
+                    print()
+                    print('Initial iter: ' + str(i))
+                    history = agent.Q_update(fitted_q=True, monte_carlo=False, verbose=False)
+                    print('Loss:', history.history['loss'][0], history.history['loss'][-1])
+                    print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
+                    print('epochs:', len(history.history['val_loss']))
+                done_inital_fit = True
 
             if not done_MC:
                 print('starting Monte Carlo')
@@ -278,6 +269,8 @@ if __name__ == '__main__':
         all_test_returns.append(np.sum(np.array(e_rewards)[-1, :]))
         print()
         print('EPISODE: ', episode, episode*skip)
+
+        print('moving av return:', np.mean(all_returns[-100:]))
         print('explore rate: ', explore_rate)
         print('alpha:', alpha)
         print('av return: ', np.mean(all_returns[-skip:]))
@@ -288,11 +281,13 @@ if __name__ == '__main__':
         print('rewards:', np.array(e_rewards)[0, :])
         print('return:', np.sum(np.array(e_rewards)[0, :]))
         print()
-        print('test actions:', np.array(e_actions)[:, -1])
-        print('test exploit:', np.array(e_exploit_flags)[:, -1])
-        print('test rewards:', np.array(e_rewards)[-1, :])
-        print('test return:', np.sum(np.array(e_rewards)[-1, :]))
-        print()
+
+        if test_episode:
+            print('test actions:', np.array(e_actions)[:, -1])
+            print('test exploit:', np.array(e_exploit_flags)[:, -1])
+            print('test rewards:', np.array(e_rewards)[-1, :])
+            print('test return:', np.sum(np.array(e_rewards)[-1, :]))
+            print()
 
     print('time:', time.time() - t)
     print(env.detFIMs[-1])
