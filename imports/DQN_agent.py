@@ -13,6 +13,7 @@ import time
 import gc
 
 
+
 class DQN_agent():
 
     def __init__(self,layer_sizes ):
@@ -501,8 +502,8 @@ class DRQN_agent(DQN_agent):
 
 
 
-        padded = pad_sequences(self.sequences, maxlen = 11)
-        next_padded = pad_sequences(self.next_sequences, maxlen = 11)
+        padded = pad_sequences(self.sequences, maxlen = 11, dtype='float64')
+        next_padded = pad_sequences(self.next_sequences, maxlen = 11,dtype='float64')
         states = np.array(self.states)
 
         next_states = np.array(self.next_states, dtype=np.float64)
@@ -524,9 +525,10 @@ class DRQN_agent(DQN_agent):
         '''
 
         # construct target
-        print(len(sample))
-        print(states.shape, padded.shape)
-        print(next_states.shape, next_padded.shape)
+        #print(len(sample))
+
+        #print(pad_sequences(self.sequences, maxlen = 11, dtype='float64'))
+
         t = time.time()
         values = self.predict([states, padded])
         print(values.shape)
@@ -540,7 +542,8 @@ class DRQN_agent(DQN_agent):
 
         t = time.time()
         # update the value for the taken action using cost function and current Q
-        print(next_states.shape, values.shape, len(self.all_values))
+        #print('next states, sequences get inputs targets:',next_states.shape, next_padded.shape)
+        #print('values get inputs targets', values.shape, next_values.shape)
         for i in range(len(next_states)):
             # print(actions[i], rewards[i])
             #print('-------------------')
@@ -604,6 +607,7 @@ class DRQN_agent(DQN_agent):
         #print('target: ', targets)
         #print('target old: ', targets_old)
 
+
         if fitted_q:
             epochs = 500
             batch_size = 256
@@ -651,7 +655,9 @@ class DRQN_agent(DQN_agent):
 
         if len(exploit_inds) > 0:
 
-            sequences = pad_sequences(sequences, maxlen=11)
+            sequences = pad_sequences(sequences, maxlen=11, dtype='float64')
+
+
             values = self.predict([np.array(states)[exploit_inds], np.array(sequences)[exploit_inds]])
 
 

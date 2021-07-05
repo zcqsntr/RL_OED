@@ -47,7 +47,7 @@ normaliser = np.array(normaliser)
 n_params = actual_params.size()[0]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
-n_episodes = 5000
+n_episodes = 2
 
 trajectory = []
 actions = []
@@ -341,7 +341,9 @@ test_actions = np.array(all_test_actions)
 
 sequences = pad_sequences(all_sequences, maxlen=N_control_intervals+1)
 test_sequences = pad_sequences(all_test_sequences, maxlen=N_control_intervals+1)
-
+print(all_sequences)
+print(sequences)
+sys.exit()
 print(states.shape)
 #print(sequences.shape)
 print(test_states.shape)

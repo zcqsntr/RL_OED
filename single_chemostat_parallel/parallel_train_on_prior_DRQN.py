@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
 
     done_MC = True
-    done_inital_fit = False # fit on the data gathered during random explore phase before explore rate < 1
+    done_inital_fit = True # fit on the data gathered during random explore phase before explore rate < 1
     param_guesses = actual_params
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
@@ -73,11 +73,18 @@ if __name__ == '__main__':
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
             n_episodes = 100000
             skip = 25
+
         elif sys.argv[2] == '10' or sys.argv[2] == '11' or sys.argv[2] == '12':
             prior = False
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
             n_episodes = 10000
             skip = 1
+
+        elif sys.argv[2] == '13' or sys.argv[2] == '14' or sys.argv[2] == '15':
+            prior = False
+            done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
+            n_episodes = 10000
+            skip = 100
 
 
         save_path = sys.argv[1] + sys.argv[2] + '/'
@@ -108,7 +115,7 @@ if __name__ == '__main__':
     n_unstables = []
     all_returns = []
     all_test_returns = []
-    test_episode = False # if true agent will take greedy actions for the last episode in the skip, to test current policy
+    test_episode = True # if true agent will take greedy actions for the last episode in the skip, to test current policy
     for episode in range(int(n_episodes//skip)):
 
         if prior:
@@ -174,6 +181,8 @@ if __name__ == '__main__':
 
                 sequences[i].append(np.concatenate((state, u/10)))
 
+
+
                 if reward != -1: # dont include the unstable trajectories as they override the true return
                     e_rewards[i].append(reward)
                     e_returns[i] += reward
@@ -222,7 +231,7 @@ if __name__ == '__main__':
         # train the agent
 
 
-        explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (12 * skip))
+        explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11 * skip))
 
         #if episode*skip <5000: # 5000 eps minimum to do MC fitting
         #   explore_rate = 1
