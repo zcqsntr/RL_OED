@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
 
     done_MC = True
-    done_inital_fit = True # fit on the data gathered during random explore phase before explore rate < 1
+    done_inital_fit = False # fit on the data gathered during random explore phase before explore rate < 1
     param_guesses = actual_params
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
