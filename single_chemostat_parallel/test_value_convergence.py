@@ -47,12 +47,12 @@ normaliser = np.array(normaliser)
 n_params = actual_params.size()[0]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
-n_episodes = 2
+n_episodes = 1000
 
 trajectory = []
 actions = []
 rewards = []
-n_iters = 2000
+n_iters = 1000
 n_repeats = 1
 
 n_cores = multiprocessing.cpu_count()//2
@@ -339,11 +339,10 @@ test_states = np.array(test_states)
 test_actions = np.array(all_test_actions)
 
 
-sequences = pad_sequences(all_sequences, maxlen=N_control_intervals+1)
-test_sequences = pad_sequences(all_test_sequences, maxlen=N_control_intervals+1)
-print(all_sequences)
-print(sequences)
-sys.exit()
+sequences = pad_sequences(all_sequences, maxlen=N_control_intervals+1, dtype='float64')
+test_sequences = pad_sequences(all_test_sequences, maxlen=N_control_intervals+1, dtype='float64')
+
+
 print(states.shape)
 #print(sequences.shape)
 print(test_states.shape)
