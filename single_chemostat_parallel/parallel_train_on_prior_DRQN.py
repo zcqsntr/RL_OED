@@ -85,6 +85,11 @@ if __name__ == '__main__':
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
             n_episodes = 10000
             skip = 100
+        if sys.argv[2] == '16' or sys.argv[2] == '17' or sys.argv[2] == '18':
+            prior = False
+            done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
+            n_episodes = 25000
+            skip = 100
 
 
         save_path = sys.argv[1] + sys.argv[2] + '/'
