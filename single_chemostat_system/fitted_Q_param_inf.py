@@ -17,6 +17,7 @@ import time
 
 from ROCC import *
 from xdot import xdot
+import json
 
 def disablePrint():
     sys.stdout = open(os.devnull, 'w')
@@ -28,10 +29,13 @@ def enablePrint():
 
 if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+    params = json.load(open('params.json'))
+    n_episodes, skip, y0, actual_params, input_bounds, n_controlled_inputs, num_inputs, dt, lb, ub, N_control_intervals, control_interval_time, n_observed_variables, prior, normaliser = \
+        [params[k] for k in params.keys()]
 
+    actual_params = DM(actual_params)
+    normaliser = np.array(normaliser)
 
-    n_episodes = 17500
-    skip = 100
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
 
@@ -53,39 +57,25 @@ if __name__ == '__main__':
     print(save_path)
     all_returns = []
 
-    #y, y0, umax, Km, Km0, A
-    #actual_params = DM([480000, 480000, 520000, 520000, 1, 1.1, 0.00048776, 0.000000102115, 0.00006845928, 0.00006845928,0, 0,0, 0])
-    actual_params = DM([1,  0.00048776, 0.00006845928])
-
-    print(actual_params)
-    input_bounds = [0.01, 1]
-    n_controlled_inputs = 2
-
     n_params = actual_params.size()[0]
 
-    y0 = [200000, 0, 1]
+
     n_system_variables = len(y0)
     n_FIM_elements = sum(range(n_params + 1))
 
     n_tot = n_system_variables + n_params * n_system_variables + n_FIM_elements
     print(n_params, n_system_variables, n_FIM_elements)
-    num_inputs = 10  # number of discrete inputs available to RL
 
-    dt = 1 / 500
 
     param_guesses = actual_params
 
-    N_control_intervals = 10
-    control_interval_time = 1
-
-    n_observed_variables = 1
 
     print('rl state', n_observed_variables + n_params + n_FIM_elements + 2)
 
     agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 150, 150, 150, num_inputs ** n_controlled_inputs])
 
 
-    normaliser = np.array([1e6, 1e1, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2, 1e2])
+    normaliser = np.array([1e4, 1e2])
     env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser)
     explore_rate = 1
 
@@ -93,6 +83,8 @@ if __name__ == '__main__':
     #agent.load_network('/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_parallel/repeat2/')
 
     all_actions = [10, 50, 99, 10, 50, 99, 10, 50, 99,99]
+
+    print('time:', control_interval_time)
     for episode in range(n_episodes):
 
         env.reset()
@@ -108,7 +100,9 @@ if __name__ == '__main__':
             t = time.time()
             action = agent.get_action(state, explore_rate)
             #action = all_actions[e]
-
+            action = 99
+            print(state[0])
+            print(action)
             next_state, reward, done, _ = env.step(action)
 
             if e == N_control_intervals - 1:

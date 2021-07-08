@@ -43,11 +43,13 @@ n_episodes, skip, y0, actual_params, input_bounds, n_controlled_inputs, num_inpu
 
 actual_params = DM(actual_params)
 normaliser = np.array(normaliser)
+normaliser = np.array([1e3, 1e1])
 
 n_params = actual_params.size()[0]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
-n_episodes = 1000
+n_episodes = 100
+skip = 100
 
 trajectory = []
 actions = []
@@ -65,34 +67,39 @@ all_value_SSEs = []
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 print('number of cores available: ', multiprocessing.cpu_count())
 
-fitted_q = True
+fitted = True
 DQN = False
 DRQN = True
-monte_carlo = False
+monte_carlo = True
 cluster = False
 if len(sys.argv) == 3:
     cluster = True
     if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
+        layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64], [100],
+                       num_inputs ** n_controlled_inputs]
 
-        n_episodes = 1000
     elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
+        layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64], [100, 100],
+                       num_inputs ** n_controlled_inputs]
 
-        n_episodes = 2000
+
     elif sys.argv[2] == '7' or sys.argv[2] == '8' or sys.argv[2] == '9':
-
-        n_episodes = 5000
+        layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64, 64], [100,100],
+                       num_inputs ** n_controlled_inputs]
 
     elif sys.argv[2] == '10' or sys.argv[2] == '11' or sys.argv[2] == '12':
 
-        n_episodes = 10000
+        layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [100], [200],
+                       num_inputs ** n_controlled_inputs]
 
     elif sys.argv[2] == '13' or sys.argv[2] == '14' or sys.argv[2] == '15':
+        layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [100], [200, 200],
+                       num_inputs ** n_controlled_inputs]
 
-        n_episodes = 20000
 
     elif sys.argv[2] == '16' or sys.argv[2] == '17' or sys.argv[2] == '18':
-
-        n_episodes = 30000
+        layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [100, 100], [200, 200],
+                       num_inputs ** n_controlled_inputs]
 
 
     save_path = sys.argv[1] + sys.argv[2] + '/'
@@ -103,6 +110,8 @@ elif len(sys.argv) == 2:
     os.makedirs(save_path, exist_ok=True)
 else:
     save_path = './'
+    layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [100, 100], [200, 200],
+     num_inputs ** n_controlled_inputs]
 
 
 
@@ -125,9 +134,9 @@ test_env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables,
 
 if DRQN:
     #agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + num_inputs ** n_controlled_inputs, 32, 100, 100, num_inputs ** n_controlled_inputs])
-    agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, 32, 100, 100, num_inputs ** n_controlled_inputs])
+    agent = DRQN_agent(layer_sizes=layer_sizes)
     #test_agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + num_inputs ** n_controlled_inputs,  32, 100, 100,  num_inputs ** n_controlled_inputs])
-    test_agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 +n_controlled_inputs,  32, 100, 100,  num_inputs ** n_controlled_inputs])
+    test_agent = DRQN_agent(layer_sizes=layer_sizes)
 else:
     agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 50, 50,  num_inputs ** n_controlled_inputs])
     #agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + 1, 50, 50,  num_inputs ** n_controlled_inputs])
@@ -144,6 +153,10 @@ all_test_sequences = []
 
 env.mapped_trajectory_solver = env.CI_solver.map(skip, "thread", n_cores)
 test_env.mapped_trajectory_solver = test_env.CI_solver.map(skip, "thread", n_cores)
+
+print(type(actual_params))
+
+
 for ep in range(int(n_episodes//skip)):
     print('episode:', ep)
     print('length:', len(agent.memory))
@@ -151,12 +164,23 @@ for ep in range(int(n_episodes//skip)):
     env.reset()
     states = [env.get_initial_RL_state() for _ in range(skip)]
     explore_rate = 1
-    actual_params = np.random.uniform(low=lb, high=ub, size=(skip, 3))
+
+    if prior:
+        actual_params = np.random.uniform(low=lb, high=ub, size=(skip, 3))
+        test_actual_params = np.random.uniform(low=lb, high=ub, size=(skip, 3))
+    else:
+        actual_params = np.random.uniform(low=[1, 0.00048776, 0.00006845928], high=[1, 0.00048776, 0.00006845928],
+                                          size=(skip, 3))
+        test_actual_params = np.random.uniform(low=[1, 0.00048776, 0.00006845928], high=[1, 0.00048776, 0.00006845928],
+                                          size=(skip, 3))
+
+
     env.param_guesses = actual_params
 
     test_env.reset()
     test_states = [test_env.get_initial_RL_state() for _ in range(skip)]
-    test_actual_params = np.random.uniform(low=lb, high=ub, size=(skip, 3))
+
+
     test_env.param_guesses = test_actual_params
 
 
@@ -224,12 +248,12 @@ for ep in range(int(n_episodes//skip)):
             trajectories[i].append(transition)
 
             #one_hot_a = np.array([int(i == action) for i in range(agent.layer_sizes[-1])])/10
-            sequences[i].append(np.concatenate((state, u/10)))
+            sequences[i].append(np.concatenate((state, u)))
 
 
 
             #one_hot_test_a = np.array([int(i == test_action) for i in range(test_agent.layer_sizes[-1])])/10
-            test_sequences[i].append(np.concatenate((test_state, test_u/10)))
+            test_sequences[i].append(np.concatenate((test_state, test_u)))
 
             e_actions[i].append(action)
             e_rewards[i].append(reward)
@@ -390,7 +414,7 @@ for iter in range(1,n_iters+1):
         #monte_carlo = iter <= 200
         #alpha = 1 - iter/n_iters
         #print('alpha:', alpha)
-        history = agent.Q_update(fitted_q = fitted_q, monte_carlo = monte_carlo, alpha = alpha, verbose = False)
+        history = agent.Q_update(fitted = fitted, monte_carlo = monte_carlo, alpha = alpha, verbose = False)
         print('n epochs:', len(history.history['loss']))
         print('Loss:', history.history['loss'][0], history.history['loss'][-1])
         print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])

@@ -45,6 +45,7 @@ if __name__ == '__main__':
 
 
 
+
     n_params = actual_params.size()[0]
     n_system_variables = len(y0)
     n_FIM_elements = sum(range(n_params + 1))
@@ -102,7 +103,7 @@ if __name__ == '__main__':
         save_path = './'
 
     # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
-    agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, 32, 100, 100, num_inputs ** n_controlled_inputs])
+    agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, 100, 200, 200,  num_inputs ** n_controlled_inputs])
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
     env = OED_env(*args)
@@ -121,6 +122,8 @@ if __name__ == '__main__':
     all_returns = []
     all_test_returns = []
     test_episode = True # if true agent will take greedy actions for the last episode in the skip, to test current policy
+
+    print('time:', control_interval_time)
     for episode in range(int(n_episodes//skip)):
 
         if prior:
@@ -158,6 +161,8 @@ if __name__ == '__main__':
 
             actions, exploit_flags = agent.get_actions([states, sequences], explore_rate, test_episode)
 
+
+
             e_actions.append(actions)
             e_exploit_flags.append(exploit_flags)
 
@@ -166,12 +171,17 @@ if __name__ == '__main__':
 
             for i,o in enumerate(outputs):
 
+
                 next_state, reward, done, _, u  = o
 
                 next_states.append(next_state)
                 state = states[i]
 
+
+
                 action = actions[i]
+
+
 
                 if e == N_control_intervals - 1 or np.all(np.abs(next_state) >= 1) or math.isnan(np.sum(next_state)):
                     next_state = [None]*agent.layer_sizes[0] # maybe dont need this
@@ -184,7 +194,7 @@ if __name__ == '__main__':
                 #one_hot_a = np.array([int(i == action) for i in range(agent.layer_sizes[-1])])/10
 
 
-                sequences[i].append(np.concatenate((state, u/10)))
+                sequences[i].append(np.concatenate((state, u)))
 
 
 
@@ -200,6 +210,10 @@ if __name__ == '__main__':
 
 
         #print((e_rewards))
+
+        #dont put the test trajectories in the agents memory
+        if test_episode:
+            trajectories = trajectories[:-1]
 
         print('traj:', len(trajectories))
         for trajectory in trajectories:
@@ -242,15 +256,6 @@ if __name__ == '__main__':
         #   explore_rate = 1
         #explore_rate = 1
         if explore_rate < 1:
-            if not done_inital_fit:
-                for  i in range(int(episode//skip)):
-                    print()
-                    print('Initial iter: ' + str(i))
-                    history = agent.Q_update(fitted_q=True, monte_carlo=False, verbose=False)
-                    print('Loss:', history.history['loss'][0], history.history['loss'][-1])
-                    #print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
-                    print('epochs:', len(history.history['loss']))
-                done_inital_fit = True
 
             if not done_MC:
                 print('starting Monte Carlo')
@@ -262,6 +267,17 @@ if __name__ == '__main__':
                     #print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
                     print('epochs:', len(history.history['loss']))
                 done_MC = True
+            if not done_inital_fit:
+                for  i in range(int(episode)):
+                    print()
+                    print('Initial iter: ' + str(i))
+                    history = agent.Q_update(fitted_q=True, monte_carlo=False, verbose=False)
+                    print('Loss:', history.history['loss'][0], history.history['loss'][-1])
+                    #print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
+                    print('epochs:', len(history.history['loss']))
+                done_inital_fit = True
+
+
             else:
                 history = agent.Q_update(fitted_q=True, monte_carlo=False, verbose=False)
 

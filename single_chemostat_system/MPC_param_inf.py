@@ -17,7 +17,7 @@ import time
 
 from ROCC import *
 from xdot import xdot
-
+import json
 def disablePrint():
     sys.stdout = open(os.devnull, 'w')
 
@@ -28,68 +28,19 @@ def enablePrint():
 
 if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+    params = json.load(open('params.json'))
+    n_episodes, skip, y0, actual_params, input_bounds, n_controlled_inputs, num_inputs, dt, lb, ub, N_control_intervals, control_interval_time, n_observed_variables, prior, normaliser = \
+        [params[k] for k in params.keys()]
+
+    actual_params = DM(actual_params)
+    normaliser = np.array(normaliser)
 
 
-    n_episodes = 1000
-    if len(sys.argv) == 3:
-        if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
-
-            n_episodes = 12500
-        elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
-            n_episodes = 15000
-        else:
-            n_episodes = 17500
-
-        save_path = sys.argv[1] + sys.argv[2] + '/'
-        print(n_episodes)
-        os.makedirs(save_path, exist_ok=True)
-    elif len(sys.argv) == 2:
-        save_path = sys.argv[1] + '/'
-        os.makedirs(save_path, exist_ok=True)
-    else:
-        save_path = './'
-
-    print(save_path)
-    all_returns = []
-
-    #y, y0, umax, Km, Km0, A
-    #actual_params = DM([480000, 480000, 520000, 520000, 1, 1.1, 0.00048776, 0.000000102115, 0.00006845928, 0.00006845928,0, 0,0, 0])
-    actual_params = DM([1,  0.00048776, 0.00006845928])
-
-    input_bounds = [0.01, 1]
-    n_controlled_inputs = 2
-
-    n_params = actual_params.size()[0]
-
-    #y0 = [200000, 0, 1]
-    y0 = [2000, 0., 0.]
-    n_system_variables = len(y0)
-    n_FIM_elements = sum(range(n_params + 1))
-
-    n_tot = n_system_variables + n_params * n_system_variables + n_FIM_elements
-    print(n_params, n_system_variables, n_FIM_elements)
-    num_inputs = 10  # number of discrete inputs available to RL
-
-    dt = 1 / 4000
-
-    #param_guesses = actual_params
-
-    lb = np.array([0.5, 0.0001, 0.00001])
-    ub = np.array([2, 0.001, 0.0001])
+    param_guesses = DM((np.array(lb) + np.array(ub))/2)
 
 
-    param_guesses = DM((lb + ub)/2)
-
-    N_control_intervals = 10
-    control_interval_time = 2
-
-    n_observed_variables = 1
-
-    print('rl state', n_observed_variables + n_params + n_FIM_elements + 2)
-
-
-    normaliser = np.array([1e3, 1e1, 1e-3, 1e-4, 1e4, 1e4, 1e4, 1e4, 1e4, 1e4, 1e2, 1e2])#*10
-    env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser)
+    args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
+    env = OED_env(*args)
     explore_rate = 1
     u0 = [(input_bounds[1] - input_bounds[0])/2]*n_controlled_inputs
 

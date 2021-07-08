@@ -397,25 +397,33 @@ class DRQN_agent(DQN_agent):
         '''
         Creates Q network for value function approximation
         '''
+        input_size, sequence_size, rec_sizes, hidden_sizes, output_size = layer_sizes
 
         initialiser = keras.initializers.RandomUniform(minval=-0.5, maxval=0.5, seed=None)
-        lstm_size = layer_sizes[2]
 
-        S_input = keras.Input(shape = (self.layer_sizes[0],), name = "S_input")
-        sequence_input = keras.Input(shape = (None,self.layer_sizes[1]), name = 'sequence_input')
 
-        #lstm_out = layers.GRU(lstm_size, input_shape = (None,self.layer_sizes[1]), return_sequences=True)(sequence_input)
+        S_input = keras.Input(shape = (input_size,), name = "S_input")
+        sequence_input = keras.Input(shape = (None,sequence_size), name = 'sequence_input')
 
-        lstm_out = layers.GRU(lstm_size)(sequence_input)
 
-        concat = layers.concatenate([S_input, lstm_out])
+        rec_out = sequence_input
+        for i, rec_size in enumerate(rec_sizes):
+
+            if i == len(rec_sizes) -1:
+                rec_out = layers.GRU(rec_size)(rec_out)
+            else:
+                rec_out = layers.GRU(rec_size, input_shape = (None,sequence_size), return_sequences=True)(rec_out)
+
+
+
+        concat = layers.concatenate([S_input, rec_out])
 
         hl = concat
 
-        for i, hl_size in enumerate(layer_sizes[3:-1]):
+        for i, hl_size in enumerate(hidden_sizes):
             hl = layers.Dense(hl_size,activation=tf.nn.relu, name = 'hidden_' + str(i))(hl)
 
-        out = layers.Dense(layer_sizes[-1], name = 'output')(hl)
+        out = layers.Dense(output_size, name = 'output')(hl)
 
         network = keras.Model(
             inputs = [S_input, sequence_input],
@@ -429,7 +437,7 @@ class DRQN_agent(DQN_agent):
         return network
 
 
-    def get_inputs_targets(self, alpha=1, fitted_q = False, monte_carlo = False):
+    def get_inputs_targets(self, alpha=1, fitted= False, monte_carlo = False):
         '''
         gets fitted Q inputs and calculates targets for training the Q-network for episodic training
         '''
@@ -441,7 +449,7 @@ class DRQN_agent(DQN_agent):
 
 
 
-        if fitted_q:
+        if fitted:
             sample = self.memory
         else:
             sample = self.sample(32, 50000)
@@ -466,9 +474,12 @@ class DRQN_agent(DQN_agent):
 
 
 
+
                 state, action, reward, next_state, done, u = transition
 
-                sequence.append(np.concatenate((state, u / 10)))
+
+
+                sequence.append(np.concatenate((state, u)))
 
                 #one_hot_a = np.array([int(i == action) for i in range(self.layer_sizes[-1])])/10
 
@@ -503,6 +514,8 @@ class DRQN_agent(DQN_agent):
 
 
         padded = pad_sequences(self.sequences, maxlen = 11, dtype='float64')
+
+
         next_padded = pad_sequences(self.next_sequences, maxlen = 11,dtype='float64')
         states = np.array(self.states)
 
@@ -566,7 +579,8 @@ class DRQN_agent(DQN_agent):
             #print()
         # shuffle inputs and target for IID
         print('targets time:', time.time()-t)
-
+        print('values', values.shape)
+        print(len(self.all_values))
 
         randomize = np.arange(len(states))
         np.random.shuffle(randomize)
@@ -590,14 +604,14 @@ class DRQN_agent(DQN_agent):
 
         return self.network.predict({'S_input': inputs[0], 'sequence_input':inputs[1]})
 
-    def Q_update(self, inputs = None, targets = None, alpha = 1, fitted_q = False, verbose = True, monte_carlo = False):
+    def Q_update(self, inputs = None, targets = None, alpha = 1, fitted = True, verbose = True, monte_carlo = False):
         '''
         Uses a set of inputs and targets to update the Q network
         '''
 
 
         if inputs is None and targets is None:
-            inputs, targets = self.get_inputs_targets(alpha =alpha, fitted_q=fitted_q, monte_carlo=monte_carlo)
+            inputs, targets = self.get_inputs_targets(alpha =alpha, fitted=fitted, monte_carlo=monte_carlo)
             #print(inputs, targets)
 
             #inputs_old, targets_old = self.get_inputs_targets_old()
@@ -608,19 +622,20 @@ class DRQN_agent(DQN_agent):
         #print('target old: ', targets_old)
 
 
-        if fitted_q:
+        if fitted:
             epochs = 500
             batch_size = 256
-            if not monte_carlo:
-                self.reset_weights()
-            callback = tf.keras.callbacks.EarlyStopping(monitor = 'loss', patience=2, restore_best_weights=True)
+
+            self.reset_weights()
+            callback = tf.keras.callbacks.EarlyStopping(monitor = 'loss', patience=3, restore_best_weights=True)
             callbacks = [callback]
         else:
             epochs = 1
             batch_size = 32
+
             callbacks = []
         t = time.time()
-        history = self.network.fit({'S_input': inputs[0], 'sequence_input':inputs[1]}, targets, epochs = epochs, verbose = verbose, validation_split =0., batch_size=batch_size, callbacks = callbacks)
+        history = self.network.fit({'S_input': inputs[0], 'sequence_input':inputs[1]}, targets, epochs = epochs, verbose = verbose, validation_split =0.1, batch_size=batch_size, callbacks = callbacks)
         print('fit time:', time.time()-t)
         return history
 
@@ -668,7 +683,9 @@ class DRQN_agent(DQN_agent):
 
 
             exploit_actions = np.argmax(values, axis = 1)
+
             actions[exploit_inds] = exploit_actions
+
 
         actions[explore_inds] = explore_actions
 
