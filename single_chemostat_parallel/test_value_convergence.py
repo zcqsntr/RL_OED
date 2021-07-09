@@ -48,7 +48,7 @@ normaliser = np.array([1e3, 1e1])
 n_params = actual_params.size()[0]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
-n_episodes = 1000
+n_episodes = 10000
 skip = 100
 
 trajectory = []
@@ -70,7 +70,7 @@ print('number of cores available: ', multiprocessing.cpu_count())
 fitted = True
 DQN = False
 DRQN = True
-monte_carlo = True
+monte_carlo = False
 cluster = False
 if len(sys.argv) == 3:
     cluster = True
