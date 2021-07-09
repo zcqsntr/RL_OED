@@ -194,7 +194,7 @@ if __name__ == '__main__':
                 #one_hot_a = np.array([int(i == action) for i in range(agent.layer_sizes[-1])])/10
 
 
-                sequences[i].append(np.concatenate((state, u)))
+                sequences[i].append(np.concatenate((state, u/10)))
 
 
 

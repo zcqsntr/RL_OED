@@ -445,59 +445,31 @@ class DRQN_agent(DQN_agent):
         '''
                 gets fitted Q inputs and calculates targets for training the Q-network for episodic training
                 '''
-
-
-
-
         if fitted:
             sample = self.memory
         else:
             sample = self.sample(32, 50000)
         #sample = self.memory[-100:]
         # iterate over all exprienc in memory and create fitted Q targets
-
-
-
         t = time.time()
         for i, trajectory in enumerate(sample):
-
 
             e_rewards = []
             sequence = [[0]*self.layer_sizes[1]]
 
 
             for j, transition in enumerate(trajectory):
-
-
-
                 self.sequences.append(copy.deepcopy(sequence))
-
-
-
-
                 state, action, reward, next_state, done, u = transition
-
-
-
-                sequence.append(np.concatenate((state, u)))
-
+                sequence.append(np.concatenate((state, u/10)))
                 #one_hot_a = np.array([int(i == action) for i in range(self.layer_sizes[-1])])/10
-
-
-
                 self.next_sequences.append(copy.deepcopy(sequence))
-
-
-
                 self.states.append(state)
                 self.next_states.append(next_state)
                 self.actions.append(action)
                 self.rewards.append(reward)
                 e_rewards.append(reward)
                 self.dones.append(done)
-
-
-
 
             if monte_carlo:
                 e_values = [e_rewards[-1]]
@@ -509,13 +481,7 @@ class DRQN_agent(DQN_agent):
 
 
         self.memory = [] # reset memory after this information has been extracted
-
-
-
-
         padded = pad_sequences(self.sequences, maxlen = 11, dtype='float64')
-
-
         next_padded = pad_sequences(self.next_sequences, maxlen = 11,dtype='float64')
         states = np.array(self.states)
 

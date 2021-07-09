@@ -48,7 +48,7 @@ normaliser = np.array([1e3, 1e1])
 n_params = actual_params.size()[0]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
-n_episodes = 100
+n_episodes = 1000
 skip = 100
 
 trajectory = []
@@ -248,12 +248,12 @@ for ep in range(int(n_episodes//skip)):
             trajectories[i].append(transition)
 
             #one_hot_a = np.array([int(i == action) for i in range(agent.layer_sizes[-1])])/10
-            sequences[i].append(np.concatenate((state, u)))
+            sequences[i].append(np.concatenate((state, u/10)))
 
 
 
             #one_hot_test_a = np.array([int(i == test_action) for i in range(test_agent.layer_sizes[-1])])/10
-            test_sequences[i].append(np.concatenate((test_state, test_u)))
+            test_sequences[i].append(np.concatenate((test_state, test_u/10)))
 
             e_actions[i].append(action)
             e_rewards[i].append(reward)
@@ -460,6 +460,11 @@ for iter in range(1,n_iters+1):
 
 np.save(save_path + 'value_SSEs.npy', value_SSEs)
 np.save(save_path + 'test_value_SSEs.npy', test_value_SSEs)
+np.save(save_path + 'true_values.npy', all_true_values)
+np.save(save_path + 'test_true_values.npy', all_test_true_values)
+np.save(save_path + 'training_pred.npy', training_pred)
+np.save(save_path + 'testing_pred.npy', testing_pred)
+
 print(value_SSEs)
 print(test_value_SSEs)
 if not cluster:
