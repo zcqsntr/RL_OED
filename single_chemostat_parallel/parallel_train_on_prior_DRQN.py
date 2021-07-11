@@ -43,9 +43,6 @@ if __name__ == '__main__':
     actual_params = DM(actual_params)
     normaliser = np.array(normaliser)
 
-
-
-
     n_params = actual_params.size()[0]
     n_system_variables = len(y0)
     n_FIM_elements = sum(range(n_params + 1))
@@ -62,35 +59,35 @@ if __name__ == '__main__':
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
             prior = False
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 50000
-            skip = 25
+            n_episodes = 100000
+            skip = 100
         elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
             prior = False
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 50000
-            skip = 10
+            n_episodes = 200000
+            skip = 100
         elif sys.argv[2] == '7' or sys.argv[2] == '8' or sys.argv[2] == '9':
             prior = False
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 100000
-            skip = 25
+            n_episodes = 200000
+            skip = 200
 
         elif sys.argv[2] == '10' or sys.argv[2] == '11' or sys.argv[2] == '12':
             prior = False
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 10000
-            skip = 1
+            n_episodes = 300000
+            skip = 300
 
         elif sys.argv[2] == '13' or sys.argv[2] == '14' or sys.argv[2] == '15':
             prior = False
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 10000
-            skip = 100
+            n_episodes = 500000
+            skip = 1000
         if sys.argv[2] == '16' or sys.argv[2] == '17' or sys.argv[2] == '18':
             prior = False
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 25000
-            skip = 100
+            n_episodes = 500000
+            skip = 2000
 
 
         save_path = sys.argv[1] + sys.argv[2] + '/'
@@ -102,8 +99,10 @@ if __name__ == '__main__':
     else:
         save_path = './'
 
+    layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64], [100],
+                   num_inputs ** n_controlled_inputs]
     # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
-    agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, 100, 200, 200,  num_inputs ** n_controlled_inputs])
+    agent = DRQN_agent(layer_sizes=layer_sizes)
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
     env = OED_env(*args)
@@ -268,7 +267,7 @@ if __name__ == '__main__':
                     print('epochs:', len(history.history['loss']))
                 done_MC = True
             if not done_inital_fit:
-                for  i in range(int(episode)):
+                for i in range(int(episode)):
                     print()
                     print('Initial iter: ' + str(i))
                     history = agent.Q_update(fitted_q=True, monte_carlo=False, verbose=False)
