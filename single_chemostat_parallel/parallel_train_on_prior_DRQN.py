@@ -261,7 +261,7 @@ if __name__ == '__main__':
                 for i in range(200):
                     print()
                     print('Monte Carlo iter: ' + str(i))
-                    history = agent.Q_update(fitted_q=True, monte_carlo=True, verbose=False)
+                    history = agent.Q_update(fitted=True, monte_carlo=True, verbose=False)
                     print('Loss:', history.history['loss'][0], history.history['loss'][-1])
                     #print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
                     print('epochs:', len(history.history['loss']))
@@ -270,7 +270,7 @@ if __name__ == '__main__':
                 for i in range(int(episode)):
                     print()
                     print('Initial iter: ' + str(i))
-                    history = agent.Q_update(fitted_q=True, monte_carlo=False, verbose=False)
+                    history = agent.Q_update(fitted=True, monte_carlo=False, verbose=False)
                     print('Loss:', history.history['loss'][0], history.history['loss'][-1])
                     #print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
                     print('epochs:', len(history.history['loss']))
@@ -278,7 +278,7 @@ if __name__ == '__main__':
 
 
             else:
-                history = agent.Q_update(fitted_q=True, monte_carlo=False, verbose=False)
+                history = agent.Q_update(fitted=True, monte_carlo=False, verbose=False)
 
 
             #alpha = 1 - episode/int(n_episodes//skip)
