@@ -23,4 +23,16 @@ for n, Is in enumerate([[1,2,3],[4,5,6],[7,8,9],[10,11,12],[13,14,15],[16,17,18]
         plt.plot(test_sses, 'orange', label = 'test')
         plt.ylim(bottom = 0)
         plt.legend()
+plt.figure()
+
+i=1
+sses = np.load(path + '/repeat' + str(i) + '/value_SSEs.npy')
+test_sses = np.load(path + '/repeat' + str(i) + '/test_value_SSEs.npy')
+print(i, sses[-1], test_sses[-1])
+
+plt.plot(sses, 'blue', label = 'train')
+plt.plot(test_sses, 'orange', label = 'test')
+plt.ylim(bottom = 0)
+plt.legend()
+
 plt.show()

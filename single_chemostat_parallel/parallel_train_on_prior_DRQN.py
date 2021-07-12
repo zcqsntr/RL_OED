@@ -21,7 +21,10 @@ from ROCC import *
 from xdot import *
 import tensorflow as tf
 physical_devices = tf.config.list_physical_devices('GPU')
-tf.config.experimental.set_memory_growth(physical_devices[0], True)
+try:
+    tf.config.experimental.set_memory_growth(physical_devices[0], True)
+except:
+    pass
 import multiprocessing
 import json
 
@@ -51,9 +54,18 @@ if __name__ == '__main__':
 
     print('rl state', n_observed_variables + n_params + n_FIM_elements + 2)
 
-
+    fitted = False
+    DQN = False
+    DRQN = True
+    monte_carlo = True
+    cluster = False
     done_MC = True
-    done_inital_fit = False # fit on the data gathered during random explore phase before explore rate < 1
+    done_inital_fit = True # fit on the data gathered during random explore phase before explore rate < 1
+    test_episode = True  # if true agent will take greedy actions for the last episode in the skip, to test current policy
+    C = 100 # frequency of target network update if applicable
+
+
+
     param_guesses = actual_params
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
@@ -69,25 +81,21 @@ if __name__ == '__main__':
         elif sys.argv[2] == '7' or sys.argv[2] == '8' or sys.argv[2] == '9':
             prior = False
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 200000
-            skip = 200
+            n_episodes = 300000
+            skip = 100
 
         elif sys.argv[2] == '10' or sys.argv[2] == '11' or sys.argv[2] == '12':
             prior = False
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 300000
-            skip = 300
+            n_episodes = 400000
+            skip = 100
 
         elif sys.argv[2] == '13' or sys.argv[2] == '14' or sys.argv[2] == '15':
             prior = False
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
             n_episodes = 500000
-            skip = 1000
-        if sys.argv[2] == '16' or sys.argv[2] == '17' or sys.argv[2] == '18':
-            prior = False
-            done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 500000
-            skip = 2000
+            skip = 100
+
 
 
         save_path = sys.argv[1] + sys.argv[2] + '/'
@@ -103,12 +111,10 @@ if __name__ == '__main__':
                    num_inputs ** n_controlled_inputs]
     # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
     agent = DRQN_agent(layer_sizes=layer_sizes)
+    agent.batch_size = int(N_control_intervals * skip)
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
     env = OED_env(*args)
-
-
-
 
     unstable = 0
     explore_rate = 1
@@ -120,7 +126,6 @@ if __name__ == '__main__':
     n_unstables = []
     all_returns = []
     all_test_returns = []
-    test_episode = True # if true agent will take greedy actions for the last episode in the skip, to test current policy
 
     print('time:', control_interval_time)
     for episode in range(int(n_episodes//skip)):
@@ -140,15 +145,14 @@ if __name__ == '__main__':
         e_rewards = [[] for _ in range(skip)]
         trajectories = [[] for _ in range(skip)]
 
-
-        sequences = [ [[0]*agent.layer_sizes[1]] for _ in range(skip)]
+        sequences = [[[0]*agent.layer_sizes[1]] for _ in range(skip)]
 
         env.reset()
         env.param_guesses = DM(actual_params)
         env.logdetFIMs = [[] for _ in range(skip)]
         env.detFIMs = [[] for _ in range(skip)]
-        #if episode % 100 == 0 and episode > 0:
-            #agent.update_target_network()
+        if DRQN and not fitted and episode % C == 0 and episode > 0:
+            agent.update_target_network()
 
         for e in range(0, N_control_intervals):
 
@@ -204,13 +208,6 @@ if __name__ == '__main__':
 
             states = next_states
 
-
-        #run single test episode
-
-
-        #print((e_rewards))
-
-        #dont put the test trajectories in the agents memory
         if test_episode:
             trajectories = trajectories[:-1]
 
@@ -247,15 +244,9 @@ if __name__ == '__main__':
                 print('new traj: ',len(new_traj))
                 '''
         # train the agent
-
-
         explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11 * skip))
 
-        #if episode*skip <5000: # 5000 eps minimum to do MC fitting
-        #   explore_rate = 1
-        #explore_rate = 1
-        if explore_rate < 1:
-
+        if explore_rate < 1 or not fitted:
             if not done_MC:
                 print('starting Monte Carlo')
                 for i in range(200):
@@ -270,7 +261,7 @@ if __name__ == '__main__':
                 for i in range(int(episode)):
                     print()
                     print('Initial iter: ' + str(i))
-                    history = agent.Q_update(fitted=True, monte_carlo=False, verbose=False)
+                    history = agent.Q_update(fitted=True, monte_carlo=monte_carlo, verbose=False)
                     print('Loss:', history.history['loss'][0], history.history['loss'][-1])
                     #print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
                     print('epochs:', len(history.history['loss']))
@@ -278,15 +269,7 @@ if __name__ == '__main__':
 
 
             else:
-                history = agent.Q_update(fitted=True, monte_carlo=False, verbose=False)
-
-
-            #alpha = 1 - episode/int(n_episodes//skip)
-            '''
-            if explore_rate == 0:
-                alpha -= 1 / (n_episodes // skip * 0.1)
-            '''
-
+                history = agent.Q_update(fitted=fitted, monte_carlo=monte_carlo, verbose=False)
 
             print('Loss:', history.history['loss'][0], history.history['loss'][-1])
             #print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
@@ -295,7 +278,8 @@ if __name__ == '__main__':
         print('n unstable ', unstable)
         n_unstables.append(unstable)
         all_returns.extend(e_returns)
-        all_test_returns.append(np.sum(np.array(e_rewards)[-1, :]))
+        if test_episode:
+            all_test_returns.append(np.sum(np.array(e_rewards)[-1, :]))
         print()
         print('EPISODE: ', episode, episode*skip)
 
@@ -324,7 +308,8 @@ if __name__ == '__main__':
 
     agent.save_network(save_path)
     np.save(save_path + 'all_returns.npy', np.array(all_returns))
-    np.save(save_path + 'all_test_returns.npy', np.array(all_test_returns))
+    if test_episode:
+        np.save(save_path + 'all_test_returns.npy', np.array(all_test_returns))
     np.save(save_path + 'n_unstables.npy', np.array(n_unstables))
     np.save(save_path + 'actions.npy', np.array(agent.actions))
     #np.save(save_path + 'values.npy', np.array(agent.values))

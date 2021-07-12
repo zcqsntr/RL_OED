@@ -1,7 +1,10 @@
 import tensorflow as tf
 physical_devices = tf.config.list_physical_devices('GPU')
 print(physical_devices)
-tf.config.experimental.set_memory_growth(physical_devices[0], True)
+try:
+    tf.config.experimental.set_memory_growth(physical_devices[0], True)
+except:
+    pass
 #tf.compat.v1.disable_eager_execution()
 from tensorflow import keras
 import numpy as np
@@ -250,8 +253,6 @@ class DQN_agent():
         history = self.network.fit(inputs, targets, epochs = 1, verbose = True)
         return history
 
-
-
     def update_target_network(self): # tested
 
         self.target_network.set_weights(self.network.get_weights())
@@ -445,19 +446,13 @@ class DRQN_agent(DQN_agent):
         '''
                 gets fitted Q inputs and calculates targets for training the Q-network for episodic training
                 '''
-        if fitted:
-            sample = self.memory
-        else:
-            sample = self.sample(32, 50000)
-        #sample = self.memory[-100:]
+
         # iterate over all exprienc in memory and create fitted Q targets
         t = time.time()
-        for i, trajectory in enumerate(sample):
+        for i, trajectory in enumerate(self.memory):
 
             e_rewards = []
             sequence = [[0]*self.layer_sizes[1]]
-
-
             for j, transition in enumerate(trajectory):
                 self.sequences.append(copy.deepcopy(sequence))
                 state, action, reward, next_state, done, u = transition
@@ -479,8 +474,9 @@ class DRQN_agent(DQN_agent):
                 self.all_values.extend(e_values)
         print('sequence time', time.time() -t)
 
-
         self.memory = [] # reset memory after this information has been extracted
+
+
         padded = pad_sequences(self.sequences, maxlen = 11, dtype='float64')
         next_padded = pad_sequences(self.next_sequences, maxlen = 11,dtype='float64')
         states = np.array(self.states)
@@ -488,20 +484,36 @@ class DRQN_agent(DQN_agent):
         next_states = np.array(self.next_states, dtype=np.float64)
         actions = np.array(self.actions)
         rewards = np.array(self.rewards)
-        dones = self.dones
+        dones = np.array(self.dones)
+        all_values = np.array(self.all_values)
 
 
-        '''
-        mem_size = 100000
-        if states.shape[0] > mem_size:
-            states = states[-mem_size:]
-            padded = padded[-mem_size:]
-            next_padded = next_padded[-mem_size:]
-            next_states = next_states[-mem_size:]
-            actions = actions[-mem_size:]
-            rewards = rewards[-mem_size:]
-            dones = dones[-mem_size:]
-        '''
+        if monte_carlo : # only take last experiences
+            batch_size = self.batch_size
+            if states.shape[0] > batch_size:
+                states = states[-batch_size:]
+                padded = padded[-batch_size:]
+                next_padded = next_padded[-batch_size:]
+                next_states = next_states[-batch_size:]
+                actions = actions[-batch_size:]
+                rewards = rewards[-batch_size:]
+                dones = dones[-batch_size:]
+                all_values = all_values[-batch_size:]
+
+        elif not fitted: # take random sample
+            mem_size = 50000
+            batch_size = 1000
+
+            indices = np.random.randint(max(0, states.shape[0] - mem_size), states.shape[0], size=(batch_size))
+            print('indices', min(indices), max(indices))
+            states = states[indices]
+            padded = padded[indices]
+            next_padded = next_padded[indices]
+            next_states = next_states[indices]
+            actions = actions[indices]
+            rewards = rewards[indices]
+            dones = dones[indices]
+
 
         # construct target
         #print(len(sample))
@@ -512,38 +524,28 @@ class DRQN_agent(DQN_agent):
         values = self.predict([states, padded])
         print(values.shape)
 
-        if not monte_carlo:
-
+        if not monte_carlo and fitted:
             next_values = self.predict([next_states, next_padded])
+        elif not monte_carlo:
+            print('target predict')
+            next_values = self.target_predict([next_states, next_padded])
 
         print('values time', time.time() - t)
 
 
         t = time.time()
         # update the value for the taken action using cost function and current Q
-        #print('next states, sequences get inputs targets:',next_states.shape, next_padded.shape)
-        #print('values get inputs targets', values.shape, next_values.shape)
+
         for i in range(len(next_states)):
-            # print(actions[i], rewards[i])
-            #print('-------------------')
-            #print(values[i, actions[i]])
-            #print(all_values[i])
-
-
             if monte_carlo:
-                values[i, actions[i]] = (1-alpha )*values[i, actions[i]] + alpha * self.all_values[i]
+                values[i, actions[i]] = (1-alpha )*values[i, actions[i]] + alpha * all_values[i]
             else:
-                #print(rewards[i], self.gamma *all_values[i, actions[i]])
                 if dones[i]:
-
                     values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha*rewards[i]
-
                 else:
                     values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma * np.max(next_values[i])) #Q learning
                     #values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma * next_values[i, actions[i+1]]) #SARSA
 
-            #print(values[i, actions[i]])
-            #print()
         # shuffle inputs and target for IID
         print('targets time:', time.time()-t)
         print('values', values.shape)
@@ -570,6 +572,9 @@ class DRQN_agent(DQN_agent):
     def predict(self, inputs):
 
         return self.network.predict({'S_input': inputs[0], 'sequence_input':inputs[1]})
+    def target_predict(self, inputs):
+
+        return self.target_network.predict({'S_input': inputs[0], 'sequence_input':inputs[1]})
 
     def Q_update(self, inputs = None, targets = None, alpha = 1, fitted = True, verbose = True, monte_carlo = False):
         '''
@@ -579,15 +584,6 @@ class DRQN_agent(DQN_agent):
 
         if inputs is None and targets is None:
             inputs, targets = self.get_inputs_targets(alpha =alpha, fitted=fitted, monte_carlo=monte_carlo)
-            #print(inputs, targets)
-
-            #inputs_old, targets_old = self.get_inputs_targets_old()
-            #print(inputs ==inputs_old)
-            #print(np.isclose(targets, targets_old))
-        #print('inputs: ', inputs)
-        #print('target: ', targets)
-        #print('target old: ', targets_old)
-
 
         if fitted:
             epochs = 500
@@ -597,12 +593,13 @@ class DRQN_agent(DQN_agent):
             callback = tf.keras.callbacks.EarlyStopping(monitor = 'loss', patience=3, restore_best_weights=True)
             callbacks = [callback]
         else:
+            print('not fitted')
             epochs = 1
             batch_size = 32
 
             callbacks = []
         t = time.time()
-        history = self.network.fit({'S_input': inputs[0], 'sequence_input':inputs[1]}, targets, epochs = epochs, verbose = verbose, validation_split =0.1, batch_size=batch_size, callbacks = callbacks)
+        history = self.network.fit({'S_input': inputs[0], 'sequence_input':inputs[1]}, targets, epochs = epochs, verbose = verbose, validation_split =0., batch_size=batch_size, callbacks = callbacks)
         print('fit time:', time.time()-t)
         return history
 
@@ -714,8 +711,6 @@ class ExperienceBuffer():
             self.buffer = transition
         else:
             self.buffer = np.append(self.buffer, transition, axis = 0)
-
-
 
     def sample(self, batch_size = 32):
         '''
