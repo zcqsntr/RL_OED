@@ -41,6 +41,8 @@ path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_tim
 path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps_reduced_state'
 path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/single_chemostat_rec_fitted_q'
 path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/rec_fitted_q_050721/single_chemostat_prior'
+
+path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_MC_130621'
 step = 1000
 n_repeats = 3
 all_returns = []
@@ -50,7 +52,7 @@ all_us = []
 N_control_intervals = 10
 control_interval_time = 30
 
-for i in range(22, 25):
+for i in range(4,7):
     '''
     us = np.load(path + '/repeat' + str(i) +'/us.npy')
     print(us.shape)
@@ -133,14 +135,16 @@ print(len(x), len(y))
 
 
 episodes = np.arange(1, len(returns) + 1)   # int(control_interval_time / dt)) * dt
-explore_rates = [get_rate(episode, 0, 1, len(returns)/12) for episode in episodes]
+explore_rates = [get_rate(episode, 0, 1, len(returns)/11) for episode in episodes]
+print(explore_rates[-100:])
 
 fig, ax1 = plt.subplots()
 plt.errorbar(x, np.mean(all_returns, axis = 0), np.std(all_returns, axis = 0), label = 'Average Return')
 
-#plt.plot(len(returns)+step,  16.612377905628856, 'o', label = 'Optimisation = 16.61')
-#plt.plot(len(returns)+step, 15.2825, 'o', label = 'Rational design = 15.28')
-#plt.plot(len(returns)+step, 20.1493, 'o', label = 'Best RL = 20.15', color='C0')
+plt.plot(len(returns)+step,  16.612377905628856, 'o', label = 'Optimisation = 16.61')
+plt.plot(len(returns)+step, 15.2825, 'o', label = 'Rational design = 15.28')
+plt.plot(len(returns)+step, 19.59, 'o', label = 'Best RL = 19.59', color='C0')
+plt.plot(len(returns)+step, 20.07, 'o', label = 'MPC = 20.07')
 ax1.set_ylabel('Return')
 ax1.set_xlabel('Episode')
 

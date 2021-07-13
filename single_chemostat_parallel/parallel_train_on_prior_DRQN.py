@@ -110,6 +110,11 @@ if __name__ == '__main__':
     layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64], [100],
                    num_inputs ** n_controlled_inputs]
     # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
+
+    if fitted:
+        learning_rate = 0.01
+    else:
+        learning_rate = 0.0001
     agent = DRQN_agent(layer_sizes=layer_sizes)
     agent.batch_size = int(N_control_intervals * skip)
 

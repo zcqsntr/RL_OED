@@ -19,12 +19,21 @@ import multiprocessing
 from DQN_agent import *
 from time import time
 import json
-from keras.preprocessing.sequence import pad_sequences
+
+from tensorflow import keras
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 import copy
 import tensorflow as tf
-physical_devices = tf.config.list_physical_devices('GPU')
-print(physical_devices)
-tf.config.experimental.set_memory_growth(physical_devices[0], True)
+
+try:
+    physical_devices = tf.config.list_physical_devices('GPU')
+    print(physical_devices)
+    tf.config.experimental.set_memory_growth(physical_devices[0], True)
+
+except:
+    print()
+    print('no GPU found')
+    print()
 
 print()
 print()
@@ -48,7 +57,7 @@ normaliser = np.array([1e3, 1e1])
 n_params = actual_params.size()[0]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
-n_episodes = 10000
+n_episodes = 1000
 skip = 100
 
 trajectory = []
@@ -67,10 +76,10 @@ all_value_SSEs = []
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 print('number of cores available: ', multiprocessing.cpu_count())
 
-fitted = True
+fitted = False
 DQN = False
 DRQN = True
-monte_carlo = False
+monte_carlo = True
 cluster = False
 if len(sys.argv) == 3:
     cluster = True
@@ -414,14 +423,14 @@ for iter in range(1,n_iters+1):
         #monte_carlo = iter <= 200
         #alpha = 1 - iter/n_iters
         #print('alpha:', alpha)
-        history = agent.Q_update(fitted = fitted, monte_carlo = monte_carlo, alpha = alpha, verbose = False)
-        print('n epochs:', len(history.history['loss']))
-        print('Loss:', history.history['loss'][0], history.history['loss'][-1])
-        print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
-        '''
-        for i in range(100):
-            agent.Q_update(verbose = False)
-        '''
+
+
+        for i in range(10):
+            history = agent.Q_update(fitted=fitted, monte_carlo=monte_carlo, alpha=alpha, verbose=False)
+            #print('n epochs:', len(history.history['loss']))
+            #print('Loss:', history.history['loss'][0], history.history['loss'][-1])
+            #print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
+
 
 
 

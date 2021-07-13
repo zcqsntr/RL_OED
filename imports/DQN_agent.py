@@ -11,7 +11,7 @@ import numpy as np
 import math
 from tensorflow.keras import layers
 import copy
-from keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 import time
 import gc
 
@@ -393,7 +393,7 @@ class DRQN_agent(DQN_agent):
 
 
 
-    def initialise_network(self, layer_sizes):
+    def initialise_network(self, layer_sizes, learning_rate = 0.01):
 
         '''
         Creates Q network for value function approximation
@@ -432,7 +432,8 @@ class DRQN_agent(DQN_agent):
         )
         #keras.utils.plot_model(network, "multi_input_and_output_model.png", show_shapes=True)
 
-        opt = keras.optimizers.Adam()
+        #opt = keras.optimizers.Adam() fitted methods
+        opt = keras.optimizers.Adam(learning_rate=learning_rate) #no nfitted methods
         network.compile(optimizer=opt, loss='mean_squared_error')
 
         return network
@@ -448,7 +449,6 @@ class DRQN_agent(DQN_agent):
                 '''
 
         # iterate over all exprienc in memory and create fitted Q targets
-        t = time.time()
         for i, trajectory in enumerate(self.memory):
 
             e_rewards = []
@@ -472,7 +472,7 @@ class DRQN_agent(DQN_agent):
                 for i in range(2, len(e_rewards) + 1):
                     e_values.insert(0, e_rewards[-i] + e_values[0] * self.gamma)
                 self.all_values.extend(e_values)
-        print('sequence time', time.time() -t)
+
 
         self.memory = [] # reset memory after this information has been extracted
 
@@ -489,6 +489,8 @@ class DRQN_agent(DQN_agent):
 
 
         if monte_carlo : # only take last experiences
+
+
             batch_size = self.batch_size
             if states.shape[0] > batch_size:
                 states = states[-batch_size:]
@@ -500,12 +502,13 @@ class DRQN_agent(DQN_agent):
                 dones = dones[-batch_size:]
                 all_values = all_values[-batch_size:]
 
+
         elif not fitted: # take random sample
             mem_size = 50000
             batch_size = 1000
 
             indices = np.random.randint(max(0, states.shape[0] - mem_size), states.shape[0], size=(batch_size))
-            print('indices', min(indices), max(indices))
+
             states = states[indices]
             padded = padded[indices]
             next_padded = next_padded[indices]
@@ -522,15 +525,14 @@ class DRQN_agent(DQN_agent):
 
         t = time.time()
         values = self.predict([states, padded])
-        print(values.shape)
+
 
         if not monte_carlo and fitted:
             next_values = self.predict([next_states, next_padded])
         elif not monte_carlo:
-            print('target predict')
             next_values = self.target_predict([next_states, next_padded])
 
-        print('values time', time.time() - t)
+
 
 
         t = time.time()
@@ -547,9 +549,7 @@ class DRQN_agent(DQN_agent):
                     #values[i, actions[i]] = (1 - alpha) * values[i, actions[i]] + alpha *(rewards[i] + self.gamma * next_values[i, actions[i+1]]) #SARSA
 
         # shuffle inputs and target for IID
-        print('targets time:', time.time()-t)
-        print('values', values.shape)
-        print(len(self.all_values))
+
 
         randomize = np.arange(len(states))
         np.random.shuffle(randomize)
@@ -593,14 +593,14 @@ class DRQN_agent(DQN_agent):
             callback = tf.keras.callbacks.EarlyStopping(monitor = 'loss', patience=3, restore_best_weights=True)
             callbacks = [callback]
         else:
-            print('not fitted')
+
             epochs = 1
-            batch_size = 32
+            batch_size = 256
 
             callbacks = []
         t = time.time()
         history = self.network.fit({'S_input': inputs[0], 'sequence_input':inputs[1]}, targets, epochs = epochs, verbose = verbose, validation_split =0., batch_size=batch_size, callbacks = callbacks)
-        print('fit time:', time.time()-t)
+
         return history
 
     def get_actions(self, inputs, explore_rate, test_episode = False):
