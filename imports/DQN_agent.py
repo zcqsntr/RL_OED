@@ -599,6 +599,7 @@ class DRQN_agent(DQN_agent):
 
             callbacks = []
         t = time.time()
+
         history = self.network.fit({'S_input': inputs[0], 'sequence_input':inputs[1]}, targets, epochs = epochs, verbose = verbose, validation_split =0., batch_size=batch_size, callbacks = callbacks)
 
         return history

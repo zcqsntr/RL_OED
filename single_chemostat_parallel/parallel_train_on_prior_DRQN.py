@@ -61,7 +61,7 @@ if __name__ == '__main__':
     cluster = False
     done_MC = True
     done_inital_fit = True # fit on the data gathered during random explore phase before explore rate < 1
-    test_episode = True  # if true agent will take greedy actions for the last episode in the skip, to test current policy
+    test_episode = False  # if true agent will take greedy actions for the last episode in the skip, to test current policy
     C = 100 # frequency of target network update if applicable
 
 
@@ -69,29 +69,24 @@ if __name__ == '__main__':
     param_guesses = actual_params
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
-            prior = False
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
             n_episodes = 100000
             skip = 100
         elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
-            prior = False
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
             n_episodes = 200000
             skip = 100
         elif sys.argv[2] == '7' or sys.argv[2] == '8' or sys.argv[2] == '9':
-            prior = False
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
             n_episodes = 300000
             skip = 100
 
         elif sys.argv[2] == '10' or sys.argv[2] == '11' or sys.argv[2] == '12':
-            prior = False
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
             n_episodes = 400000
             skip = 100
 
         elif sys.argv[2] == '13' or sys.argv[2] == '14' or sys.argv[2] == '15':
-            prior = False
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
             n_episodes = 500000
             skip = 100
@@ -216,7 +211,7 @@ if __name__ == '__main__':
         if test_episode:
             trajectories = trajectories[:-1]
 
-        print('traj:', len(trajectories))
+
         for trajectory in trajectories:
             if np.all( [np.all(np.abs(trajectory[i][0]) <= 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
                 #plt.figure()
@@ -288,7 +283,7 @@ if __name__ == '__main__':
         print()
         print('EPISODE: ', episode, episode*skip)
 
-        print('moving av return:', np.mean(all_returns[-100:]))
+        print('moving av return:', np.mean(all_returns[-10*skip:]))
         print('explore rate: ', explore_rate)
         print('alpha:', alpha)
         print('av return: ', np.mean(all_returns[-skip:]))
