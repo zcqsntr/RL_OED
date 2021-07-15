@@ -370,14 +370,14 @@ class DQN_agent():
         return np.array(sample)
 
 class DRQN_agent(DQN_agent):
-    def __init__(self,layer_sizes ):
+    def __init__(self,layer_sizes, learning_rate ):
         self.memory = []
         self.layer_sizes = layer_sizes
         self.gamma = 1.
         self.state_size = layer_sizes[0]
         self.n_actions = layer_sizes[-1]
-        self.network = self.initialise_network(layer_sizes)
-        self.target_network = self.initialise_network(layer_sizes)
+        self.network = self.initialise_network(layer_sizes, learning_rate)
+        self.target_network = self.initialise_network(layer_sizes, learning_rate)
         self.buffer = ExperienceBuffer()
         self.values = []
         self.actions = []
@@ -390,8 +390,6 @@ class DRQN_agent(DQN_agent):
         self.sequences = []
         self.next_sequences = []
         self.all_values = []
-
-
 
     def initialise_network(self, layer_sizes, learning_rate = 0.01):
 
@@ -567,8 +565,6 @@ class DRQN_agent(DQN_agent):
 
         return inputs, targets
 
-
-
     def predict(self, inputs):
 
         return self.network.predict({'S_input': inputs[0], 'sequence_input':inputs[1]})
@@ -670,6 +666,11 @@ class DRQN_agent(DQN_agent):
         tf.keras.backend.clear_session()
         tf.compat.v1.reset_default_graph()
         self.network = self.initialise_network(self.layer_sizes)
+
+
+
+
+
 
 
 class ExperienceBuffer():

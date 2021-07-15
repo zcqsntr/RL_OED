@@ -54,18 +54,6 @@ if __name__ == '__main__':
 
     print('rl state', n_observed_variables + n_params + n_FIM_elements + 2)
 
-    fitted = False
-    DQN = False
-    DRQN = True
-    monte_carlo = True
-    cluster = False
-    done_MC = True
-    done_inital_fit = True # fit on the data gathered during random explore phase before explore rate < 1
-    test_episode = True  # if true agent will take greedy actions for the last episode in the skip, to test current policy
-    C = 100 # frequency of target network update if applicable
-
-
-
     param_guesses = actual_params
     if len(sys.argv) == 3:
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
@@ -110,7 +98,7 @@ if __name__ == '__main__':
         learning_rate = 0.01
     else:
         learning_rate = 0.0001
-    agent = DRQN_agent(layer_sizes=layer_sizes, learning_rate = learning_rate)
+    agent = DRQN_agent(layer_sizes=layer_sizes)
     agent.batch_size = int(N_control_intervals * skip)
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
