@@ -477,15 +477,17 @@ class OED_env():
 
         return self.normalise_RL_state(state)
 
-    def map_parallel_step(self, actions, actual_params):
+    def map_parallel_step(self, actions, actual_params, continuous = False):
         self.current_tstep += 1
         # actions, actual_params = args
 
         # all_us = []
         # for As in actions:
         # us = [self.action_to_input(action) for action in actions]
-        us = self.actions_to_inputs(actions)
-
+        if not continuous:
+            us = self.actions_to_inputs(actions)
+        else:
+            us = np.clip(actions, 0.01, 1)
         # all_us.append(np.array(us)[:,:,0].T)
 
         # print(np.array(all_us).shape)

@@ -14,24 +14,23 @@ import copy
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import time
 import gc
+import tensorflow.keras.initializers as initializers
 
-import tensorflow_probability as tfp
-tfd = tfp.distributions
 
 
 
 
 class DRPG_agent():
-    def __init__(self, layer_sizes):
+    def __init__(self, layer_sizes, learning_rate = 0.001):
         self.memory = []
         self.layer_sizes = layer_sizes
         self.gamma = 1.
         self.state_size = layer_sizes[0]
         self.n_actions = layer_sizes[-1]
-        self.value_network = self.initialise_network(layer_sizes)
+        self.critic_network = self.initialise_network(layer_sizes, critic_nw=True)
         self.actor_network = self.initialise_network(layer_sizes)
-        self.opt = keras.optimizers.Adam(learning_rate=0.001)
-        self.buffer = ExperienceBuffer()
+        self.opt = keras.optimizers.Adam(learning_rate=learning_rate)
+        self.critic_network.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate), loss='mean_squared_error')
         self.values = []
         self.actions = []
 
@@ -45,7 +44,7 @@ class DRPG_agent():
         self.all_values = []
 
 
-    def initialise_network(self, layer_sizes, learning_rate = 0.01):
+    def initialise_network(self, layer_sizes, critic_nw = False):
 
         '''
         Creates Q network for value function approximation
@@ -74,13 +73,24 @@ class DRPG_agent():
         for i, hl_size in enumerate(hidden_sizes):
             hl = layers.Dense(hl_size,activation=tf.nn.relu, name = 'hidden_' + str(i))(hl)
 
-        mu = layers.Dense(output_size, name = 'mu')(hl)
-        log_std = layers.Dense(output_size, name = 'log_std')(hl)
 
-        network = keras.Model(
-            inputs = [S_input, sequence_input],
-            outputs = [mu, log_std]
-        )
+        if critic_nw:
+
+            values = layers.Dense(1, name='mu')(hl)
+
+
+            network = keras.Model(
+                inputs=[S_input, sequence_input],
+                outputs=[values]
+            )
+        else:
+            mu = layers.Dense(output_size, name = 'mu', activation=tf.nn.sigmoid)(hl)
+            log_std = layers.Dense(output_size, name = 'log_std')(hl)
+
+            network = keras.Model(
+                inputs = [S_input, sequence_input],
+                outputs = [mu, log_std]
+            )
         #keras.utils.plot_model(network, "multi_input_and_output_model.png", show_shapes=True)
 
         #opt = keras.optimizers.Adam() fitted methods
@@ -91,8 +101,20 @@ class DRPG_agent():
 
 
     def get_actions(self, inputs):
-        mu, log_std = self.actor_network.predict(inputs)
-        actions = tfp.distributions.Normal(mu, tf.exp(log_std))
+
+        states, sequences = inputs
+
+
+        sequences = pad_sequences(sequences, maxlen=11, dtype='float64')
+
+
+        mu, log_std = self.actor_network.predict([np.array(states), sequences])
+
+        print('mu log_std',mu[0], log_std[0])
+
+
+        actions = mu + tf.multiply(tf.random.normal(tf.shape(mu)), tf.exp(log_std))
+        #print('actions',actions[0])
 
         return actions
 
@@ -102,10 +124,11 @@ class DRPG_agent():
 
         # Compute log probability
         log_probability = self.log_probability(actions, mu, log_std)
-
+        print('log probability', log_probability.shape)
+        print('returns:', returns.shape)
         # Compute weighted loss
-        loss_actor = - returns * log_probability
-
+        loss_actor = - tf.reduce_mean(tf.multiply(returns, log_probability))
+        print('loss actor', loss_actor.shape)
         return loss_actor
 
 
@@ -114,11 +137,24 @@ class DRPG_agent():
 
         EPS = 1e-8
         pre_sum = -0.5 * (((actions - mu) / (tf.exp(log_std) + EPS)) ** 2 + 2 * log_std + np.log(2 * np.pi))
+
+        print('pre sum', pre_sum.shape)
         return tf.reduce_sum(pre_sum, axis=1)
 
 
-    def policy_update(self):
+    def policy_update(self, critic = True):
+
         inputs, actions, returns = self.get_inputs_targets()
+
+        print(returns.shape)
+        if critic:
+
+            expected_returns = self.critic_network.predict(inputs)
+
+            returns -= expected_returns.reshape(-1)
+            print(expected_returns.reshape(-1).shape)
+            self.critic_network.fit(inputs, returns, epochs = 1)
+
         with tf.GradientTape() as tape:
             loss = self.loss(inputs, actions, returns)
             grads = tape.gradient(loss, self.actor_network.trainable_variables)
@@ -142,7 +178,7 @@ class DRPG_agent():
             for j, transition in enumerate(trajectory):
                 self.sequences.append(copy.deepcopy(sequence))
                 state, action, reward, next_state, done, u = transition
-                sequence.append(np.concatenate((state, u/10)))
+                sequence.append(np.concatenate((state, u/1)))
                 #one_hot_a = np.array([int(i == action) for i in range(self.layer_sizes[-1])])/10
                 self.next_sequences.append(copy.deepcopy(sequence))
                 self.states.append(state)
@@ -180,5 +216,19 @@ class DRPG_agent():
         all_values = all_values[randomize]
 
         inputs = [states, padded]
-
+        print('inputs, actions, all_values', inputs[0].shape, inputs[1].shape, actions.shape, all_values.shape)
         return inputs, actions, all_values
+
+
+    def save_network(self, save_path): # tested
+        #print(self.network.layers[1].get_weights())
+        self.actor_network.save(save_path + '/saved_network.h5')
+
+    def load_network(self, load_path): #tested
+        try:
+            self.actor_network = keras.models.load_model(load_path + '/saved_network.h5') # sometimes this crashes, apparently a bug in keras
+
+        except:
+            print('EXCEPTION IN LOAD NETWORK')
+            self.actor_network.load_weights(load_path+ '/saved_network.h5') # this requires model to be initialised exactly the same
+
