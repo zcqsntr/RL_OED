@@ -21,16 +21,21 @@ import tensorflow.keras.initializers as initializers
 
 
 class DRPG_agent():
-    def __init__(self, layer_sizes, learning_rate = 0.001):
+    def __init__(self, layer_sizes, learning_rate = 0.001, critic=True):
         self.memory = []
         self.layer_sizes = layer_sizes
         self.gamma = 1.
         self.state_size = layer_sizes[0]
         self.n_actions = layer_sizes[-1]
-        self.critic_network = self.initialise_network(layer_sizes, critic_nw=True)
+
+        self.critic = critic
+        if critic:
+            self.critic_network = self.initialise_network(layer_sizes, critic_nw=True)
+            self.critic_network.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
+                                        loss='mean_squared_error')
         self.actor_network = self.initialise_network(layer_sizes)
         self.opt = keras.optimizers.Adam(learning_rate=learning_rate)
-        self.critic_network.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate), loss='mean_squared_error')
+
         self.values = []
         self.actions = []
 
@@ -142,12 +147,12 @@ class DRPG_agent():
         return tf.reduce_sum(pre_sum, axis=1)
 
 
-    def policy_update(self, critic = True):
+    def policy_update(self):
 
         inputs, actions, returns = self.get_inputs_targets()
 
         print(returns.shape)
-        if critic:
+        if self.critic:
 
             expected_returns = self.critic_network.predict(inputs)
 

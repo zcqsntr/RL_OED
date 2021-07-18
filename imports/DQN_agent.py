@@ -620,8 +620,6 @@ class DRQN_agent(DQN_agent):
             rng = np.random.random(len(states))
 
         explore_inds = np.where(rng < explore_rate)[0]
-
-
         exploit_inds = np.where(rng >= explore_rate)[0]
 
         if test_episode: exploit_inds = np.append(exploit_inds, len(states)-1)

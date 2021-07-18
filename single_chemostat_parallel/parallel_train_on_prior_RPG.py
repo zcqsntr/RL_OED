@@ -87,10 +87,10 @@ if __name__ == '__main__':
     else:
         save_path = './'
 
-    layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64], [100], n_controlled_inputs]
+    layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [32, 32], [64,64,64], n_controlled_inputs]
     # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
 
-    agent = DRPG_agent(layer_sizes=layer_sizes, learning_rate = 0.001)
+    agent = DRPG_agent(layer_sizes=layer_sizes, learning_rate = 0.0004, critic = True)
     agent.batch_size = int(N_control_intervals * skip)
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
