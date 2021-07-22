@@ -109,7 +109,7 @@ if __name__ == '__main__':
     if fitted:
         learning_rate = 0.01
     else:
-        learning_rate = 0.0001
+        learning_rate = 0.001
     agent = DRQN_agent(layer_sizes=layer_sizes, learning_rate = learning_rate)
     agent.batch_size = int(N_control_intervals * skip)
 
