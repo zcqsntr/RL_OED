@@ -48,23 +48,16 @@ class OED_env():
 
 
         self.Y = self.initial_Y
-
         self.xdot = xdot # f(x, u, params)
-
-
         self.all_param_guesses = []
         self.all_RL_states = []
         self.us = []
-
-
         self.actual_params = actual_params
-
         self.num_inputs = num_inputs
         self.input_bounds = np.array(input_bounds)
-
-
         self.current_tstep = 0 # to keep track of time in parallel
         self.CI_solver = self.get_control_interval_solver(control_interval_time, dt)
+
     def reset(self):
         self.param_guesses = self.initial_params
         self.Y = self.initial_Y

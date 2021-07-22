@@ -179,32 +179,19 @@ if __name__ == '__main__':
 
                 next_states.append(next_state)
                 state = states[i]
-
-
-
                 action = actions[i]
-
-
 
                 if e == N_control_intervals - 1 or np.all(np.abs(next_state) >= 1) or math.isnan(np.sum(next_state)):
                     next_state = [None]*agent.layer_sizes[0] # maybe dont need this
                     done = True
-
-
                 transition = (state, action, reward, next_state, done, u)
                 trajectories[i].append(transition)
 
                 #one_hot_a = np.array([int(i == action) for i in range(agent.layer_sizes[-1])])/10
-
-
                 sequences[i].append(np.concatenate((state, u/10)))
-
-
-
                 if reward != -1: # dont include the unstable trajectories as they override the true return
                     e_rewards[i].append(reward)
                     e_returns[i] += reward
-
 
             states = next_states
 

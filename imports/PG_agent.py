@@ -17,20 +17,20 @@ import gc
 import tensorflow.keras.initializers as initializers
 
 
-
-
-
 class DRPG_agent():
-    def __init__(self, layer_sizes, learning_rate = 0.001):
+    def __init__(self, layer_sizes, learning_rate = 0.001, critic=True):
         self.memory = []
         self.layer_sizes = layer_sizes
         self.gamma = 1.
-        self.state_size = layer_sizes[0]
-        self.n_actions = layer_sizes[-1]
-        self.critic_network = self.initialise_network(layer_sizes, critic_nw=True)
+
+        self.critic = critic
+        if critic:
+            self.critic_network = self.initialise_network(layer_sizes, critic_nw=True)
+            self.critic_network.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
+                                        loss='mean_squared_error')
         self.actor_network = self.initialise_network(layer_sizes)
         self.opt = keras.optimizers.Adam(learning_rate=learning_rate)
-        self.critic_network.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate), loss='mean_squared_error')
+
         self.values = []
         self.actions = []
 
@@ -142,12 +142,12 @@ class DRPG_agent():
         return tf.reduce_sum(pre_sum, axis=1)
 
 
-    def policy_update(self, critic = True):
+    def policy_update(self):
 
         inputs, actions, returns = self.get_inputs_targets()
 
         print(returns.shape)
-        if critic:
+        if self.critic:
 
             expected_returns = self.critic_network.predict(inputs)
 
@@ -232,3 +232,201 @@ class DRPG_agent():
             print('EXCEPTION IN LOAD NETWORK')
             self.actor_network.load_weights(load_path+ '/saved_network.h5') # this requires model to be initialised exactly the same
 
+
+
+class DDPG_agent():
+    def __init__(self, layer_sizes, learning_rate = 0.001):
+        self.memory = []
+        self.layer_sizes = layer_sizes
+        self.gamma = 1.
+        self.policy_network = self.initialise_network(layer_sizes)
+        self.policy_opt = keras.optimizers.Adam(learning_rate=learning_rate)
+
+        # Q(s,a) = value
+        layer_sizes[0] += layer_sizes[-1]
+        layer_sizes[-1] = 1
+        self.Q_network = self.initialise_network(layer_sizes)
+        self.Q_opt = keras.optimizers.Adam(learning_rate=learning_rate)
+        self.values = []
+        self.actions = []
+        self.states = []
+        self.next_states = []
+        self.actions = []
+        self.rewards = []
+        self.dones = []
+        self.sequences = []
+        self.next_sequences = []
+        self.all_values = []
+
+    def initialise_network(self, layer_sizes):
+
+        '''
+        Creates Q network for value function approximation
+        '''
+        input_size, sequence_size, rec_sizes, hidden_sizes, output_size = layer_sizes
+
+        S_input = keras.Input(shape = (input_size,), name = "S_input")
+        sequence_input = keras.Input(shape = (None,sequence_size), name = 'sequence_input')
+
+        rec_out = sequence_input
+        for i, rec_size in enumerate(rec_sizes):
+
+            if i == len(rec_sizes) -1:
+                rec_out = layers.GRU(rec_size)(rec_out)
+            else:
+                rec_out = layers.GRU(rec_size, input_shape = (None,sequence_size), return_sequences=True)(rec_out)
+
+        concat = layers.concatenate([S_input, rec_out])
+
+        hl = concat
+
+        for i, hl_size in enumerate(hidden_sizes):
+            hl = layers.Dense(hl_size,activation=tf.nn.relu, name = 'hidden_' + str(i))(hl)
+
+        out =  layers.Dense(layer_sizes[-1], name='mu', activation=tf.nn.sigmoid)(hl)
+        network = keras.Model(
+            inputs=[S_input, sequence_input],
+            outputs=[out]
+        )
+
+
+        return network
+
+
+    def get_actions(self, inputs, explore_rate, test_episode = False):
+        '''
+        PARALLEL version of get action
+        Choses action based on enivormental state, explore rate and current value estimates
+
+        Parameters:
+            state: environmental state
+            explore_rate
+        Returns:
+            action
+        '''
+
+        states, sequences = inputs
+
+        if test_episode:
+            rng = np.random.random(len(states)-1)
+        else:
+            rng = np.random.random(len(states))
+
+        explore_inds = np.where(rng < explore_rate)[0]
+        exploit_inds = np.where(rng >= explore_rate)[0]
+
+        if test_episode: exploit_inds = np.append(exploit_inds, len(states)-1)
+
+        explore_actions = np.random.uniform(low= 0.01, high = 1., size = (len(explore_inds), 2))
+        actions = np.zeros((len(states), 2))
+
+        if len(exploit_inds) > 0:
+
+            sequences = pad_sequences(sequences, maxlen=11, dtype='float64')
+            exploit_actions = self.policy_network([np.array(states)[exploit_inds], np.array(sequences)[exploit_inds]])
+            actions[exploit_inds] = exploit_actions
+
+        actions[explore_inds] = explore_actions
+
+        exploit_flags = np.zeros((len(states)), dtype=np.int32) #just for interest
+        exploit_flags[exploit_inds] = 1
+        self.actions.extend(actions)
+
+        return actions, exploit_flags
+
+    def policy_update(self):
+        inputs, actions, returns = self.get_inputs_targets()
+        states, sequences = inputs
+
+        with tf.GradientTape() as tape:
+
+            Q_pred = self.Q_network([tf.concat((states, actions), 1), sequences], returns)
+            Q_loss = tf.math.reduce_mean(tf.math.square(Q_pred - returns))
+            Q_grad = tape.gradient(Q_loss, self.Q_network.trainable_variables)
+
+            self.Q_opt.apply_gradients(
+                zip(Q_grad, self.Q_network.trainable_variables)
+            )
+
+        with tf.GradientTape() as tape:
+            pred_actions = self.policy_network(inputs)
+
+            pred_values = self.Q_network([tf.concat((states, pred_actions), 1), sequences])
+            # Used `-value` as we want to maximize the value given
+            # by the critic for our actions
+            loss = -tf.math.reduce_mean(pred_values)
+
+            policy_grad = tape.gradient(loss, self.policy_network.trainable_variables)
+
+            self.policy_opt.apply_gradients(zip(policy_grad, self.policy_network.trainable_variables))
+
+    def get_inputs_targets(self):
+        '''
+        gets fitted Q inputs and calculates targets for training the Q-network for episodic training
+        '''
+
+        '''
+                gets fitted Q inputs and calculates targets for training the Q-network for episodic training
+                '''
+
+        # iterate over all exprienc in memory and create fitted Q targets
+        for i, trajectory in enumerate(self.memory):
+
+            e_rewards = []
+            sequence = [[0]*self.layer_sizes[1]]
+            for j, transition in enumerate(trajectory):
+                self.sequences.append(copy.deepcopy(sequence))
+                state, action, reward, next_state, done, u = transition
+                sequence.append(np.concatenate((state, u/1)))
+                #one_hot_a = np.array([int(i == action) for i in range(self.layer_sizes[-1])])/10
+                self.next_sequences.append(copy.deepcopy(sequence))
+                self.states.append(state)
+                self.next_states.append(next_state)
+                self.actions.append(action)
+                self.rewards.append(reward)
+                e_rewards.append(reward)
+                self.dones.append(done)
+
+
+            e_values = [e_rewards[-1]]
+
+            for i in range(2, len(e_rewards) + 1):
+                e_values.insert(0, e_rewards[-i] + e_values[0] * self.gamma)
+            self.all_values.extend(e_values)
+
+        padded = pad_sequences(self.sequences, maxlen = 11, dtype='float64')
+        states = np.array(self.states)
+        actions = np.array(self.actions)
+        all_values = np.array(self.all_values)
+
+        self.sequences = []
+        self.states = []
+        self.actions = []
+        self.all_values = []
+        self.memory = []  # reset memory after this information has been extracted
+
+        randomize = np.arange(len(states))
+        np.random.shuffle(randomize)
+
+        states = states[randomize]
+        actions = actions[randomize]
+
+        padded = padded[randomize]
+        all_values = all_values[randomize]
+
+        inputs = [states, padded]
+        print('inputs, actions, all_values', inputs[0].shape, inputs[1].shape, actions.shape, all_values.shape)
+        return inputs, actions, all_values
+
+
+    def save_network(self, save_path): # tested
+        #print(self.network.layers[1].get_weights())
+        self.actor_network.save(save_path + '/saved_network.h5')
+
+    def load_network(self, load_path): #tested
+        try:
+            self.actor_network = keras.models.load_model(load_path + '/saved_network.h5') # sometimes this crashes, apparently a bug in keras
+
+        except:
+            print('EXCEPTION IN LOAD NETWORK')
+            self.actor_network.load_weights(load_path+ '/saved_network.h5') # this requires model to be initialised exactly the same
