@@ -15,6 +15,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from OED_env import *
 from PG_agent import *
+from DQN_agent import *
 import time
 
 from xdot import *
@@ -89,13 +90,16 @@ if __name__ == '__main__':
 
     layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [32, 32], [64,64,64], n_controlled_inputs]
     # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
-
-    agent = DRPG_agent(layer_sizes=layer_sizes, learning_rate = 0.0004, critic = True)
+    print(layer_sizes)
+    #agent = DRPG_agent(layer_sizes=layer_sizes, learning_rate = 0.0004, critic = True)
+    agent = DDPG_agent(layer_sizes=layer_sizes)
     agent.batch_size = int(N_control_intervals * skip)
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
     env = OED_env(*args)
 
+
+    test_episode = True
     unstable = 0
     explore_rate = 1
     alpha = 1
@@ -136,16 +140,11 @@ if __name__ == '__main__':
 
         for e in range(0, N_control_intervals):
 
-            #if explore_rate < 1:
-            #if episode >0 :
-
-                #agent.Q_update(alpha=alpha) DQN Monte carlo
-
-
-            actions = agent.get_actions([states, sequences])
+            actions, exploit_flags = agent.get_actions([states, sequences], explore_rate = explore_rate, test_episode = True)
+            #actions = agent.get_actions([states, sequences])
 
             e_actions.append(actions)
-
+            e_exploit_flags.append(exploit_flags)
             outputs = env.map_parallel_step(np.array(actions).T, actual_params, continuous = True)
             next_states = []
 
@@ -179,10 +178,8 @@ if __name__ == '__main__':
                 print('UNSTABLE!!!')
                 print((trajectory[-1][0]))
 
+        explore_rate = DQN_agent.get_rate(None, episode, 0, 1, n_episodes / (11 * skip))
         agent.policy_update()
-
-
-
 
         print('n unstable ', unstable)
         n_unstables.append(unstable)
@@ -202,6 +199,20 @@ if __name__ == '__main__':
         print('rewards:', np.array(e_rewards)[0, :])
         print('return:', np.sum(np.array(e_rewards)[0, :]))
         print()
+
+        print('actions:', np.array(e_actions).shape)
+        print('actions:', np.array(e_actions)[:, 0])
+        print('exploit:', np.array(e_exploit_flags)[:, 0])
+        print('rewards:', np.array(e_rewards)[0, :])
+        print('return:', np.sum(np.array(e_rewards)[0, :]))
+        print()
+
+        if test_episode:
+            print('test actions:', np.array(e_actions)[:, -1])
+            print('test exploit:', np.array(e_exploit_flags)[:, -1])
+            print('test rewards:', np.array(e_rewards)[-1, :])
+            print('test return:', np.sum(np.array(e_rewards)[-1, :]))
+            print()
 
     print('time:', time.time() - t)
     print(env.detFIMs[-1])
