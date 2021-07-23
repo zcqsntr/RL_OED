@@ -235,17 +235,18 @@ class DRPG_agent():
 
 
 class DDPG_agent():
-    def __init__(self, layer_sizes, learning_rate = 0.001):
+    def __init__(self, val_layer_sizes, pol_layer_sizes, learning_rate = 0.001):
+        self.layer_sizes = pol_layer_sizes
         self.memory = []
-        self.layer_sizes = layer_sizes
         self.gamma = 1.
-        self.policy_network = self.initialise_network(layer_sizes)
+        self.policy_network = self.initialise_network(pol_layer_sizes)
         self.policy_opt = keras.optimizers.Adam(learning_rate=learning_rate)
 
         # Q(s,a) = value
-        layer_sizes[0] += layer_sizes[-1]
-        layer_sizes[-1] = 1
-        self.Q_network = self.initialise_network(layer_sizes)
+
+        self.Q_network = self.initialise_network(val_layer_sizes)
+        opt = keras.optimizers.Adam(learning_rate=learning_rate)  # no nfitted methods
+        self.Q_network.compile(optimizer=opt, loss='mean_squared_error')
         self.Q_opt = keras.optimizers.Adam(learning_rate=learning_rate)
         self.values = []
         self.actions = []
@@ -338,15 +339,10 @@ class DDPG_agent():
         inputs, actions, returns = self.get_inputs_targets()
         states, sequences = inputs
 
-        with tf.GradientTape() as tape:
 
-            Q_pred = self.Q_network([tf.concat((states, actions), 1), sequences], returns)
-            Q_loss = tf.math.reduce_mean(tf.math.square(Q_pred - returns))
-            Q_grad = tape.gradient(Q_loss, self.Q_network.trainable_variables)
 
-            self.Q_opt.apply_gradients(
-                zip(Q_grad, self.Q_network.trainable_variables)
-            )
+        history = self.Q_network.fit([tf.concat((states, actions), 1), sequences], returns)
+
 
         with tf.GradientTape() as tape:
             pred_actions = self.policy_network(inputs)

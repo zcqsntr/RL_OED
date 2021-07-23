@@ -88,11 +88,12 @@ if __name__ == '__main__':
     else:
         save_path = './'
 
-    layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [32, 32], [64,64,64], n_controlled_inputs]
+    pol_layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [32, 32], [64,64,64], n_controlled_inputs]
+    val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, n_observed_variables + 1 + n_controlled_inputs, [64], [100], 1]
     # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
-    print(layer_sizes)
+
     #agent = DRPG_agent(layer_sizes=layer_sizes, learning_rate = 0.0004, critic = True)
-    agent = DDPG_agent(layer_sizes=layer_sizes)
+    agent = DDPG_agent(val_layer_sizes = val_layer_sizes, pol_layer_sizes = pol_layer_sizes)
     agent.batch_size = int(N_control_intervals * skip)
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
@@ -131,7 +132,7 @@ if __name__ == '__main__':
         e_us = [[] for _ in range(skip)]
         trajectories = [[] for _ in range(skip)]
 
-        sequences = [[[0]*agent.layer_sizes[1]] for _ in range(skip)]
+        sequences = [[[0]*pol_layer_sizes[1]] for _ in range(skip)]
 
         env.reset()
         env.param_guesses = DM(actual_params)
@@ -157,7 +158,7 @@ if __name__ == '__main__':
                 action = actions[i]
 
                 if e == N_control_intervals - 1 or np.all(np.abs(next_state) >= 1) or math.isnan(np.sum(next_state)):
-                    next_state = [None]*agent.layer_sizes[0] # maybe dont need this
+                    next_state = [None]*pol_layer_sizes[0] # maybe dont need this
                     done = True
 
                 transition = (state, action, reward, next_state, done, u)

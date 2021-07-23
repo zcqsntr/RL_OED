@@ -52,7 +52,7 @@ all_us = []
 N_control_intervals = 10
 control_interval_time = 30
 
-for i in range(13, 16):
+for i in range(1, 16):
     '''
     us = np.load(path + '/repeat' + str(i) +'/us.npy')
     print(us.shape)
