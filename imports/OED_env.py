@@ -480,7 +480,8 @@ class OED_env():
         if not continuous:
             us = self.actions_to_inputs(actions)
         else:
-            us = np.clip(actions, 0.01, 1)
+            #us = np.clip(actions, 0.00001, 1)
+            us = 0.01 + (1-0.01)*actions*10
         # all_us.append(np.array(us)[:,:,0].T)
 
         # print(np.array(all_us).shape)
@@ -585,6 +586,12 @@ class OED_env():
 
             reward = -100
 
+        # testing new reward condition
+
+        if len(self.logdetFIMs[i]) == 10:
+            reward = self.logdetFIMs[i][-1]
+        else:
+            reward = 0
 
         return reward/100
 

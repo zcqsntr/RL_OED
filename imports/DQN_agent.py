@@ -586,7 +586,7 @@ class DRQN_agent(DQN_agent):
             batch_size = 256
 
             self.reset_weights()
-            callback = tf.keras.callbacks.EarlyStopping(monitor = 'loss', patience=3, restore_best_weights=True)
+            callback = tf.keras.callbacks.EarlyStopping(monitor = 'loss', patience=1, restore_best_weights=True)
             callbacks = [callback]
         else:
 
@@ -596,8 +596,8 @@ class DRQN_agent(DQN_agent):
             callbacks = []
         t = time.time()
 
-        history = self.network.fit({'S_input': inputs[0], 'sequence_input':inputs[1]}, targets, epochs = epochs, verbose = verbose, validation_split =0., batch_size=batch_size, callbacks = callbacks)
-
+        history = self.network.fit({'S_input': inputs[0], 'sequence_input':inputs[1]}, targets, epochs = epochs, verbose = False, validation_split =0., batch_size=batch_size, callbacks = callbacks)
+        print('fit time:', time.time() - t)
         return history
 
     def get_actions(self, inputs, explore_rate, test_episode = False):
@@ -664,12 +664,6 @@ class DRQN_agent(DQN_agent):
         tf.keras.backend.clear_session()
         tf.compat.v1.reset_default_graph()
         self.network = self.initialise_network(self.layer_sizes)
-
-
-
-
-
-
 
 class ExperienceBuffer():
     '''

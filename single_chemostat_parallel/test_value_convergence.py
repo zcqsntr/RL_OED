@@ -57,7 +57,7 @@ normaliser = np.array([1e3, 1e1])
 n_params = actual_params.size()[0]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
-n_episodes = 1000
+n_episodes = 10000
 skip = 100
 
 trajectory = []
@@ -76,13 +76,22 @@ all_value_SSEs = []
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 print('number of cores available: ', multiprocessing.cpu_count())
 
-fitted = False
+fitted = True
 DQN = False
 DRQN = True
-monte_carlo = True
+monte_carlo = False
 cluster = False
+
+if fitted:
+    learning_rate = 0.01
+else:
+    learning_rate = 0.001
+
 if len(sys.argv) == 3:
     cluster = True
+    layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [100, 100], [200, 200],
+                   num_inputs ** n_controlled_inputs]
+    '''
     if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
         layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64], [100],
                        num_inputs ** n_controlled_inputs]
@@ -109,11 +118,12 @@ if len(sys.argv) == 3:
     elif sys.argv[2] == '16' or sys.argv[2] == '17' or sys.argv[2] == '18':
         layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [100, 100], [200, 200],
                        num_inputs ** n_controlled_inputs]
-
+    '''
 
     save_path = sys.argv[1] + sys.argv[2] + '/'
     print(n_episodes)
     os.makedirs(save_path, exist_ok=True)
+    os.makedirs(save_path + '/value_graphs', exist_ok=True)
 elif len(sys.argv) == 2:
     save_path = sys.argv[1] + '/'
     os.makedirs(save_path, exist_ok=True)
@@ -143,9 +153,9 @@ test_env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables,
 
 if DRQN:
     #agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + num_inputs ** n_controlled_inputs, 32, 100, 100, num_inputs ** n_controlled_inputs])
-    agent = DRQN_agent(layer_sizes=layer_sizes)
+    agent = DRQN_agent(layer_sizes=layer_sizes, learning_rate = learning_rate)
     #test_agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + num_inputs ** n_controlled_inputs,  32, 100, 100,  num_inputs ** n_controlled_inputs])
-    test_agent = DRQN_agent(layer_sizes=layer_sizes)
+    test_agent = DRQN_agent(layer_sizes=layer_sizes, learning_rate = learning_rate)
 else:
     agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 50, 50,  num_inputs ** n_controlled_inputs])
     #agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + 1, 50, 50,  num_inputs ** n_controlled_inputs])
@@ -295,9 +305,6 @@ for ep in range(int(n_episodes//skip)):
             for l in range(len(trajectory)):
                 all_sequences.append(copy.deepcopy(sequences[j][:l+1]))
 
-
-
-
         else:
 
             print('UNSTABLE!!!')
@@ -423,17 +430,11 @@ for iter in range(1,n_iters+1):
         #monte_carlo = iter <= 200
         #alpha = 1 - iter/n_iters
         #print('alpha:', alpha)
-
-
-        for i in range(10):
+        for i in range(1):
             history = agent.Q_update(fitted=fitted, monte_carlo=monte_carlo, alpha=alpha, verbose=False)
             #print('n epochs:', len(history.history['loss']))
             #print('Loss:', history.history['loss'][0], history.history['loss'][-1])
             #print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
-
-
-
-
     else:
         history = agent.fitted_Q_update()
     print('time: ', time()-t)
@@ -441,22 +442,28 @@ for iter in range(1,n_iters+1):
 
 
 
-    if iter % 10 ==0 and not cluster:
-        plt.figure()
-        plt.plot(all_true_values[0:100], label='true')
-        plt.plot(training_pred[0:100], label='pred')
-        plt.legend()
-        plt.title('training ' + str(iter))
-        plt.savefig(save_path + 'value_graphs/train' + str(iter) + '.png')
-        plt.close()
-        plt.figure()
-        plt.plot(all_test_true_values[0:100], label='true')
-        plt.plot(testing_pred[0:100], label='pred')
-        plt.title('testing ' + str(iter))
+    if iter % 10 ==0 :
 
-        plt.legend()
-        plt.savefig(save_path + 'value_graphs/test' + str(iter) + '.png')
-        plt.close()
+        np.save(save_path + 'train_pred' + str(iter) + '.npy',training_pred)
+        np.save(save_path + 'test_pred' + str(iter) + '.npy',testing_pred)
+
+        if not cluster:
+            plt.figure()
+            plt.plot(all_true_values[0:100], label='true')
+            plt.plot(training_pred[0:100], label='pred')
+            plt.legend()
+            plt.title('training ' + str(iter))
+            plt.savefig(save_path + 'value_graphs/train' + str(iter) + '.png')
+            plt.close()
+            plt.figure()
+            plt.plot(all_test_true_values[0:100], label='true')
+            plt.plot(testing_pred[0:100], label='pred')
+            plt.title('testing ' + str(iter))
+
+            plt.legend()
+            plt.savefig(save_path + 'value_graphs/test' + str(iter) + '.png')
+            plt.close()
+
     #print('loss:', history.history['loss'])
 
     #print('val loss:', history.history['val_loss'])
