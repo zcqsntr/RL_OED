@@ -476,6 +476,7 @@ class DRQN_agent(DQN_agent):
 
 
         padded = pad_sequences(self.sequences, maxlen = 11, dtype='float64')
+
         next_padded = pad_sequences(self.next_sequences, maxlen = 11,dtype='float64')
         states = np.array(self.states)
 
@@ -650,7 +651,7 @@ class DRQN_agent(DQN_agent):
 
         exploit_flags = np.zeros((len(states)), dtype=np.int32) #just for interest
         exploit_flags[exploit_inds] = 1
-        self.actions.extend(actions)
+
         return actions, exploit_flags
 
     def reset_weights(self):

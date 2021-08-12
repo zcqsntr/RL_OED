@@ -86,15 +86,17 @@ if __name__ == '__main__':
         save_path = sys.argv[1] + '/'
         os.makedirs(save_path, exist_ok=True)
     else:
-        save_path = './'
+        save_path = '../single_chemostat_parallel/'
 
     #pol_layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [32, 32], [64,64,64], n_controlled_inputs]
-    pol_layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [32, 32], [50, 50], n_controlled_inputs]
-    val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, n_observed_variables + 1 + n_controlled_inputs, [32, 32], [150, 50], 1]
+    pol_layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64, 64], [128, 128], n_controlled_inputs]
+    #pol_layer_sizes = [n_observed_variables + 1, 0, [], [128, 128], n_controlled_inputs]
+    val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, n_observed_variables + 1 + n_controlled_inputs, [64,64], [128, 128], 1]
+    #val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, 0, [], [128, 128], 1]
     # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
 
     #agent = DRPG_agent(layer_sizes=layer_sizes, learning_rate = 0.0004, critic = True)
-    agent = DDPG_agent(val_layer_sizes = val_layer_sizes, pol_layer_sizes = pol_layer_sizes)#, pol_learning_rate=0.0001)
+    agent = DDPG_agent(val_layer_sizes = val_layer_sizes, pol_layer_sizes = pol_layer_sizes,  policy_act = tf.nn.sigmoid)#, pol_learning_rate=0.0001)
     agent.batch_size = int(N_control_intervals * skip)
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
@@ -112,6 +114,12 @@ if __name__ == '__main__':
     n_unstables = []
     all_returns = []
     all_test_returns = []
+    agent.std = 0.025
+    agent.noise_bounds = [-0.0625, 0.0625]
+    agent.action_bounds = [0, 1]
+    policy_delay = 2
+    update_count = 0
+
 
     print('time:', control_interval_time)
     for episode in range(int(n_episodes//skip)):
@@ -143,6 +151,7 @@ if __name__ == '__main__':
         for e in range(0, N_control_intervals):
 
             actions = agent.get_actions([states, sequences], explore_rate = explore_rate, test_episode = True)
+            #actions = agent.get_actions([states], explore_rate = explore_rate, test_episode = True, recurrent = False)
             #actions = agent.get_actions([states, sequences])
 
             e_actions.append(actions)
@@ -169,8 +178,20 @@ if __name__ == '__main__':
                     e_rewards[i].append(reward)
                     e_returns[i] += reward
 
-
+            #print('sequences', np.array(sequences).shape)
+            #print('sequences', sequences[0])
             states = next_states
+
+
+            if episode > 1000//skip:
+
+                for hello in range(skip):
+                    #print(e, episode, hello, update_count)
+                    update_count += 1
+                    policy = update_count%policy_delay == 0 and update_count > 1000
+
+                    agent.Q_update(policy=policy, fitted=False, recurrent = True)
+
 
         for trajectory in trajectories:
             if np.all( [np.all(np.abs(trajectory[i][0]) <= 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
@@ -181,8 +202,11 @@ if __name__ == '__main__':
                 print((trajectory[-1][0]))
 
         explore_rate = DQN_agent.get_rate(None, episode, 0, 1, n_episodes / (11 * skip))
-        agent.Q_update()
-
+        '''
+        if episode > 1000//skip:
+            update_count += 1
+            agent.Q_update( policy=update_count%policy_delay == 0, fitted=True)
+        '''
 
         print('n unstable ', unstable)
         n_unstables.append(unstable)

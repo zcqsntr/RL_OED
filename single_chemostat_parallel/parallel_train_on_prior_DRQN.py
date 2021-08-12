@@ -164,8 +164,6 @@ if __name__ == '__main__':
 
             actions, exploit_flags = agent.get_actions([states, sequences], explore_rate, test_episode)
 
-
-
             e_actions.append(actions)
             e_exploit_flags.append(exploit_flags)
 
@@ -212,24 +210,6 @@ if __name__ == '__main__':
                 print('UNSTABLE!!!')
                 print((trajectory[-1][0]))
 
-
-                '''
-                i = 0
-                new_traj = []
-
-                while not np.all(np.isnan(trajectory[i][0])) and (trajectory[i][3][0] is not None) and not math.isnan(np.sum(trajectory[i][3])) and np.all(np.abs(trajectory[i][3]) < 1):
-                    new_traj.append(trajectory[i])
-                    i += 1
-                trans = trajectory[i]
-                new_trans = (trans[0], trans[1], trans[2], [None]*agent.layer_sizes[0], True)
-
-                new_traj.append(new_trans)
-
-                agent.memory.append(new_traj) # monte carlo
-                #agent.memory.extend(new_traj) # DQN
-
-                print('new traj: ',len(new_traj))
-                '''
         # train the agent
         explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11 * skip))
 

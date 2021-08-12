@@ -20,6 +20,7 @@ from DQN_agent import *
 from PG_agent import *
 from time import time
 import json
+import math
 
 from tensorflow import keras
 from tensorflow.keras.preprocessing.sequence import pad_sequences
@@ -58,7 +59,7 @@ normaliser = np.array([1e3, 1e1])
 n_params = actual_params.size()[0]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
-n_episodes = 100
+n_episodes = 1000
 skip = 100
 
 trajectory = []
@@ -77,62 +78,14 @@ all_value_SSEs = []
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 print('number of cores available: ', multiprocessing.cpu_count())
 
-fitted = True
-DQN = False
-DRQN = True
+fitted = False
+
 monte_carlo = False
 cluster = False
 DDPG = False
+verbose = False
+policy = True
 
-if fitted:
-    learning_rate = 0.01
-else:
-    learning_rate = 0.001
-
-if len(sys.argv) == 3:
-    cluster = True
-    layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [100, 100], [200, 200],
-                   num_inputs ** n_controlled_inputs]
-    '''
-    if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
-        layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64], [100],
-                       num_inputs ** n_controlled_inputs]
-
-    elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
-        layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64], [100, 100],
-                       num_inputs ** n_controlled_inputs]
-
-
-    elif sys.argv[2] == '7' or sys.argv[2] == '8' or sys.argv[2] == '9':
-        layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64, 64], [100,100],
-                       num_inputs ** n_controlled_inputs]
-
-    elif sys.argv[2] == '10' or sys.argv[2] == '11' or sys.argv[2] == '12':
-
-        layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [100], [200],
-                       num_inputs ** n_controlled_inputs]
-
-    elif sys.argv[2] == '13' or sys.argv[2] == '14' or sys.argv[2] == '15':
-        layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [100], [200, 200],
-                       num_inputs ** n_controlled_inputs]
-
-
-    elif sys.argv[2] == '16' or sys.argv[2] == '17' or sys.argv[2] == '18':
-        layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [100, 100], [200, 200],
-                       num_inputs ** n_controlled_inputs]
-    '''
-
-    save_path = sys.argv[1] + sys.argv[2] + '/'
-    print(n_episodes)
-    os.makedirs(save_path, exist_ok=True)
-    os.makedirs(save_path + '/value_graphs', exist_ok=True)
-elif len(sys.argv) == 2:
-    save_path = sys.argv[1] + '/'
-    os.makedirs(save_path, exist_ok=True)
-else:
-    save_path = '../single_chemostat_continuous/'
-    layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64], [100],
-     num_inputs ** n_controlled_inputs]
 
 
 train_times = []
@@ -149,33 +102,21 @@ env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_co
 
 test_env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time, normaliser)
 
+pol_layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64, 64], [100, 100],
+                   n_controlled_inputs]
+val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, n_observed_variables + 1 + n_controlled_inputs,
+                   [64, 64], [100, 100], 1]
+# agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
 
-if DRQN:
-    #agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + num_inputs ** n_controlled_inputs, 32, 100, 100, num_inputs ** n_controlled_inputs])
-    agent = DRQN_agent(layer_sizes=layer_sizes, learning_rate = learning_rate)
-    #test_agent = DRQN_agent(layer_sizes=[n_observed_variables + 1, n_observed_variables + 1 + num_inputs ** n_controlled_inputs,  32, 100, 100,  num_inputs ** n_controlled_inputs])
-    test_agent = DRQN_agent(layer_sizes=layer_sizes, learning_rate = learning_rate)
+# agent = DRPG_agent(layer_sizes=layer_sizes, learning_rate = 0.0004, critic = True)
+agent = DDPG_agent(val_layer_sizes=val_layer_sizes, pol_layer_sizes=pol_layer_sizes, val_learning_rate = 0.0001, pol_learning_rate = 0.0001, policy_act = tf.nn.sigmoid)
+test_agent = DDPG_agent(val_layer_sizes=val_layer_sizes, pol_layer_sizes=pol_layer_sizes, val_learning_rate = 0.0001, pol_learning_rate = 0.0001, policy_act = tf.nn.sigmoid)
+agent.max_length = 11
+test_agent.max_length = 11
+agent.std = 0.0
+agent.noise_bounds = [-0.0625, 0.0625]
+agent.action_bounds = [0, 1]
 
-
-
-elif DDPG:
-    pol_layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64, 64], [100, 100],
-                       n_controlled_inputs]
-    val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, n_observed_variables + 1 + n_controlled_inputs,
-                       [64, 64], [100, 100], 1]
-    # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
-
-    # agent = DRPG_agent(layer_sizes=layer_sizes, learning_rate = 0.0004, critic = True)
-    agent = DDPG_agent(val_layer_sizes=val_layer_sizes, pol_layer_sizes=pol_layer_sizes, pol_act = tf.nn.sigmoid)
-    test_agent = DDPG_agent(val_layer_sizes=val_layer_sizes, pol_layer_sizes=pol_layer_sizes, pol_act = tf.nn.sigmoid)
-
-
-
-else:
-    agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 50, 50,  num_inputs ** n_controlled_inputs])
-    #agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + 1, 50, 50,  num_inputs ** n_controlled_inputs])
-    test_agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 50, 50,  num_inputs ** n_controlled_inputs])
-    #test_agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + 1, 50, 50,  num_inputs ** n_controlled_inputs])
 all_actions = []
 all_rewards = []
 
@@ -190,6 +131,7 @@ test_env.mapped_trajectory_solver = test_env.CI_solver.map(skip, "thread", n_cor
 
 print(type(actual_params))
 
+save_path = './'
 
 for ep in range(int(n_episodes//skip)):
     print('episode:', ep)
@@ -208,16 +150,12 @@ for ep in range(int(n_episodes//skip)):
         test_actual_params = np.random.uniform(low=[1, 0.00048776, 0.00006845928], high=[1, 0.00048776, 0.00006845928],
                                           size=(skip, 3))
 
-
     env.param_guesses = actual_params
 
     test_env.reset()
     test_states = [test_env.get_initial_RL_state() for _ in range(skip)]
 
-
     test_env.param_guesses = test_actual_params
-
-
 
     env.logdetFIMs = [[] for _ in range(skip)]
     test_env.logdetFIMs = [[] for _ in range(skip)]
@@ -239,29 +177,21 @@ for ep in range(int(n_episodes//skip)):
     test_trajectories = [[] for _ in range(skip)]
 
     for e in range(0, N_control_intervals):
+        actions = np.random.random(size=(skip, n_controlled_inputs))
+        test_actions = np.random.random(size=(skip, n_controlled_inputs))
 
-        if DRQN:
-            actions, _ = agent.get_actions([states, sequences], explore_rate)
 
-            test_actions,_ = agent.get_actions([test_states, test_sequences], explore_rate)
-        elif DDPG:
-            actions = np.random.randint(0, num_inputs ** n_controlled_inputs, size=(skip))
-            test_actions = np.random.randint(0, num_inputs ** n_controlled_inputs, size=(skip))
-        else:
-            actions,_ = agent.get_actions(states, explore_rate)
-            test_actions,_ = agent.get_actions(states, explore_rate)
+        outputs = env.map_parallel_step(np.array(actions).T, actual_params, continuous=True)
 
-        outputs = env.map_parallel_step(np.array(actions).T, actual_params)
-
-        test_outputs = test_env.map_parallel_step(np.array(test_actions).T, test_actual_params)
+        test_outputs = test_env.map_parallel_step(np.array(test_actions).T, test_actual_params, continuous=True)
 
         next_states = []
         test_next_states = []
 
 
         for i, o in enumerate(outputs):
-            next_state, reward, done, _, u = o
-            test_next_state, test_reward, test_done, _, test_u = test_outputs[i]
+            next_state, reward, done, _, _ = o
+            test_next_state, test_reward, test_done, _, _= test_outputs[i]
 
             next_states.append(next_state)
             test_next_states.append(test_next_state)
@@ -282,23 +212,23 @@ for ep in range(int(n_episodes//skip)):
                 test_next_state = [None] *agent.layer_sizes[0]
                 test_done = True
 
-            transition = (state, action, reward, next_state, done, u)
+            transition = (state, action, reward, next_state, done)
             trajectories[i].append(transition)
 
             #one_hot_a = np.array([int(i == action) for i in range(agent.layer_sizes[-1])])/10
-            sequences[i].append(np.concatenate((state, u)))
+            sequences[i].append(np.concatenate((state, action)))
 
 
 
 
             #one_hot_test_a = np.array([int(i == test_action) for i in range(test_agent.layer_sizes[-1])])/10
-            test_sequences[i].append(np.concatenate((test_state, test_u)))
+            test_sequences[i].append(np.concatenate((test_state, test_action)))
 
             e_actions[i].append(action)
             e_rewards[i].append(reward)
 
 
-            test_transition = (test_state, test_action, test_reward, test_next_state, test_done, u)
+            test_transition = (test_state, test_action, test_reward, test_next_state, test_done)
             test_trajectories[i].append(test_transition)
 
             e_test_actions[i].append(test_action)
@@ -382,7 +312,7 @@ states = []
 for trajectory in agent.memory:
 
     for transition in trajectory:
-        state, action, reward, next_state, done, u = transition
+        state, action, reward, next_state, done = transition
 
         states.append(state)
 states = np.array(states)
@@ -393,7 +323,7 @@ test_states = []
 for trajectory in test_agent.memory:
 
     for transition in trajectory:
-        state, action, reward, next_state, done, u = transition
+        state, action, reward, next_state, done= transition
 
 
         test_states.append(state)
@@ -411,41 +341,14 @@ print(states.shape)
 print(test_states.shape)
 #print(test_sequences.shape)
 
-# for the continuous agent
-us = env.actions_to_inputs(actions).T/10
-test_us = test_env.actions_to_inputs(test_actions).T/10
 
 
 for iter in range(1,n_iters+1):
-    training_pred = []
-    testing_pred = []
+    values = agent.Q1_network.predict([tf.concat((states, actions), 1), sequences])
+    test_values = agent.Q1_network.predict([tf.concat((test_states, test_actions), 1), test_sequences])
 
-
-    if DRQN:
-        values = agent.predict([states, sequences])
-        test_values = agent.predict([test_states, test_sequences])
-    elif DDPG:
-
-        print(us.shape)
-        values = agent.Q_network.predict([tf.concat((states, us), 1), sequences])
-        test_values = agent.Q_network.predict([tf.concat((test_states, test_us), 1), test_sequences])
-    else:
-        values = agent.predict(states)
-        print(values.shape, actions.shape)
-
-        test_values = agent.predict(test_states)
-        print(test_values.shape, test_actions.shape)
-
-
-    if DDPG:
-        training_pred = values.reshape(-1)
-        testing_pred = test_values.reshape(-1)
-    else:
-        for i, v in enumerate(values):
-            training_pred.append(v[actions[i]])
-
-        for i, v in enumerate(test_values):
-            testing_pred.append(v[test_actions[i]])
+    training_pred = values.reshape(-1)
+    testing_pred = test_values.reshape(-1)
 
     # get the change from last value function to measure convergence
     # print(all_pred_rewards)
@@ -454,12 +357,8 @@ for iter in range(1,n_iters+1):
     print(np.array(all_test_true_values).shape, np.array(testing_pred).shape)
     print(((np.array(all_true_values) - np.array(training_pred)) ** 2).shape)
 
-
-
     SSE = np.mean((np.array(all_true_values) - np.array(training_pred)) ** 2)
     test_SSE = np.mean((np.array(all_test_true_values) - np.array(testing_pred)) ** 2)
-
-
     value_SSEs.append(SSE)
     test_value_SSEs.append(test_SSE)
     print('mse:', SSE, 'test:', test_SSE)
@@ -469,21 +368,12 @@ for iter in range(1,n_iters+1):
 
     t = time()
     alpha = 1
-    if DRQN or DDPG:
-        #monte_carlo = iter <= 200
-        #alpha = 1 - iter/n_iters
-        #print('alpha:', alpha)
-        for i in range(1):
-            history = agent.Q_update(fitted=fitted, monte_carlo=monte_carlo, verbose=False)
-            #print('n epochs:', len(history.history['loss']))
-            #print('Loss:', history.history['loss'][0], history.history['loss'][-1])
-            #print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
-    else:
-        history = agent.fitted_Q_update()
-    print('time: ', time()-t)
 
-
-
+    for i in range(1):
+        history = agent.Q_update(fitted=fitted, monte_carlo=monte_carlo, verbose=verbose, policy = policy)
+        #print('n epochs:', len(history.history['loss']))
+        #print('Loss:', history.history['loss'][0], history.history['loss'][-1])
+        #print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
 
     if iter % 1 ==0:
 
@@ -510,12 +400,6 @@ for iter in range(1,n_iters+1):
     #print('loss:', history.history['loss'])
 
     #print('val loss:', history.history['val_loss'])
-
-
-
-
-
-
 
 np.save(save_path + 'value_SSEs.npy', value_SSEs)
 np.save(save_path + 'test_value_SSEs.npy', test_value_SSEs)

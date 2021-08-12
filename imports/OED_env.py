@@ -481,7 +481,8 @@ class OED_env():
             us = self.actions_to_inputs(actions)
         else:
             #us = np.clip(actions, 0.00001, 1)
-            us = 0.01 + (1-0.01)*actions*10
+            #us = 0.01 + (1-0.01)*actions*10
+            us = 0.01 + (1-0.01)*actions
         # all_us.append(np.array(us)[:,:,0].T)
 
         # print(np.array(all_us).shape)
@@ -588,10 +589,12 @@ class OED_env():
 
         # testing new reward condition
 
+        '''
         if len(self.logdetFIMs[i]) == 10:
-            reward = self.logdetFIMs[i][-1]
+            reward = logdet_FIM
         else:
             reward = 0
+        '''
 
         return reward/100
 
@@ -617,6 +620,7 @@ class OED_env():
         #state = np.append(state, np.append(self.param_guesses[i, :], FIM_elements))
 
         state = np.append(state, self.current_tstep)
+        #state = np.append(state, 0)
 
         #state = np.append(state, self.logdetFIMs[i][-1])
 
