@@ -98,10 +98,10 @@ if __name__ == '__main__':
     #agent = DRPG_agent(layer_sizes=layer_sizes, learning_rate = 0.0004, critic = True)
     agent = DDPG_agent(val_layer_sizes = val_layer_sizes, pol_layer_sizes = pol_layer_sizes,  policy_act = tf.nn.sigmoid)#, pol_learning_rate=0.0001)
     agent.batch_size = int(N_control_intervals * skip)
+    agent.max_length = 11
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
     env = OED_env(*args)
-
 
     test_episode = True
     unstable = 0
@@ -119,7 +119,6 @@ if __name__ == '__main__':
     agent.action_bounds = [0, 1]
     policy_delay = 2
     update_count = 0
-
 
     print('time:', control_interval_time)
     for episode in range(int(n_episodes//skip)):
@@ -188,9 +187,9 @@ if __name__ == '__main__':
                 for hello in range(skip):
                     #print(e, episode, hello, update_count)
                     update_count += 1
-                    policy = update_count%policy_delay == 0 and update_count > 1000
+                    policy = update_count%policy_delay == 0 and update_count > 5
 
-                    agent.Q_update(policy=policy, fitted=False, recurrent = True)
+                    agent.Q_update(policy=policy, fitted=False, recurrent=True)
 
 
         for trajectory in trajectories:
@@ -220,12 +219,8 @@ if __name__ == '__main__':
         print('alpha:', alpha)
         print('av return: ', np.mean(all_returns[-skip:]))
         print()
-        print('actions:', np.array(e_actions).shape)
-        print('us:', np.array(e_us)[0, :])
 
-        print('rewards:', np.array(e_rewards)[0, :])
-        print('return:', np.sum(np.array(e_rewards)[0, :]))
-        print()
+        #print('us:', np.array(e_us)[0, :])
 
         print('actions:', np.array(e_actions).shape)
         print('actions:', np.array(e_actions)[:, 0])

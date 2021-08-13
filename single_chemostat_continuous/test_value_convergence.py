@@ -12,7 +12,6 @@ sys.path.append(SINGLE_CHEMOSTAT_PATH)
 IMPORT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'single_chemostat_system')
 sys.path.append(IMPORT_PATH)
 from OED_env import *
-from ROCC import *
 from xdot import xdot
 import multiprocessing
 import tensorflow as tf
