@@ -53,7 +53,9 @@ if __name__ == '__main__':
 
 
     param_guesses = actual_params
+
     if len(sys.argv) == 3:
+        '''
         if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
             done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
             n_episodes = 100000
@@ -77,7 +79,7 @@ if __name__ == '__main__':
             n_episodes = 500000
             skip = 100
 
-
+        '''
 
         save_path = sys.argv[1] + sys.argv[2] + '/'
         print(n_episodes)
