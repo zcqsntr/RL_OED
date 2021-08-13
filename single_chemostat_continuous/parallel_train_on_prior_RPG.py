@@ -191,7 +191,7 @@ if __name__ == '__main__':
                     update_count += 1
                     policy = update_count%policy_delay == 0 and update_count > 5
 
-                    agent.Q_update(policy=policy, fitted=False, recurrent=True)
+                    agent.Q_update(policy=policy, fitted=True, recurrent=True)
 
 
         for trajectory in trajectories:
