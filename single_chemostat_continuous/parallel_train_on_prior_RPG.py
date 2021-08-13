@@ -91,9 +91,9 @@ if __name__ == '__main__':
         save_path = '../single_chemostat_parallel/'
 
     #pol_layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [32, 32], [64,64,64], n_controlled_inputs]
-    pol_layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64, 64], [128, 128], n_controlled_inputs]
+    pol_layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [32], [128, 128], n_controlled_inputs]
     #pol_layer_sizes = [n_observed_variables + 1, 0, [], [128, 128], n_controlled_inputs]
-    val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, n_observed_variables + 1 + n_controlled_inputs, [64,64], [128, 128], 1]
+    val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, n_observed_variables + 1 + n_controlled_inputs, [32], [128, 128], 1]
     #val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, 0, [], [128, 128], 1]
     # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
 
@@ -107,11 +107,14 @@ if __name__ == '__main__':
 
     test_episode = True
     unstable = 0
-    explore_rate = 1
+
+    max_std = 0.35  # for exploring
+    explore_rate = max_std
     alpha = 1
     #n_episodes = 10000
     env.mapped_trajectory_solver = env.CI_solver.map(skip, "thread", n_cores)
     t = time.time()
+
 
     n_unstables = []
     all_returns = []
@@ -121,7 +124,7 @@ if __name__ == '__main__':
     agent.action_bounds = [0, 1]
     policy_delay = 2
     update_count = 0
-
+    fitted = True
     print('time:', control_interval_time)
     for episode in range(int(n_episodes//skip)):
 
@@ -151,7 +154,10 @@ if __name__ == '__main__':
 
         for e in range(0, N_control_intervals):
 
-            actions = agent.get_actions([states, sequences], explore_rate = explore_rate, test_episode = True)
+            if episode < 1000 // skip:
+                actions = agent.get_actions0([states, sequences], explore_rate = 1, test_episode = True)
+            else:
+                actions = agent.get_actions([states, sequences], explore_rate=explore_rate, test_episode=True)
             #actions = agent.get_actions([states], explore_rate = explore_rate, test_episode = True, recurrent = False)
             #actions = agent.get_actions([states, sequences])
 
@@ -169,7 +175,7 @@ if __name__ == '__main__':
                 action = actions[i]
 
                 if e == N_control_intervals - 1 or np.all(np.abs(next_state) >= 1) or math.isnan(np.sum(next_state)):
-                    next_state = [None]*pol_layer_sizes[0] # maybe dont need this
+                    #next_state = [0]*pol_layer_sizes[0] # maybe dont need this
                     done = True
 
                 transition = (state, action, reward, next_state, done)
@@ -183,17 +189,6 @@ if __name__ == '__main__':
             #print('sequences', sequences[0])
             states = next_states
 
-
-            if episode > 1000//skip:
-
-                #for hello in range(skip):
-                    #print(e, episode, hello, update_count)
-                update_count += 1
-                policy = update_count%policy_delay == 0 and update_count > 5
-
-                agent.Q_update(policy=policy, fitted=True, recurrent=True)
-
-
         for trajectory in trajectories:
             if np.all( [np.all(np.abs(trajectory[i][0]) <= 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
                 agent.memory.append(trajectory) # monte carlo, fitted
@@ -202,7 +197,17 @@ if __name__ == '__main__':
                 print('UNSTABLE!!!')
                 print((trajectory[-1][0]))
 
-        explore_rate = DQN_agent.get_rate(None, episode, 0, 1, n_episodes / (11 * skip))
+        if episode > 1000 // skip:
+            print('training', update_count)
+            # for hello in range(skip):
+            # print(e, episode, hello, update_count)
+            update_count += 1
+            policy = update_count % policy_delay == 0
+            t = time.time()
+            agent.Q_update(policy=policy, fitted=fitted, recurrent=True)
+            print('fitting time', time.time() - t)
+
+        explore_rate = DQN_agent.get_rate(None, episode, 0, 1, n_episodes / (11 * skip)) * max_std
         '''
         if episode > 1000//skip:
             update_count += 1

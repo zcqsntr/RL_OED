@@ -531,6 +531,9 @@ class DDPG_agent():
             #next_values = Q1
             targets = rewards + self.gamma*(1-dones)*next_values
 
+
+
+
         randomize = np.arange(len(states))
         np.random.shuffle(randomize)
 
@@ -543,6 +546,7 @@ class DDPG_agent():
 
         inputs = [states, padded] if recurrent else [states]
         #print('inputs, actions, targets', inputs[0].shape, actions.shape, targets.shape)
+
         return inputs, actions, targets
 
     def Q_update(self, recurrent = True, monte_carlo =False, policy = True, fitted = True, verbose = False):

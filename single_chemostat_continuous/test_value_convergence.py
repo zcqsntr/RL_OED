@@ -205,10 +205,10 @@ for ep in range(int(n_episodes//skip)):
 
 
             if e == N_control_intervals - 1:
-                next_state = [None] *agent.layer_sizes[0]
+                next_state = [0] *agent.layer_sizes[0]
                 done = True
 
-                test_next_state = [None] *agent.layer_sizes[0]
+                test_next_state = [0] *agent.layer_sizes[0]
                 test_done = True
 
             transition = (state, action, reward, next_state, done)
@@ -216,10 +216,6 @@ for ep in range(int(n_episodes//skip)):
 
             #one_hot_a = np.array([int(i == action) for i in range(agent.layer_sizes[-1])])/10
             sequences[i].append(np.concatenate((state, action)))
-
-
-
-
             #one_hot_test_a = np.array([int(i == test_action) for i in range(test_agent.layer_sizes[-1])])/10
             test_sequences[i].append(np.concatenate((test_state, test_action)))
 
@@ -244,8 +240,6 @@ for ep in range(int(n_episodes//skip)):
         trajectory = trajectories[j]
         test_trajectory = test_trajectories[j]
 
-
-
         if np.all( [np.all(np.abs(trajectory[i][0]) <= 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
             agent.memory.append(trajectory)
             all_actions.extend(e_actions[j])
@@ -261,8 +255,6 @@ for ep in range(int(n_episodes//skip)):
 
         if np.all( [np.all(np.abs(test_trajectory[i][0]) <= 1) for i in range(len(test_trajectory))] ) and not math.isnan(np.sum(test_trajectory[-1][0])): # check for instability
             test_agent.memory.append(test_trajectory)
-
-
             all_test_actions.extend(e_test_actions[j])
             all_test_rewards.append(e_test_rewards[j])
 
