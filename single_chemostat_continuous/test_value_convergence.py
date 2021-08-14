@@ -77,8 +77,8 @@ all_value_SSEs = []
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 print('number of cores available: ', multiprocessing.cpu_count())
 
-fitted = False
-
+fitted = True
+prior = True
 monte_carlo = False
 cluster = False
 DDPG = False
