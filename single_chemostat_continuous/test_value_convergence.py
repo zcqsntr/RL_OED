@@ -12,7 +12,6 @@ sys.path.append(SINGLE_CHEMOSTAT_PATH)
 IMPORT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'single_chemostat_system')
 sys.path.append(IMPORT_PATH)
 from OED_env import *
-from ROCC import *
 from xdot import xdot
 import multiprocessing
 import tensorflow as tf
@@ -79,7 +78,7 @@ print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('
 print('number of cores available: ', multiprocessing.cpu_count())
 
 fitted = True
-
+prior = True
 monte_carlo = False
 cluster = False
 DDPG = False
@@ -109,8 +108,8 @@ val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, n_observed_va
 # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
 
 # agent = DRPG_agent(layer_sizes=layer_sizes, learning_rate = 0.0004, critic = True)
-agent = DDPG_agent(val_layer_sizes=val_layer_sizes, pol_layer_sizes=pol_layer_sizes,  policy_act = tf.nn.sigmoid)
-test_agent = DDPG_agent(val_layer_sizes=val_layer_sizes, pol_layer_sizes=pol_layer_sizes,  policy_act = tf.nn.sigmoid)
+agent = DDPG_agent(val_layer_sizes=val_layer_sizes, pol_layer_sizes=pol_layer_sizes, val_learning_rate = 0.0001, pol_learning_rate = 0.0001, policy_act = tf.nn.sigmoid)
+test_agent = DDPG_agent(val_layer_sizes=val_layer_sizes, pol_layer_sizes=pol_layer_sizes, val_learning_rate = 0.0001, pol_learning_rate = 0.0001, policy_act = tf.nn.sigmoid)
 agent.max_length = 11
 test_agent.max_length = 11
 agent.std = 0.0
@@ -177,10 +176,8 @@ for ep in range(int(n_episodes//skip)):
     test_trajectories = [[] for _ in range(skip)]
 
     for e in range(0, N_control_intervals):
-        #actions = np.random.random(size=(skip, n_controlled_inputs))
-        #test_actions = np.random.random(size=(skip, n_controlled_inputs))
-        actions = agent.get_actions([states, sequences], explore_rate=explore_rate, test_episode=True)
-        test_actions = test_agent.get_actions([states, sequences], explore_rate=explore_rate, test_episode=True)
+        actions = np.random.random(size=(skip, n_controlled_inputs))
+        test_actions = np.random.random(size=(skip, n_controlled_inputs))
 
 
         outputs = env.map_parallel_step(np.array(actions).T, actual_params, continuous=True)
@@ -208,10 +205,10 @@ for ep in range(int(n_episodes//skip)):
 
 
             if e == N_control_intervals - 1:
-                next_state = [None] *agent.layer_sizes[0]
+                next_state = [0] *agent.layer_sizes[0]
                 done = True
 
-                test_next_state = [None] *agent.layer_sizes[0]
+                test_next_state = [0] *agent.layer_sizes[0]
                 test_done = True
 
             transition = (state, action, reward, next_state, done)
@@ -219,10 +216,6 @@ for ep in range(int(n_episodes//skip)):
 
             #one_hot_a = np.array([int(i == action) for i in range(agent.layer_sizes[-1])])/10
             sequences[i].append(np.concatenate((state, action)))
-
-
-
-
             #one_hot_test_a = np.array([int(i == test_action) for i in range(test_agent.layer_sizes[-1])])/10
             test_sequences[i].append(np.concatenate((test_state, test_action)))
 
@@ -247,8 +240,6 @@ for ep in range(int(n_episodes//skip)):
         trajectory = trajectories[j]
         test_trajectory = test_trajectories[j]
 
-
-
         if np.all( [np.all(np.abs(trajectory[i][0]) <= 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
             agent.memory.append(trajectory)
             all_actions.extend(e_actions[j])
@@ -264,8 +255,6 @@ for ep in range(int(n_episodes//skip)):
 
         if np.all( [np.all(np.abs(test_trajectory[i][0]) <= 1) for i in range(len(test_trajectory))] ) and not math.isnan(np.sum(test_trajectory[-1][0])): # check for instability
             test_agent.memory.append(test_trajectory)
-
-
             all_test_actions.extend(e_test_actions[j])
             all_test_rewards.append(e_test_rewards[j])
 

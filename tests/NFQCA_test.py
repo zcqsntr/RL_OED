@@ -122,7 +122,7 @@ for episode in range(n_episodes):
             #run test episode
             #a = agent.get_action(s.reshape(-1, pol_layer_sizes[0]), 0)[0]
             a = agent.get_actions([s.reshape(-1, pol_layer_sizes[0]), sequence], explore_rate)[0]
-            env.render()
+            #env.render()
             next_s, r, d, info = env.step(a)
             #next_s[2] = 0
             #next_s[3] = 0

@@ -533,6 +533,9 @@ class DDPG_agent():
             #next_values = Q1
             targets = rewards + self.gamma*(1-dones)*next_values
 
+
+
+
         randomize = np.arange(len(states))
         np.random.shuffle(randomize)
 
@@ -545,6 +548,7 @@ class DDPG_agent():
 
         inputs = [states, padded] if recurrent else [states]
         #print('inputs, actions, targets', inputs[0].shape, actions.shape, targets.shape)
+
         return inputs, actions, targets
 
     def Q_update(self, recurrent = True, monte_carlo =False, policy = True, fitted = True, verbose = False):
@@ -575,8 +579,8 @@ class DDPG_agent():
         else:
             history1 = self.Q1_network.fit([tf.concat((states, actions), 1)], targets, epochs = epochs, verbose = False, validation_split =0., batch_size=batch_size, callbacks = callbacks)
             history2 = self.Q2_network.fit([tf.concat((states, actions), 1)], targets, epochs = epochs, verbose = False, validation_split =0., batch_size=batch_size, callbacks = callbacks)
-        #print('Q1 epochs:', len(history1.history['loss']), 'Loss:', history1.history['loss'][0], history1.history['loss'][-1])
-        #print('Q2 epochs:', len(history2.history['loss']), 'Loss:', history2.history['loss'][0], history2.history['loss'][-1])
+        print('Q1 epochs:', len(history1.history['loss']), 'Loss:', history1.history['loss'][0], history1.history['loss'][-1])
+        print('Q2 epochs:', len(history2.history['loss']), 'Loss:', history2.history['loss'][0], history2.history['loss'][-1])
 
         if policy:
             batches = math.ceil(states.shape[0]/batch_size)
@@ -625,7 +629,7 @@ class DDPG_agent():
 
                         break
 
-            #print('Policy epochs: ', len(epoch_losses), epoch_losses[0], epoch_losses[-1])
+            print('Policy epochs: ', len(epoch_losses), epoch_losses[0], epoch_losses[-1])
 
         if not fitted and not monte_carlo and policy: # update target nbetworks when we update the policy
             self.update_target_network(self.Q1_network, self.Q1_target, self.polyak)
