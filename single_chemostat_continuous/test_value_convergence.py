@@ -78,7 +78,7 @@ all_value_SSEs = []
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 print('number of cores available: ', multiprocessing.cpu_count())
 
-fitted = False
+fitted = True
 
 monte_carlo = False
 cluster = False
@@ -109,8 +109,8 @@ val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, n_observed_va
 # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
 
 # agent = DRPG_agent(layer_sizes=layer_sizes, learning_rate = 0.0004, critic = True)
-agent = DDPG_agent(val_layer_sizes=val_layer_sizes, pol_layer_sizes=pol_layer_sizes, val_learning_rate = 0.0001, pol_learning_rate = 0.0001, policy_act = tf.nn.sigmoid)
-test_agent = DDPG_agent(val_layer_sizes=val_layer_sizes, pol_layer_sizes=pol_layer_sizes, val_learning_rate = 0.0001, pol_learning_rate = 0.0001, policy_act = tf.nn.sigmoid)
+agent = DDPG_agent(val_layer_sizes=val_layer_sizes, pol_layer_sizes=pol_layer_sizes,  policy_act = tf.nn.sigmoid)
+test_agent = DDPG_agent(val_layer_sizes=val_layer_sizes, pol_layer_sizes=pol_layer_sizes,  policy_act = tf.nn.sigmoid)
 agent.max_length = 11
 test_agent.max_length = 11
 agent.std = 0.0
@@ -177,8 +177,10 @@ for ep in range(int(n_episodes//skip)):
     test_trajectories = [[] for _ in range(skip)]
 
     for e in range(0, N_control_intervals):
-        actions = np.random.random(size=(skip, n_controlled_inputs))
-        test_actions = np.random.random(size=(skip, n_controlled_inputs))
+        #actions = np.random.random(size=(skip, n_controlled_inputs))
+        #test_actions = np.random.random(size=(skip, n_controlled_inputs))
+        actions = agent.get_actions([states, sequences], explore_rate=explore_rate, test_episode=True)
+        test_actions = test_agent.get_actions([states, sequences], explore_rate=explore_rate, test_episode=True)
 
 
         outputs = env.map_parallel_step(np.array(actions).T, actual_params, continuous=True)

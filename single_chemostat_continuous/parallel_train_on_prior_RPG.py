@@ -101,7 +101,7 @@ if __name__ == '__main__':
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
     env = OED_env(*args)
-
+    agent.max_length = 11
 
     test_episode = True
     unstable = 0
@@ -185,13 +185,15 @@ if __name__ == '__main__':
 
             if episode > 1000//skip:
 
-                for hello in range(skip):
+                #for hello in range(skip):
                     #print(e, episode, hello, update_count)
-                    update_count += 1
-                    policy = update_count%policy_delay == 0 and update_count > 1000
+                update_count += 1
+                policy = update_count%policy_delay == 0 and update_count > 1000
 
-                    agent.Q_update(policy=policy, fitted=False, recurrent = True)
+                agent.Q_update(policy=policy, fitted=True, recurrent = True)
 
+        if test_episode:
+            trajectories = trajectories[:-1]
 
         for trajectory in trajectories:
             if np.all( [np.all(np.abs(trajectory[i][0]) <= 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
