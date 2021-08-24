@@ -243,7 +243,7 @@ class DDPG_agent():
         self.gamma = gamma
         self.scale = 1
         self.polyak = 0.995
-        self.batch_size = 32
+        self.batch_size = 256
         self.policy_network = self.initialise_network(pol_layer_sizes, out_act = policy_act, scale = self.scale)
         self.policy_opt = keras.optimizers.Adam(learning_rate=pol_learning_rate)
         self.policy_act = policy_act
@@ -350,21 +350,20 @@ class DDPG_agent():
             states = inputs[0]
             actions = self.policy_network([np.array(states)])
         actions = np.array(actions)
+
         if test_episode:
+
             actions[:-1] += np.random.normal(0, explore_rate,size = actions[:-1].shape)
 
         else:
             actions += np.random.normal(0, explore_rate, size=actions.shape)
 
 
-        actions = np.clip(actions, 0, 1)
-
-
-
+        actions = np.clip(actions, self.action_bounds[0], self.action_bounds[1])
 
         return actions
 
-    def get_actions0(self, inputs, explore_rate, test_episode = False):
+    def get_actions0(self, inputs, explore_rate, test_episode = False, recurrent = True):
         '''
         PARALLEL version of get action
         Choses action based on enivormental state, explore rate and current value estimates
@@ -388,7 +387,7 @@ class DDPG_agent():
 
         if test_episode: exploit_inds = np.append(exploit_inds, len(states)-1)
 
-        explore_actions = np.random.uniform(0, 1, size = (len(explore_inds), 2))
+        explore_actions = np.random.uniform(self.action_bounds[0], self.action_bounds[1], size = (len(explore_inds), 2))
 
 
         actions = np.zeros((len(states), 2), dtype='float64')
@@ -396,6 +395,10 @@ class DDPG_agent():
         if len(exploit_inds) > 0:
             sequences = pad_sequences(sequences, maxlen=self.max_length, dtype='float64')
             exploit_actions = self.policy_network([np.array(states)[exploit_inds], np.array(sequences)[exploit_inds]])
+
+            exploit_actions += np.random.normal(0, explore_rate*self.std*2, size=exploit_actions.shape)
+
+            exploit_actions = np.clip(exploit_actions, self.action_bounds[0], self.action_bounds[1])
 
             actions[exploit_inds] = exploit_actions
 
@@ -454,16 +457,16 @@ class DDPG_agent():
 
 
         if recurrent:
-            padded = pad_sequences(self.sequences, maxlen = self.max_length, dtype='float64')
-            next_padded = pad_sequences(self.next_sequences, maxlen=self.max_length, dtype='float64')
+            padded = pad_sequences(self.sequences, maxlen = self.max_length, dtype='float64')[:self.mem_size]
+            next_padded = pad_sequences(self.next_sequences, maxlen=self.max_length, dtype='float64')[:self.mem_size]
 
 
-        next_states = np.array(self.next_states, dtype=np.float64)
-        rewards = np.array(self.rewards).reshape(-1, 1)
-        dones = np.array(self.dones).reshape(-1, 1)
-        states = np.array(self.states)
-        actions = np.array(self.actions)
-        all_returns = np.array(self.all_returns)
+        next_states = np.array(self.next_states, dtype=np.float64)[:self.mem_size]
+        rewards = np.array(self.rewards).reshape(-1, 1)[:self.mem_size]
+        dones = np.array(self.dones).reshape(-1, 1)[:self.mem_size]
+        states = np.array(self.states)[:self.mem_size]
+        actions = np.array(self.actions)[:self.mem_size]
+        all_returns = np.array(self.all_returns)[:self.mem_size]
 
         self.memory = []  # reset memory after this information has been extracted
 
@@ -485,10 +488,10 @@ class DDPG_agent():
 
         elif not fitted:
             # take random sample
-            mem_size = 50000000
-            batch_size = self.batch_size
 
-            indices = np.random.randint(max(0, states.shape[0] - mem_size), states.shape[0], size=(batch_size))
+            sample_size = int(self.batch_size*10)
+
+            indices = np.random.randint(max(0, states.shape[0] - self.mem_size), states.shape[0], size=(sample_size))
 
             states = states[indices]
 
@@ -562,51 +565,50 @@ class DDPG_agent():
         if fitted:
             epochs = 500
             patience = 10
-            batch_size = 256
+
 
             self.reset_weights(policy=policy)
             callback = tf.keras.callbacks.EarlyStopping(monitor = 'loss', patience=patience, restore_best_weights=True)
             callbacks = [callback]
         else:
             epochs = 1
-            batch_size = self.batch_size
+
             patience = 1
             callbacks = []
 
         if recurrent:
-            history1 = self.Q1_network.fit([tf.concat((states, actions), 1), sequences], targets, epochs = epochs, verbose = verbose, validation_split =0., batch_size=batch_size, callbacks = callbacks)
-            history2 = self.Q2_network.fit([tf.concat((states, actions), 1), sequences], targets, epochs = epochs, verbose = verbose, validation_split =0., batch_size=batch_size, callbacks = callbacks)
+            history1 = self.Q1_network.fit([tf.concat((states, actions), 1), sequences], targets, epochs = epochs, verbose = verbose, validation_split =0., batch_size=self.batch_size, callbacks = callbacks)
+            history2 = self.Q2_network.fit([tf.concat((states, actions), 1), sequences], targets, epochs = epochs, verbose = verbose, validation_split =0., batch_size=self.batch_size, callbacks = callbacks)
         else:
-            history1 = self.Q1_network.fit([tf.concat((states, actions), 1)], targets, epochs = epochs, verbose = False, validation_split =0., batch_size=batch_size, callbacks = callbacks)
-            history2 = self.Q2_network.fit([tf.concat((states, actions), 1)], targets, epochs = epochs, verbose = False, validation_split =0., batch_size=batch_size, callbacks = callbacks)
-        print('Q1 epochs:', len(history1.history['loss']), 'Loss:', history1.history['loss'][0], history1.history['loss'][-1])
-        print('Q2 epochs:', len(history2.history['loss']), 'Loss:', history2.history['loss'][0], history2.history['loss'][-1])
+            history1 = self.Q1_network.fit([tf.concat((states, actions), 1)], targets, epochs = epochs, verbose = False, validation_split =0., batch_size=self.batch_size, callbacks = callbacks)
+            history2 = self.Q2_network.fit([tf.concat((states, actions), 1)], targets, epochs = epochs, verbose = False, validation_split =0., batch_size=self.batch_size, callbacks = callbacks)
+        #print('Q1 epochs:', len(history1.history['loss']), 'Loss:', history1.history['loss'][0], history1.history['loss'][-1])
+        #print('Q2 epochs:', len(history2.history['loss']), 'Loss:', history2.history['loss'][0], history2.history['loss'][-1])
 
         if policy:
-            batches = math.ceil(states.shape[0]/batch_size)
+            batches = math.ceil(states.shape[0]/self.batch_size)
 
             epoch_losses = []
             for epoch in range(epochs):
                 batch_losses = []
                 for batch in range(batches):
 
-                    start = batch*batch_size
-                    end = start + batch_size
+                    start = batch*self.batch_size
+                    end = start + self.batch_size
 
                     with tf.GradientTape() as tape:
                         pred_actions = self.policy_network([states[start:end], sequences[start:end]]) if recurrent else self.policy_network([states[start:end]])
                         pred_values = self.Q1_network([tf.concat((states[start:end], pred_actions), 1), sequences[start:end]]) if recurrent else self.Q1_network([tf.concat((states[start:end], pred_actions), 1)])
 
-
                         # Used `-value` as we want to maximize the value given
                         # by the critic for our actions
                         loss = -tf.math.reduce_mean(pred_values)
 
-                        policy_grad = tape.gradient(loss, self.policy_network.trainable_variables)
+                    policy_grad = tape.gradient(loss, self.policy_network.trainable_variables)
 
-                        self.policy_opt.apply_gradients(zip(policy_grad, self.policy_network.trainable_variables))
+                    self.policy_opt.apply_gradients(zip(policy_grad, self.policy_network.trainable_variables))
 
-                        batch_losses.append(loss)
+                    batch_losses.append(loss)
 
                 epoch_losses.append(np.mean(batch_losses))
 
@@ -629,7 +631,7 @@ class DDPG_agent():
 
                         break
 
-            print('Policy epochs: ', len(epoch_losses), epoch_losses[0], epoch_losses[-1])
+            #print('Policy epochs: ', len(epoch_losses), epoch_losses[0], epoch_losses[-1])
 
         if not fitted and not monte_carlo and policy: # update target nbetworks when we update the policy
             self.update_target_network(self.Q1_network, self.Q1_target, self.polyak)

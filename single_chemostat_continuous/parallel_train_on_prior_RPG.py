@@ -53,33 +53,14 @@ if __name__ == '__main__':
 
 
     param_guesses = actual_params
-
+    pol_learning_rate = 0.0001
     if len(sys.argv) == 3:
-        '''
-        if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
-            done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 100000
-            skip = 100
-        elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
-            done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 200000
-            skip = 100
-        elif sys.argv[2] == '7' or sys.argv[2] == '8' or sys.argv[2] == '9':
-            done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 300000
-            skip = 100
 
-        elif sys.argv[2] == '10' or sys.argv[2] == '11' or sys.argv[2] == '12':
-            done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 400000
-            skip = 100
+        if sys.argv[2] in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']:
+            pol_learning_rate = 0.0001
+        else:
+            pol_learning_rate = 0.00001
 
-        elif sys.argv[2] == '13' or sys.argv[2] == '14' or sys.argv[2] == '15':
-            done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 500000
-            skip = 100
-
-        '''
 
         save_path = sys.argv[1] + sys.argv[2] + '/'
         print(n_episodes)
@@ -88,43 +69,49 @@ if __name__ == '__main__':
         save_path = sys.argv[1] + '/'
         os.makedirs(save_path, exist_ok=True)
     else:
-        save_path = '../single_chemostat_parallel/'
+        save_path = './'
 
-    #pol_layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [32, 32], [64,64,64], n_controlled_inputs]
-    pol_layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [32], [128, 128], n_controlled_inputs]
-    #pol_layer_sizes = [n_observed_variables + 1, 0, [], [128, 128], n_controlled_inputs]
-    val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, n_observed_variables + 1 + n_controlled_inputs, [32], [128, 128], 1]
-    #val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, 0, [], [128, 128], 1]
-    # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
+    test_episode = True
+    recurrent = True
+
+    if recurrent:
+        #pol_layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [32, 32], [64,64,64], n_controlled_inputs]
+        pol_layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64], [128, 128], n_controlled_inputs]
+        val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, n_observed_variables + 1 + n_controlled_inputs, [64], [128, 128], 1]
+        # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
+    else:
+        pol_layer_sizes = [n_observed_variables + 1, 0, [], [128, 128], n_controlled_inputs]
+        val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, 0, [], [128, 128], 1]
 
     #agent = DRPG_agent(layer_sizes=layer_sizes, learning_rate = 0.0004, critic = True)
-    agent = DDPG_agent(val_layer_sizes = val_layer_sizes, pol_layer_sizes = pol_layer_sizes,  policy_act = tf.nn.sigmoid)#, pol_learning_rate=0.0001)
+    agent = DDPG_agent(val_layer_sizes = val_layer_sizes, pol_layer_sizes = pol_layer_sizes,  policy_act = tf.nn.sigmoid, val_learning_rate = 0.0001, pol_learning_rate = pol_learning_rate)#, pol_learning_rate=0.0001)
     agent.batch_size = int(N_control_intervals * skip)
     agent.max_length = 11
+    agent.mem_size = 500000000
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
     env = OED_env(*args)
 
-    test_episode = True
+
     unstable = 0
 
-    max_std = 0.35  # for exploring
+    max_std = 1  # for exploring
     explore_rate = max_std
     alpha = 1
     #n_episodes = 10000
     env.mapped_trajectory_solver = env.CI_solver.map(skip, "thread", n_cores)
-    t = time.time()
+    total_t = time.time()
 
 
     n_unstables = []
     all_returns = []
     all_test_returns = []
-    agent.std = 0.025
-    agent.noise_bounds = [-0.0625, 0.0625]
+    agent.std = 0.1
+    agent.noise_bounds = [-0.25, 0.25]
     agent.action_bounds = [0, 1]
     policy_delay = 2
     update_count = 0
-    fitted = True
+    fitted = False
     print('time:', control_interval_time)
     for episode in range(int(n_episodes//skip)):
 
@@ -154,10 +141,16 @@ if __name__ == '__main__':
 
         for e in range(0, N_control_intervals):
 
-            if episode < 1000 // skip:
-                actions = agent.get_actions0([states, sequences], explore_rate = 1, test_episode = True)
+
+            if recurrent:
+                inputs = [states, sequences]
             else:
-                actions = agent.get_actions([states, sequences], explore_rate=explore_rate, test_episode=True)
+                inputs = [states]
+
+            if episode < 1000 // skip:
+                actions = agent.get_actions0(inputs, explore_rate = 1, test_episode = True, recurrent=recurrent)
+            else:
+                actions = agent.get_actions0(inputs, explore_rate=explore_rate, test_episode=True, recurrent=recurrent)
             #actions = agent.get_actions([states], explore_rate = explore_rate, test_episode = True, recurrent = False)
             #actions = agent.get_actions([states, sequences])
 
@@ -188,6 +181,8 @@ if __name__ == '__main__':
             #print('sequences', np.array(sequences).shape)
             #print('sequences', sequences[0])
             states = next_states
+        if test_episode:
+            trajectories = trajectories[:-1]
 
         for trajectory in trajectories:
             if np.all( [np.all(np.abs(trajectory[i][0]) <= 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
@@ -199,12 +194,13 @@ if __name__ == '__main__':
 
         if episode > 1000 // skip:
             print('training', update_count)
-            # for hello in range(skip):
-            # print(e, episode, hello, update_count)
-            update_count += 1
-            policy = update_count % policy_delay == 0
             t = time.time()
-            agent.Q_update(policy=policy, fitted=fitted, recurrent=True)
+            for hello in range(skip):
+                # print(e, episode, hello, update_count)
+                update_count += 1
+                policy = update_count % policy_delay == 0
+
+                agent.Q_update(policy=policy, fitted=fitted, recurrent=recurrent)
             print('fitting time', time.time() - t)
 
         explore_rate = DQN_agent.get_rate(None, episode, 0, 1, n_episodes / (11 * skip)) * max_std
@@ -216,7 +212,9 @@ if __name__ == '__main__':
 
         print('n unstable ', unstable)
         n_unstables.append(unstable)
-        all_returns.extend(e_returns)
+        all_returns.extend(e_returns[:-test_episode])
+        if test_episode:
+            all_test_returns.append(np.sum(np.array(e_rewards)[-1, :]))
 
         print()
         print('EPISODE: ', episode, episode*skip)
@@ -241,14 +239,22 @@ if __name__ == '__main__':
             print('test return:', np.sum(np.array(e_rewards)[-1, :]))
             print()
 
-    print('time:', time.time() - t)
+    print('time:', time.time() - total_t)
     print(env.detFIMs[-1])
     print(env.logdetFIMs[-1])
     np.save(save_path + 'all_returns.npy', np.array(all_returns))
+    if test_episode:
+        np.save(save_path + 'all_test_returns.npy', np.array(all_test_returns))
+
     np.save(save_path + 'n_unstables.npy', np.array(n_unstables))
     np.save(save_path + 'actions.npy', np.array(agent.actions))
     agent.save_network(save_path)
 
     #np.save(save_path + 'values.npy', np.array(agent.values))
     t = np.arange(N_control_intervals) * int(control_interval_time)
+
+    plt.plot(all_test_returns)
+    plt.figure()
+    plt.plot(all_returns)
+    plt.show()
 

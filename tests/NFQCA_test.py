@@ -22,23 +22,25 @@ print(env.action_space)
 print(env.observation_space)
 
 recurrent = True
-
+fitted = False
 
 #pol_layer_sizes = [8, 0, [], [128,128], 2] # lander
-pol_layer_sizes = [8, 10, [32], [128, 128], 2] # lander
+#pol_layer_sizes = [8, 10, [64], [128, 128], 2] # lander
+pol_layer_sizes = [5, 7, [64], [128, 128], 2] # recurrent lander
 #val_layer_sizes = [10, 0, [], [128,128], 1] #lander
-val_layer_sizes = [10, 10, [32], [128, 128], 1] #lander
+#val_layer_sizes = [10, 10, [64], [128, 128], 1] #lander
+val_layer_sizes = [7, 7, [64], [128, 128], 1] #recurrent lander
 
 
-agent = DDPG_agent(val_layer_sizes = val_layer_sizes, pol_layer_sizes = pol_layer_sizes, val_learning_rate = 0.001, pol_learning_rate = 0.001, policy_act = tf.nn.tanh, gamma = 0.99)
-agent.std = 0.05
-agent.noise_bounds = [-0.125, 0.125]
+agent = DDPG_agent(val_layer_sizes = val_layer_sizes, pol_layer_sizes = pol_layer_sizes, val_learning_rate = 0.0001, pol_learning_rate = 0.0001, policy_act = tf.nn.tanh, gamma = 0.99)
+agent.std = 0.2
+agent.noise_bounds = [-0.5, 0.5]
 agent.action_bounds = [-1, 1]
-agent.max_length = 2
-
+agent.max_length = 11
+agent.mem_size = 500000000
 explore_rate = 1
 
-n_episodes = 500
+n_episodes = 5000
 
 n_success = 0
 returns = []
@@ -48,19 +50,25 @@ update_every = 10
 
 update_count = 0
 update_after = 2000
+#update_after = 0
+
+#update_after = 10000 #fitted
+
 
 total_t = 0
 max_t = 500
+
+def reduce_state(s): # remove velocities for reucrrent network
+
+    new_s = list(s[0:2]) + list([s[4]]) + list(s[6:8])
+    return np.array(new_s)
+
+
 for episode in range(n_episodes):
     print()
     print('EPISODE:', episode, 'explore_rate', explore_rate)
     s = env.reset()
-
-    #s[2] = 0
-    #s[3] = 0
-    #s[5] = 0
-
-
+    s = reduce_state(s)
     t=0
     rs = []
     traj = []
@@ -69,27 +77,31 @@ for episode in range(n_episodes):
     ti = time.time()
 
     sequence = [[[0]*pol_layer_sizes[1]]]
-
-
     while True:
         #a = agent.get_action(s.reshape(-1, pol_layer_sizes[0]), explore_rate)[0]
         a = agent.get_actions([s.reshape(-1, pol_layer_sizes[0]), sequence], explore_rate)[0]
-        #env.render()
+        env.render()
         actions.append(a)
 
         next_s, r, d, info = env.step(a)
-        #next_s[2] = 0
-        #next_s[3] = 0
-        #next_s[5] = 0
+        next_s = reduce_state(next_s)
 
 
         if t > max_t:
             d = True
         r /= 100 #lunar lander
         rs.append(r)
-        #agent.memory.append([(s, a, r, next_s, d)])
-        traj.append((s, a, r, next_s, d))
+
+
+        traj.append((s, a, r, next_s, d)) # if fitted else agent.memory.append([(s, a, r, next_s, d)])
+
         sequence[0].append(np.concatenate((s, a)))
+
+        if total_t > update_after and not fitted and t%update_every==0:
+
+             for _ in range(update_every):
+                update_count += 1
+                agent.Q_update(recurrent=recurrent, policy=update_count % policy_delay == 0, fitted=fitted)
 
         if d:
             if t + 1< 999:
@@ -101,12 +113,6 @@ for episode in range(n_episodes):
         total_t += 1
         s = next_s
 
-        if total_t > update_after and t%update_every==0:
-
-            for _ in range(update_every):
-                update_count += 1
-                agent.Q_update(recurrent=recurrent, policy=update_count%policy_delay == 0, fitted=False)
-
     print('ep time', time.time() - ti)
 
     if episode%1 == 0:
@@ -115,22 +121,21 @@ for episode in range(n_episodes):
         t=0
         test_rs = []
         s = env.reset()
-        #s[2] = 0
-        #s[3] = 0
-        #s[5] = 0
+        s = reduce_state(s)
+        sequence = [[[0] * pol_layer_sizes[1]]]
         while True:
             #run test episode
             #a = agent.get_action(s.reshape(-1, pol_layer_sizes[0]), 0)[0]
-            a = agent.get_actions([s.reshape(-1, pol_layer_sizes[0]), sequence], explore_rate)[0]
-            #env.render()
+            a = agent.get_actions([s.reshape(-1, pol_layer_sizes[0]), sequence], 0)[0]
+            env.render()
             next_s, r, d, info = env.step(a)
-            #next_s[2] = 0
-            #next_s[3] = 0
-            #next_s[5] = 0
+            next_s = reduce_state(next_s)
             if t > max_t:
                 d = True
             r /= 100  # lunar lander
             test_rs.append(r)
+
+            sequence[0].append(np.concatenate((s, a)))
 
             if d:
                 if t + 1 < 999:
@@ -154,7 +159,13 @@ for episode in range(n_episodes):
 
     ti = time.time()
 
-    #agent.Q_update(recurrent = False)
+
+    if total_t > update_after and fitted:  # and t%update_every==0:
+
+        # for _ in range(update_every):
+        update_count += 1
+        agent.Q_update(recurrent=recurrent, policy=update_count % policy_delay == 0, fitted=fitted)
+
     print('fit time', time.time() - ti)
     explore_rate = DQN_agent.get_rate(None, episode, 0, 1, n_episodes/11 )
 

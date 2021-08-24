@@ -64,7 +64,7 @@ skip = 100
 trajectory = []
 actions = []
 rewards = []
-n_iters = 1000
+n_iters = 50
 n_repeats = 1
 
 n_cores = multiprocessing.cpu_count()//2
@@ -77,13 +77,16 @@ all_value_SSEs = []
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 print('number of cores available: ', multiprocessing.cpu_count())
 
-fitted = True
+fitted = False
 prior = True
 monte_carlo = False
 cluster = False
 DDPG = False
 verbose = False
 policy = True
+
+recurrent = True
+policy_delay = 2
 
 
 
@@ -101,19 +104,26 @@ env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_co
 
 test_env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time, normaliser)
 
-pol_layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64, 64], [100, 100],
-                   n_controlled_inputs]
-val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, n_observed_variables + 1 + n_controlled_inputs,
-                   [64, 64], [100, 100], 1]
+if recurrent:
+    pol_layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64], [128, 128],
+                       n_controlled_inputs]
+    val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, n_observed_variables + 1 + n_controlled_inputs,
+                       [64], [128, 128], 1]
+else:
+    pol_layer_sizes = [n_observed_variables + 1,0, [], [128, 128], n_controlled_inputs]
+    val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, 0, [], [128, 128], 1]
 # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
 
 # agent = DRPG_agent(layer_sizes=layer_sizes, learning_rate = 0.0004, critic = True)
-agent = DDPG_agent(val_layer_sizes=val_layer_sizes, pol_layer_sizes=pol_layer_sizes, val_learning_rate = 0.0001, pol_learning_rate = 0.0001, policy_act = tf.nn.sigmoid)
-test_agent = DDPG_agent(val_layer_sizes=val_layer_sizes, pol_layer_sizes=pol_layer_sizes, val_learning_rate = 0.0001, pol_learning_rate = 0.0001, policy_act = tf.nn.sigmoid)
+agent = DDPG_agent(val_layer_sizes=val_layer_sizes, pol_layer_sizes=pol_layer_sizes, policy_act = tf.nn.sigmoid, val_learning_rate = 0.001, pol_learning_rate = 0.0001)
+test_agent = DDPG_agent(val_layer_sizes=val_layer_sizes, pol_layer_sizes=pol_layer_sizes, policy_act = tf.nn.sigmoid, val_learning_rate = 0.001, pol_learning_rate = 0.0001)
+agent.mem_size = 50000000
+test_agent.mem_size = 50000000
+agent.batch_size = 100
 agent.max_length = 11
 test_agent.max_length = 11
-agent.std = 0.0
-agent.noise_bounds = [-0.0625, 0.0625]
+agent.std = 0.1
+agent.noise_bounds = [-0.25, 0.25]
 agent.action_bounds = [0, 1]
 
 all_actions = []
@@ -178,7 +188,7 @@ for ep in range(int(n_episodes//skip)):
     for e in range(0, N_control_intervals):
         actions = np.random.random(size=(skip, n_controlled_inputs))
         test_actions = np.random.random(size=(skip, n_controlled_inputs))
-
+        #print(actions)
 
         outputs = env.map_parallel_step(np.array(actions).T, actual_params, continuous=True)
 
@@ -205,10 +215,10 @@ for ep in range(int(n_episodes//skip)):
 
 
             if e == N_control_intervals - 1:
-                next_state = [0] *agent.layer_sizes[0]
+                #next_state = [0] *agent.layer_sizes[0]
                 done = True
 
-                test_next_state = [0] *agent.layer_sizes[0]
+                #test_next_state = [0] *agent.layer_sizes[0]
                 test_done = True
 
             transition = (state, action, reward, next_state, done)
@@ -322,9 +332,9 @@ for trajectory in test_agent.memory:
 test_states = np.array(test_states)
 test_actions = np.array(all_test_actions)
 
-
-sequences = pad_sequences(all_sequences, maxlen=N_control_intervals+1, dtype='float64')
-test_sequences = pad_sequences(all_test_sequences, maxlen=N_control_intervals+1, dtype='float64')
+if recurrent:
+    sequences = pad_sequences(all_sequences, maxlen=N_control_intervals+1, dtype='float64')
+    test_sequences = pad_sequences(all_test_sequences, maxlen=N_control_intervals+1, dtype='float64')
 
 
 print(states.shape)
@@ -333,10 +343,19 @@ print(test_states.shape)
 #print(test_sequences.shape)
 
 
-
+updates = 0
 for iter in range(1,n_iters+1):
-    values = agent.Q1_network.predict([tf.concat((states, actions), 1), sequences])
-    test_values = agent.Q1_network.predict([tf.concat((test_states, test_actions), 1), test_sequences])
+
+    if recurrent:
+        inputs = [tf.concat((states, actions), 1), sequences]
+        test_inputs = [tf.concat((test_states, test_actions), 1), test_sequences]
+    else:
+        inputs = [tf.concat((states, actions), 1)]
+        test_inputs = [tf.concat((test_states, test_actions), 1)]
+
+
+    values = agent.Q1_network.predict(inputs)
+    test_values = agent.Q1_network.predict(test_inputs)
 
     training_pred = values.reshape(-1)
     testing_pred = test_values.reshape(-1)
@@ -353,19 +372,6 @@ for iter in range(1,n_iters+1):
     value_SSEs.append(SSE)
     test_value_SSEs.append(test_SSE)
     print('mse:', SSE, 'test:', test_SSE)
-    print()
-    print('ITER: ' + str(iter), '------------------------------------')
-
-
-    t = time()
-    alpha = 1
-
-    for i in range(1):
-        history = agent.Q_update(fitted=fitted, monte_carlo=monte_carlo, verbose=verbose, policy = policy)
-        #print('n epochs:', len(history.history['loss']))
-        #print('Loss:', history.history['loss'][0], history.history['loss'][-1])
-        #print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
-
     if iter % 1 ==0:
 
         np.save(save_path + 'value_graphs/train_pred' + str(iter) + '.npy',training_pred)
@@ -387,6 +393,21 @@ for iter in range(1,n_iters+1):
             plt.legend()
             plt.savefig(save_path + 'value_graphs/test' + str(iter) + '.png')
             plt.close()
+
+    print()
+    print('ITER: ' + str(iter), '------------------------------------')
+
+
+    t = time()
+    alpha = 1
+
+    for i in range(100):
+        updates += 1
+        history = agent.Q_update(fitted=fitted, monte_carlo=monte_carlo, verbose=verbose, policy = policy and updates%policy_delay==0, recurrent =recurrent)
+        #print('n epochs:', len(history.history['loss']))
+        #print('Loss:', history.history['loss'][0], history.history['loss'][-1])
+        #print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
+    print('fitting time:', time()-t)
 
     #print('loss:', history.history['loss'])
 
