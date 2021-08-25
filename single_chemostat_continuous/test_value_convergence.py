@@ -140,7 +140,7 @@ test_env.mapped_trajectory_solver = test_env.CI_solver.map(skip, "thread", n_cor
 
 print(type(actual_params))
 
-save_path = './'
+save_path = './working_results'
 
 for ep in range(int(n_episodes//skip)):
     print('episode:', ep)

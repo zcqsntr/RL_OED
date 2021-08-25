@@ -53,13 +53,26 @@ if __name__ == '__main__':
 
 
     param_guesses = actual_params
-    pol_learning_rate = 0.0001
+    pol_learning_rate = 0.00001
+
+    pol_learning_rates = [0.0001, 0.00005 , 0.00001]
+    hidden_layer_size = [[64, 64], [128, 128, 128]]
+
+    hidden_layer_sizes = [[[64], [ 128, 128]], [[64, 64], [ 128, 128]],  [[64], [ 256, 256]], [[64, 64], [ 128, 128, 128]]]
+
+
     if len(sys.argv) == 3:
 
-        if sys.argv[2] in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']:
-            pol_learning_rate = 0.0001
-        else:
-            pol_learning_rate = 0.00001
+        exp = int(sys.argv[2]) - 1
+
+        # 3 learning rates
+        # 4 hl sizes
+        # 3 repeats per combination
+        n_repeats = 3
+        comb = exp // n_repeats
+        pol_learning_rate = pol_learning_rates[comb//len(hidden_layer_sizes)]
+        hidden_layer_size = hidden_layer_sizes[comb%len(hidden_layer_sizes)]
+
 
 
         save_path = sys.argv[1] + sys.argv[2] + '/'
@@ -69,15 +82,18 @@ if __name__ == '__main__':
         save_path = sys.argv[1] + '/'
         os.makedirs(save_path, exist_ok=True)
     else:
-        save_path = './'
+        save_path = './working_results'
 
     test_episode = True
     recurrent = True
 
+
+
+
     if recurrent:
         #pol_layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [32, 32], [64,64,64], n_controlled_inputs]
-        pol_layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64], [128, 128], n_controlled_inputs]
-        val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, n_observed_variables + 1 + n_controlled_inputs, [64], [128, 128], 1]
+        pol_layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, hidden_layer_size[0], hidden_layer_size[1], n_controlled_inputs]
+        val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, n_observed_variables + 1 + n_controlled_inputs, hidden_layer_size[0], hidden_layer_size[1], 1]
         # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
     else:
         pol_layer_sizes = [n_observed_variables + 1, 0, [], [128, 128], n_controlled_inputs]
