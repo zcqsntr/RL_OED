@@ -53,18 +53,19 @@ if __name__ == '__main__':
 
 
     param_guesses = actual_params
-    pol_learning_rate = 0.00001
 
-    pol_learning_rates = [0.0001, 0.00005 , 0.00001]
-    hidden_layer_size = [[64, 64], [128, 128, 128]]
-
-    hidden_layer_sizes = [[[64], [ 128, 128]], [[64, 64], [ 128, 128]],  [[64], [ 256, 256]], [[64, 64], [ 128, 128, 128]]]
 
 
     if len(sys.argv) == 3:
 
-        exp = int(sys.argv[2]) - 1
 
+        if int(sys.argv[2]) <= 10:
+            prior = False
+        else:
+            prior = True
+        # for parameter scan
+        '''
+        exp = int(sys.argv[2]) - 1
         # 3 learning rates
         # 4 hl sizes
         # 3 repeats per combination
@@ -72,6 +73,7 @@ if __name__ == '__main__':
         comb = exp // n_repeats
         pol_learning_rate = pol_learning_rates[comb//len(hidden_layer_sizes)]
         hidden_layer_size = hidden_layer_sizes[comb%len(hidden_layer_sizes)]
+        '''
 
 
 
@@ -88,7 +90,9 @@ if __name__ == '__main__':
     recurrent = True
 
 
-
+    #these chosen from parameter scan
+    pol_learning_rate = 0.00005
+    hidden_layer_size = [[64, 64], [128, 128]]
 
     if recurrent:
         #pol_layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [32, 32], [64,64,64], n_controlled_inputs]
