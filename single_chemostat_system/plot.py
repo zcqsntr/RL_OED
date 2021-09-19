@@ -1,7 +1,10 @@
+import matplotlib as mpl
+mpl.use('tkagg')
 import matplotlib.pyplot as plt
 import numpy as np
 import math
 import numpy as np
+
 
 def get_rate( episode, MIN_RATE, MAX_RATE, denominator):
     '''
@@ -46,140 +49,136 @@ path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_PG_220721
 path = '/home/neythen/Desktop/Projects/RL_OED/results/continuous/sing_chem_cont_18-08-21/single_chemostat_FDDPG'
 path = '/home/neythen/Desktop/Projects/RL_OED/results/continuous/param_scan_080921/single_chemostat_FDDPG'
 
-step = 100
+
+#1-10 are non prior, 11-20 are prior
+path = '/Users/neythen/Desktop/Projects/RL_OED/results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG'
+
+
+step = 1000
 n_repeats = 3
 
 
 N_control_intervals = 10
 control_interval_time = 30
-hidden_layer_sizes = [[[64], [ 128, 128]], [[64, 64], [ 128, 128]],  [[64], [ 256, 256]], [[64, 64], [ 128, 128, 128]]]
-pol_learning_rates = [0.0001, 0.00005 , 0.00001]
 
-for exp in range(12):
-    all_returns = []
-    all_trajectories = []
-    all_us = []
+all_returns = []
+all_us = []
+all_trajectories =[]
 
-    comb = exp
-    pol_learning_rate = pol_learning_rates[comb // len(hidden_layer_sizes)]
-    hidden_layer_size = hidden_layer_sizes[comb % len(hidden_layer_sizes)]
+for i in range(11, 21):
+    '''
+    us = np.load(path + '/repeat' + str(i) +'/us.npy')
+    print(us.shape)
+    all_us.append(us)
+    t = np.arange(0, N_control_intervals + 1) * control_interval_time  # int(control_interval_time / dt)) * dt
+    plt.figure()
+    print(us[0,:, :].T)
+    print(us[:, :, 0].T)
+    #us = np.vstack((us[0,:, :].T,us[:, :, 0]))
 
-    print(str(pol_learning_rate))
-    print(str(hidden_layer_size))
+    print(us.shape)
+    #plt.step(t, us[:,0], ':', color='red', label='$C_{in}$')
+    #plt.step(t, us[:,1], ':', color='black', label='$C_{0, in}$')
+    #plt.legend()
 
-    for i in range(exp*3 + 1, exp*3 + 4):
-        '''
-        us = np.load(path + '/repeat' + str(i) +'/us.npy')
-        print(us.shape)
-        all_us.append(us)
-        t = np.arange(0, N_control_intervals + 1) * control_interval_time  # int(control_interval_time / dt)) * dt
-        plt.figure()
-        print(us[0,:, :].T)
-        print(us[:, :, 0].T)
-        #us = np.vstack((us[0,:, :].T,us[:, :, 0]))
+    #plt.ylabel('u')
+    #plt.xlabel('Time (min)')
+
     
-        print(us.shape)
-        #plt.step(t, us[:,0], ':', color='red', label='$C_{in}$')
-        #plt.step(t, us[:,1], ':', color='black', label='$C_{0, in}$')
-        #plt.legend()
-    
-        #plt.ylabel('u')
-        #plt.xlabel('Time (min)')
-    
-        
-        trajectory = np.load(path + '/repeat' + str(i) +'/true_trajectory.npy')
-        all_trajectories.append(trajectory)
-    
-        print(trajectory.shape)
-        t = np.arange(1, N_control_intervals + 1) * (100)  # int(control_interval_time / dt)) * dt
-        fig, ax1 = plt.subplots()
-        ax1.plot(t, trajectory[0, :], label='Population')
-        ax1.set_ylabel('Population ($10^5$ cells/L)')
-        ax1.set_xlabel('Time (min)')
-    
-        ax2 = ax1.twinx()
-        ax2.plot(t, trajectory[1, :], color='red', label='C')
-        ax2.set_ylabel('C ($g/L$)')
-        ax2.set_xlabel('Time (min)')
-    
-        ax2.plot(t, trajectory[2, :], color='black', label='$C_0$')
-        ax2.set_ylabel('Concentration ($g/L$)')
-        ax2.set_xlabel('Time (min)')
-        fig.tight_layout()
-        fig.legend(bbox_to_anchor=(0.8, 0.9))
-    
-        '''
-        print()
-        print(i)
+    trajectory = np.load(path + '/repeat' + str(i) +'/true_trajectory.npy')
+    all_trajectories.append(trajectory)
 
-        returns = np.load(path + '/repeat' + str(i) +'/all_returns.npy')*100
-        print('end:', returns[-1])
-        print('max:', np.max(returns))
-
-
-        y = [np.mean(returns[i * step: (i + 1) * step]) for i in range(0, len(returns) // step)]
-        print(i, 'everage max ', y[-1])
-        y.append(returns[-1])
-        #plt.figure()
-        #plt.plot(y)
-
-        # i in [1,2,3]:
-        all_returns.append(y)
-
-        #values =  np.load(path + '/repeat' + str(i) +'/values.npy')
-        n_unstable =  np.load(path + '/repeat' + str(i) +'/n_unstables.npy')
-        print('unstable:', n_unstable[-1])
-        #plt.plot(n_unstable)
-        #plt.show()
-
-
-    #print(values[-1,0,:])
-
-
-    #plt.close('all')
-
-
-    all_returns = np.array(all_returns)
-    all_us = np.array(all_us)
-    all_trajectories = np.array(all_trajectories)
-    print(all_returns.shape, all_us.shape, all_trajectories.shape)
-    print(all_returns[:, -1])
-    x = [(i+1) * step for i in range(0, len(returns)//step)]
-    x.append(len(returns)+step)
-    print(len(x), len(y))
-
-
-    episodes = np.arange(1, len(returns) + 1)   # int(control_interval_time / dt)) * dt
-    explore_rates = [get_rate(episode, 0, 1, len(returns)/11) for episode in episodes]
-    print(explore_rates[-100:])
-
-    #fig, ax1 = plt.subplots()
-    ax1 = plt.subplot(3,4,exp+1)
-    plt.errorbar(x, np.mean(all_returns, axis = 0), np.std(all_returns, axis = 0), label = 'Average Return')
-    #plt.plot(x,all_returns[0])
-    #plt.plot(x,all_returns[1])
-    #plt.plot(x,all_returns[2])
-
-    plt.plot(len(returns)+step,  16.612377905628856, 'o', label = 'Optimisation = 16.61')
-    plt.plot(len(returns)+step, 15.2825, 'o', label = 'Rational design = 15.28')
-    #plt.plot(len(returns)+step, 19.59, 'o', label = 'Best RL = 19.59', color='C0')
-    plt.plot(len(returns)+step, 20.07, 'o', label = 'MPC = 20.07')
-    ax1.set_ylabel('Return')
-    ax1.set_xlabel('Episode')
-
+    print(trajectory.shape)
+    t = np.arange(1, N_control_intervals + 1) * (100)  # int(control_interval_time / dt)) * dt
+    fig, ax1 = plt.subplots()
+    ax1.plot(t, trajectory[0, :], label='Population')
+    ax1.set_ylabel('Population ($10^5$ cells/L)')
+    ax1.set_xlabel('Time (min)')
 
     ax2 = ax1.twinx()
-    ax2.plot(episodes, explore_rates, color = 'black', label = 'Explore rate')
+    ax2.plot(t, trajectory[1, :], color='red', label='C')
+    ax2.set_ylabel('C ($g/L$)')
+    ax2.set_xlabel('Time (min)')
+
+    ax2.plot(t, trajectory[2, :], color='black', label='$C_0$')
+    ax2.set_ylabel('Concentration ($g/L$)')
+    ax2.set_xlabel('Time (min)')
+    fig.tight_layout()
+    fig.legend(bbox_to_anchor=(0.8, 0.9))
+
+    '''
+    print()
+    print(i)
+
+    returns = np.load(path + '/repeat' + str(i) +'/all_returns.npy')*100
+    print('end:', returns[-1])
+    print('max:', np.max(returns))
 
 
-    ax2.set_ylabel('Explore Rate')
-    ax2.set_xlabel('Episode')
-    plt.tight_layout()
-    plt.legend(bbox_to_anchor=(0.5, 0.9))
+    y = [np.mean(returns[i * step: (i + 1) * step]) for i in range(0, len(returns) // step)]
+    print(i, 'everage max ', y[-1])
+    #y.append(returns[-1])
+    #plt.figure()
+    #plt.plot(y)
 
-    plt.title('LR: ' + str(pol_learning_rate) + ' ' + 'Layer sizes: ' + str(hidden_layer_size))
+    # i in [1,2,3]:
+    all_returns.append(y)
+
+    #values =  np.load(path + '/repeat' + str(i) +'/values.npy')
+    n_unstable =  np.load(path + '/repeat' + str(i) +'/n_unstables.npy')
+    print('unstable:', n_unstable[-1])
+    #plt.plot(n_unstable)
+    #plt.show()
+
+
+#print(values[-1,0,:])
+
+
+#plt.close('all')
+
+
+all_returns = np.array(all_returns)
+all_us = np.array(all_us)
+all_trajectories = np.array(all_trajectories)
+print(all_returns.shape, all_us.shape, all_trajectories.shape)
+print(all_returns[:, -1])
+x = [(i+1) * step for i in range(0, len(returns)//step)]
+#x.append(len(returns)+step)
+print(len(x), len(y))
+
+
+episodes = np.arange(1, len(returns) + 1)   # int(control_interval_time / dt)) * dt
+explore_rates = [get_rate(episode, 0, 1, len(returns)/11) for episode in episodes]
+print(explore_rates[-100:])
+
+fig, ax1 = plt.subplots()
+
+plt.errorbar(x, np.mean(all_returns, axis = 0), np.std(all_returns, axis = 0), label = 'Average Return')
+#plt.plot(x,all_returns[0])
+#plt.plot(x,all_returns[1])
+#plt.plot(x,all_returns[2])
+
+plt.plot(len(returns)+step,  16.612377905628856, 'o', label = 'Optimisation = 16.61')
+plt.plot(len(returns)+step, 15.2825, 'o', label = 'Rational design = 15.28')
+#plt.plot(len(returns)+step, 19.59, 'o', label = 'Best RL = 19.59', color='C0')
+plt.plot(len(returns)+step, 20.07, 'o', label = 'MPC = 20.07')
+ax1.set_ylabel('Return')
+ax1.set_xlabel('Episode')
+
+
+ax2 = ax1.twinx()
+ax2.plot(episodes, explore_rates, color = 'black', label = 'Explore rate')
+
+
+ax2.set_ylabel('Explore Rate')
+ax2.set_xlabel('Episode')
+plt.tight_layout()
+
+ax1.legend(bbox_to_anchor=(0.65, 0.7))
+ax2.legend(bbox_to_anchor=(0.6, 0.7))
+#plt.title('LR: ' + str(pol_learning_rate) + ' ' + 'Layer sizes: ' + str(hidden_layer_size))
+
 plt.show()
-
 
 
 

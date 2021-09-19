@@ -645,13 +645,31 @@ class DDPG_agent():
         self.Q1_network.save(save_path + '/Q1_network.h5')
         self.Q2_network.save(save_path + '/Q2_network.h5')
 
-    def load_network(self, load_path): #tested
-        try:
-            self.actor_network = keras.models.load_model(load_path + '/saved_network.h5') # sometimes this crashes, apparently a bug in keras
+        self.policy_target.save(save_path + '/policy_target.h5')
+        self.Q1_target.save(save_path + '/Q1_target.h5')
+        self.Q2_target.save(save_path + '/Q2_target.h5')
 
+    def load_network(self, load_path): #tested
+        print('LOADING NETWORKS, UNCOMMENT HERE TO ALSO LOAD TARGET NETWORKS')
+
+
+        try:
+            self.policy_network = keras.models.load_model(load_path + '/policy_network.h5') # sometimes this crashes, apparently a bug in keras
+            self.Q1_network = keras.models.load_model(load_path + '/Q1_network.h5')
+            self.Q2_network = keras.models.load_model(load_path + '/Q2_network.h5')
+            #self.policy_target = keras.models.load_model(load_path + '/policy_target.h5')  # sometimes this crashes, apparently a bug in keras
+            #self.Q1_target = keras.models.load_model(load_path + '/Q1_target.h5')
+            #self.Q2_target = keras.models.load_model(load_path + '/Q2_target.h5')
         except:
             print('EXCEPTION IN LOAD NETWORK')
-            self.actor_network.load_weights(load_path+ '/saved_network.h5') # this requires model to be initialised exactly the same
+            self.policy_network.load_weights(load_path+ '/policy_network.h5') # this requires model to be initialised exactly the same
+            self.Q1_network.load_weights(load_path + '/Q1_network.h5')
+            self.Q2_network.load_weights(load_path + '/Q2_network.h5')
+            #self.policy_target.load_weights(load_path + '/policy_target.h5')  # this requires model to be initialised exactly the same
+            #self.Q1_target.load_weights(load_path + '/Q1_target.h5')
+            #self.Q2_target.load_weights(load_path + '/Q2_target.h5')
+
+
 
 
     def reset_weights(self, policy = True):

@@ -184,8 +184,13 @@ class OED_env():
                        ['x','p','lam_f','lam_g'], ['hess_gamma_x_x'],
                        dict(jit=False, compiler='clang', verbose = False))
         print('hesslag init')
+
+        #IPOPT options https://coin-or.github.io/Ipopt/OPTIONS.html
         #return nlpsol("solver","ipopt", nlp, dict(ipopt={'max_iter':20}, hess_lag=hessLag, jit=False, compiler='clang', verbose_init = False, verbose = False))
-        return nlpsol("solver","ipopt", nlp, dict(ipopt={'hessian_approximation':'limited-memory'}, hess_lag=hessLag, jit=False, compiler='clang', verbose_init = False, verbose = False))
+
+        # using the limited memory hessian approximation for ipopt seems to make it unstable
+        return nlpsol("solver","ipopt", nlp, dict(ipopt = {'max_iter': 1}, hess_lag=hessLag, jit=False, compiler='clang', verbose_init = False, verbose = False))
+        #'acceptable_tol':10, 'acceptable_iter':30,'s_max':1e10,  'obj_scaling_factor': 1e5
         #return nlpsol("solver","ipopt", nlp, dict(ipopt={'hessian_approximation':'limited_memory'}))
 
     def get_u_solver(self):
@@ -250,12 +255,11 @@ class OED_env():
         print('nlp initialised')
         solver = self.gauss_newton(e, nlp, sym_theta)
         print('solver initialised')
-        # solver.print_options()
-        # sys.exit()
+
 
         return solver
 
-    def step(self, action = None):
+    def step(self, action = None, continuous = True):
 
         self.current_tstep += 1
         if action is None: # Traditional OED step
@@ -264,7 +268,10 @@ class OED_env():
             u = u_solver(x0=self.u0, lbx = [self.input_bounds[0]]*self.n_controlled_inputs, ubx = [self.input_bounds[1]]*self.n_controlled_inputs)['x']
             self.us.append(u.elements())
         else: #RL step
-            u = self.action_to_input(action)
+            if continuous:
+                u = action
+            else:
+                u = self.action_to_input(action)
             #self.us.append(10**u)
             self.us.append(u)
         N_control_intervals = len(self.us)
@@ -275,10 +282,7 @@ class OED_env():
         #trajectory_solver = self.get_full_trajectory_solver(N_control_intervals, control_interval_time, self.dt) # the true trajectory of the system
         #trajectory_solver = trajectory_solver(N_control_intervals, control_interval_time, dt ) #this si the symbolic trajectory
         t = time.time()
-
-        self.true_trajectory = sampled_trajectory_solver(self.initial_Y,  self.actual_params, np.array(self.us)[:,:,0].T)
-
-
+        self.true_trajectory = sampled_trajectory_solver(self.initial_Y,  self.actual_params, np.array(self.us).T)
         #self.est_trajectory = sampled_trajectory_solver(self.initial_Y, self.param_guesses, self.us )
 
         #param_solver = self.get_param_solver(sampled_trajectory_solver)
@@ -507,6 +511,7 @@ class OED_env():
 
         transitions = []
         t = time.time()
+
         for i in range(true_trajectories.shape[1]):
             true_trajectory = true_trajectories[:, i]
 

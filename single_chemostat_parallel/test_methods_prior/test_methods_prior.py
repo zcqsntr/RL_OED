@@ -10,12 +10,15 @@ sys.path.append(IMPORT_PATH)
 import math
 from casadi import *
 import numpy as np
+import matplotlib as mpl
+mpl.use('tkagg')
 import matplotlib.pyplot as plt
 from OED_env import *
 from DQN_agent import *
 import tensorflow as tf
 import time
 from xdot import xdot
+from PG_agent import *
 from ROCC import *
 
 import multiprocessing
@@ -46,6 +49,10 @@ network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_f
 
 network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps_new_ICS_reduced_state/repeat13'
 network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps_reduced_state/repeat4'
+
+
+network_path = '/Users/neythen/Desktop/Projects/RL_OED/results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat10'
+
 actions_from_agent = True
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 n_cores = multiprocessing.cpu_count()//2
@@ -57,6 +64,37 @@ print(params)
 
 n_episodes, skip, y0, actual_params, input_bounds, n_controlled_inputs, num_inputs, dt, lb, ub, N_control_intervals, control_interval_time, n_observed_variables, prior, normaliser = \
     [params[k] for k in params.keys()]
+
+if len(sys.argv) == 3:
+
+    if int(sys.argv[2]) <= 30:
+        prior = False
+        network_path = '../../results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat10'
+        save_path = sys.argv[1] + sys.argv[2] + '/no_prior/'
+    else:
+        prior = True
+        network_path = '../../results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat12'
+        save_path = sys.argv[1] + sys.argv[2] + '/prior/'
+    # for parameter scan
+    '''
+    exp = int(sys.argv[2]) - 1
+    # 3 learning rates
+    # 4 hl sizes
+    # 3 repeats per combination
+    n_repeats = 3
+    comb = exp // n_repeats
+    pol_learning_rate = pol_learning_rates[comb//len(hidden_layer_sizes)]
+    hidden_layer_size = hidden_layer_sizes[comb%len(hidden_layer_sizes)]
+    '''
+
+    print(save_path)
+    print(n_episodes)
+    os.makedirs(save_path, exist_ok=True)
+elif len(sys.argv) == 2:
+    save_path = sys.argv[1] + '/'
+    os.makedirs(save_path, exist_ok=True)
+else:
+    save_path = './working_results/'
 
 actual_params = DM(actual_params)
 normaliser = np.array(normaliser)
@@ -92,16 +130,30 @@ all_initial_params = []
 if actions_from_agent:
     #agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
     #agent = KerasFittedQAgent(layer_sizes=[n_observed_variables +1, 50, 50, num_inputs ** n_controlled_inputs])
-    agent = DQN_agent(layer_sizes=[n_observed_variables + 1, 50, 50, num_inputs ** n_controlled_inputs])
+    #agent = DQN_agent(layer_sizes=[n_observed_variables + 1, 50, 50, num_inputs ** n_controlled_inputs])
     #agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
+    pol_learning_rate = 0.00005
+    hidden_layer_size = [[64, 64], [128, 128]]
+    pol_layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, hidden_layer_size[0],
+                       hidden_layer_size[1], n_controlled_inputs]
+    val_layer_sizes = [n_observed_variables + 1 + n_controlled_inputs, n_observed_variables + 1 + n_controlled_inputs,
+                       hidden_layer_size[0], hidden_layer_size[1], 1]
+    agent = DDPG_agent(val_layer_sizes=val_layer_sizes, pol_layer_sizes=pol_layer_sizes, policy_act=tf.nn.sigmoid,
+                       val_learning_rate=0.0001, pol_learning_rate=pol_learning_rate)
 
+    agent.std = 0.1
+    agent.noise_bounds = [-0.25, 0.25]
+    agent.action_bounds = [0, 1]
+    agent.batch_size = int(N_control_intervals * skip)
+    agent.max_length = 11
+    agent.mem_size = 500000000
     print()
     #print(agent.network.layers[0].get_weights())
     agent.load_network(network_path)
 
-    print(agent.network.layers[-1].get_weights()[0].shape)
+    #print(agent.network.layers[-1].get_weights()[0].shape)
 
-skip = 100
+skip = 1
 
 trajectory_solver =env.get_sampled_trajectory_solver(N_control_intervals, control_interval_time, dt)
 lb = [0.5, 0.0001, 0.00001]
@@ -110,22 +162,25 @@ ub = [2, 0.001, 0.0001]
 all_losses = []
 all_actual_params = []
 all_actions = []
+env.mapped_trajectory_solver = env.CI_solver.map(skip, "thread", n_cores)
+for i in range(1): # run in parrallel as array jobs on server
 
-for i in range(30):
-
-    actual_params = np.random.uniform(low=lb, high=ub)
+    if prior: actual_params = np.random.uniform(low=lb, high=ub)
     param_guesses = np.random.uniform(low=lb, high=ub)
+    initial_params = param_guesses
 
     print('SAMPLE: ', i)
     #param_guesses = np.random.uniform(low=[0.5, 0.0003, 0.00005], high=[1.5, 0.001, 0.0001])
     #param_guesses = DM(actual_params) + np.random.normal(loc=0, scale=np.sqrt(0.05 * actual_params))
 
-    print('initial params: ', param_guesses)
+
     env.reset()
     env.param_guesses = DM(actual_params)
     env.actual_params = actual_params
-    #env.logdetFIMs = [[] for _ in range(skip)]
-    #env.detFIMs = [[] for _ in range(skip)]
+
+
+    env.logdetFIMs = [[] for _ in range(skip)]
+    env.detFIMs = [[] for _ in range(skip)]
 
     if not actions_from_agent: # use hardcoded actions from the optimiser
         env.us = us
@@ -133,15 +188,13 @@ for i in range(30):
 
     else: # use the trained agent to get actions
         state = env.get_initial_RL_state()
-
-
         actions = []
+        sequence = [[0]*pol_layer_sizes[1]]
         for e in range(0, N_control_intervals):
 
-            action = agent.get_action(state, 0)
+            inputs = [[state], [sequence]]
 
-
-
+            action = agent.get_actions0(inputs, explore_rate=0)[0]
 
             next_state, reward, done, _ = env.step(action)
 
@@ -150,35 +203,42 @@ for i in range(30):
                 done = True
             transition = (state, action, reward, next_state, done)
 
+            sequence.append(np.concatenate((state, action)))
+
             state = next_state
             actions.append(action)
         trajectory = env.true_trajectory
-        print(actions)
+        print('actions:', actions)
         all_actions.append(actions)
-        env.us = env.actions_to_inputs(np.array(actions)).T
+        #env.us = env.actions_to_inputs(np.array(actions)).T
     print('traj:', trajectory[0,:])
     # add noramlly distributed noise
-    plt.plot(trajectory[0,:].T)
-    plt.show()
+    #plt.plot(trajectory[0,:].T)
+    #plt.show()
     trajectory[0,:] += np.random.normal(loc=0, scale=np.sqrt(0.05 * trajectory[0,:]))
     print('traj:', trajectory.shape)
 
 
     # FOR NOW JUAST USE RETURN, not param estimates
-    #param_solver = env.get_param_solver(trajectory_solver, trajectory)
-    #sol = param_solver(x0=param_guesses, lbx = lb, ubx = ub)
-    #inferred_params = sol['x']
-    #print('actual_params: ', actual_params)
-    #print('inferred params: ', inferred_params.elements())
-    #all_actual_params.append(actual_params)
-    #all_inferred_params.append(inferred_params.elements())
-    #a#ll_losses.append(sol['f'].elements())
+    param_solver = env.get_param_solver(trajectory_solver, trajectory)
+    sol = param_solver(x0=param_guesses, lbx = lb, ubx = ub)
+    inferred_params = sol['x']
+    print('initial params: ', initial_params)
+    print('actual_params: ', actual_params)
+    print('inferred params: ', inferred_params.elements())
+    all_actual_params.append(actual_params.elements())
+    all_inferred_params.append(inferred_params.elements())
+    all_losses.append(sol['f'].elements())
 
 print(' all final params: ', np.array(all_inferred_params))
 all_inferred_params = np.array(all_inferred_params)
+
+'''
 cov = np.cov(all_inferred_params.T)
 
 q, r = qr(cov)
+
+print(diag(r).elements())
 
 det_cov = np.prod(diag(r).elements())
 
@@ -193,8 +253,11 @@ print(np.log(np.linalg.det(cov)))
 print('eigen values: ', np.linalg.eig(cov)[0])
 print('log det cov; ',logdet_cov)
 print(all_inferred_params)
-np.save('../all_inferred_params.npy', np.array(all_inferred_params))
-np.save('../all_actual_params.npy', np.array(all_actual_params))
-np.save('../all_losses_opt.npy', np.array(all_losses))
-np.save('../all_actions.npy', np.array(all_actions))
+print(all_actual_params)
+'''
+
+np.save(save_path + 'all_inferred_params.npy', all_inferred_params)
+np.save(save_path +'all_actual_params.npy', all_actual_params)
+np.save(save_path +'all_losses_opt.npy', all_losses)
+np.save(save_path +'all_actions.npy', all_actions)
 
