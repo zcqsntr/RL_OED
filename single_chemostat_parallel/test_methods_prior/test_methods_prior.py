@@ -69,11 +69,13 @@ if len(sys.argv) == 3:
 
     if int(sys.argv[2]) <= 30:
         prior = False
-        network_path = '../../results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat10'
+
+
+        network_path = '/home/ntreloar/RL_OED/results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat10'
         save_path = sys.argv[1] + sys.argv[2] + '/no_prior/'
     else:
         prior = True
-        network_path = '../../results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat12'
+        network_path = '/home/ntreloar/RL_OED/results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat12'
         save_path = sys.argv[1] + sys.argv[2] + '/prior/'
     # for parameter scan
     '''

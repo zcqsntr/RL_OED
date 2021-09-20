@@ -38,17 +38,17 @@ def xdot(sym_y, sym_theta, sym_u):
         dsol: array of the derivatives for all state variables
     '''
 
-    q = sym_u[0]
-    Cin = sym_u[1:3]
-    C0in = sym_u[3]
-    print(sym_u.shape, q.shape, Cin.shape, C0in.shape)
+
+    Cin = sym_u[0:2]
+    C0in = sym_u[2]
+    #print(sym_u.shape, q.shape, Cin.shape, C0in.shape)
     q = 0.5
 
     #y, y0, umax, Km, Km0 = [sym_theta[2*i:2*(i+1)] for i in range(len(sym_theta.elements())//2)]
 
     umax, Km, Km0 = [sym_theta[2*i:2*(i+1)] for i in range(3)]
-    A = sym_theta[6:]
-    A = reshape(A, (2,2))
+    #A = sym_theta[6:]
+    #A = reshape(A, (2,2))
 
     y = np.array([480000., 480000.])
     y0 = np.array([520000., 520000.])

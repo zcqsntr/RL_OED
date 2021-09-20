@@ -387,10 +387,10 @@ class DDPG_agent():
 
         if test_episode: exploit_inds = np.append(exploit_inds, len(states)-1)
 
-        explore_actions = np.random.uniform(self.action_bounds[0], self.action_bounds[1], size = (len(explore_inds), 2))
+        explore_actions = np.random.uniform(self.action_bounds[0], self.action_bounds[1], size = (len(explore_inds), self.layer_sizes[-1]))
 
 
-        actions = np.zeros((len(states), 2), dtype='float64')
+        actions = np.zeros((len(states), self.layer_sizes[-1]), dtype='float64')
 
         if len(exploit_inds) > 0:
             sequences = pad_sequences(sequences, maxlen=self.max_length, dtype='float64')

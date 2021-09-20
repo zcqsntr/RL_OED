@@ -557,6 +557,8 @@ class OED_env():
     def get_reward_parallel(self, est_trajectory, i):
         FIM = self.get_FIM(est_trajectory)
 
+
+
         # use this method to remove the small negatvie eigenvalues
 
         # casadi QR seems better,gives same results as np but some -ves in different places and never gives -ve determinant
