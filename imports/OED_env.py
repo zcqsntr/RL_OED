@@ -48,6 +48,9 @@ class OED_env():
 
 
         self.Y = self.initial_Y
+
+        #TODO: remove t his as too much memory
+        self.Ys = [self.initial_Y.elements()]
         self.xdot = xdot # f(x, u, params)
         self.all_param_guesses = []
         self.all_RL_states = []
@@ -75,6 +78,7 @@ class OED_env():
         # xdot = (sym_theta[0] * sym_u/(sym_theta[1] + sym_u))*sym_Y[0]
 
         dx = self.xdot(Y, theta,u)
+        print(dx)
 
         sensitivities_dot = jacobian(dx[0:self.n_observed_variables], theta) + mtimes(jacobian(dx[0:self.n_observed_variables], Y[0:self.n_observed_variables]), jacobian(Y[0:self.n_observed_variables], theta))
 
@@ -109,6 +113,9 @@ class OED_env():
         RHS[self.n_system_variables:self.n_system_variables + self.n_sensitivities] = sensitivities_dot
 
         RHS[self.n_system_variables + self.n_sensitivities:] = FIM_dot
+
+
+
 
         return RHS
 
@@ -302,6 +309,8 @@ class OED_env():
 
         state = self.get_RL_state(self.true_trajectory, self.true_trajectory)
 
+
+
         self.all_RL_states.append(state)
         return state, reward, done, None
 
@@ -408,6 +417,7 @@ class OED_env():
 
             FIM = vertcat(FIM, row)
 
+        #sys.exit()
         return FIM
 
     def get_unique_elements(self, FIM):
@@ -515,6 +525,7 @@ class OED_env():
         for i in range(true_trajectories.shape[1]):
             true_trajectory = true_trajectories[:, i]
 
+
             reward = self.get_reward_parallel(true_trajectory, i)
 
             done = False
@@ -522,9 +533,11 @@ class OED_env():
             # state = self.get_RL_state(self.true_trajectory, self.est_trajectory)
             state = self.get_RL_state_parallel(true_trajectory, true_trajectory, i)
 
+
             transitions.append((state, reward, done, None, us[:,i]))
 
         self.Y = true_trajectories
+        self.Ys.append(self.Y.elements())
         return transitions
 
     def actions_to_inputs(self, actions):
@@ -636,83 +649,3 @@ class OED_env():
 
         return self.normalise_RL_state(state)
 
-class OED_env_model_discr(OED_env):
-    def __init__(self, initial_Y, xdot, xdot_guess, xdot_guess_1, param_guesses, param_guesses_1, actual_params, u0, num_inputs, input_bounds):
-
-        self.param_guesses_1 = param_guesses_1
-        self.xdot_guess = xdot_guess
-        self.xdot_guess_1 = xdot_guess_1
-        self.all_param_guesses_1 = []
-
-        self.sym_params_1 = SX.sym('params_1', 2)
-        super().__init__(initial_Y, xdot, param_guesses, actual_params, u0, num_inputs, input_bounds)
-
-
-
-
-    def step(self, action):
-        #TODO: COVARIANCE MATRIX IN FIM
-        #       KEEP SEQUENCE OF FIMS AND ADD TO IT, ALTHOUGH DONT HAVE TO DO THIS IF USING COMPUTATIONAL SAVING APPROX?
-        #       SCALE FIM LIKE IN NATE'S PAPER
-
-
-        u = self.action_to_input(action)
-
-
-        self.us = np.append(self.us, u)
-
-        true_trajectory_solver = self.get_trajectory_solver(self.xdot, len(self.us)) # solves using the true model adn params
-        trajectory_solver = self.get_trajectory_solver(self.xdot_guess, len(self.us)) # solves using the first model and param guesses
-        trajectory_solver_1 = self.get_trajectory_solver(self.xdot_guess_1, len(self.us)) # solves using the second model and param guesses
-
-        true_trajectory = true_trajectory_solver(self.initial_Y, self.us, self.actual_params)
-        est_trajectory = trajectory_solver(self.initial_Y, self.us, self.param_guesses)
-        est_trajectory_1 = trajectory_solver_1(self.initial_Y, self.us, self.param_guesses_1)
-
-        param_solver = self.get_param_solver(trajectory_solver)
-        param_solver_1 = self.get_param_solver(trajectory_solver_1)
-        # estimate params based on whole trajectory so far
-
-        self.param_guesses = param_solver(x0=self.param_guesses)['x']
-        self.param_guesses_1 = param_solver_1(x0=self.param_guesses_1)['x']
-
-        self.all_param_guesses.append(self.param_guesses.elements())
-        self.all_param_guesses_1.append(self.param_guesses_1.elements())
-
-
-
-        reward = self.get_reward(est_trajectory, est_trajectory_1)
-        done = False
-        state = self.get_state(true_trajectory, est_trajectory, est_trajectory_1)
-        self.true_trajectory = true_trajectory
-        self.est_trajectory = est_trajectory
-        self.est_trajectory_1 = est_trajectory_1
-
-        return state, reward, done, None
-
-    def get_state(self, true_trajectory, est_trajectory, est_trajectory_1):
-        # get the current measured system state
-        sys_state = true_trajectory[:self.n_system_variables, -1]
-
-        FIM, FIM_1 = self.get_FIMs(est_trajectory, est_trajectory_1)
-
-        state = np.append(sys_state, np.append(np.append(self.param_guesses, self.param_guesses_1), np.append(FIM[0, 1, 3], FIM_1[0, 1, 3])))
-
-        return state
-
-    def get_reward(self, est_trajectory, est_trajectory_1):
-
-        FIM, FIM_1 = self.get_FIMs(est_trajectory, est_trajectory_1)
-
-        det_FIM = np.linalg.det(FIM)*1e7 # maybe make this change in det(FIM)
-        det_FIM_1 = np.linalg.det(FIM_1)*1e7 # maybe make this change in det(FIM)
-
-        model_div = np.sum((est_trajectory[0, :] - est_trajectory_1[0,:])**2)
-        #print(det_FIM + det_FIM_1, model_div/10)
-        return det_FIM + det_FIM_1 + model_div/10
-
-    def get_FIMs(self, est_trajectory, est_trajectory_1):
-        FIM = vertcat(horzcat(est_trajectory[3,-1], est_trajectory[4,-1]), horzcat(est_trajectory[4, -1], est_trajectory[5, -1]))
-
-        FIM_1 = vertcat(horzcat(est_trajectory_1[3,-1], est_trajectory_1[4,-1]), horzcat(est_trajectory_1[4, -1], est_trajectory_1[5, -1]))
-        return FIM, FIM_1

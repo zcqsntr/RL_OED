@@ -42,12 +42,13 @@ if __name__ == '__main__':
     n_episodes, skip, y0, actual_params, input_bounds, n_controlled_inputs, num_inputs, dt, lb, ub, N_control_intervals, control_interval_time, n_observed_variables, prior, normaliser = \
         [params[k] for k in params.keys()]
 
-
+    params = actual_params
     actual_params = DM(actual_params)
     normaliser = np.array(normaliser)
 
     n_params = actual_params.size()[0]
     n_system_variables = len(y0)
+
     n_FIM_elements = sum(range(n_params + 1))
     n_tot = n_system_variables + n_params * n_system_variables + n_FIM_elements
 
@@ -139,7 +140,7 @@ if __name__ == '__main__':
             actual_params = np.random.uniform(low=lb, high=ub,  size = (skip, n_params))
         else :
             print(actual_params.shape)
-            actual_params = np.random.uniform(low=[1, 0.00048776, 0.00006845928, 1.1, 0.000000102115, 0.00006845928], high=[1, 0.00048776, 0.00006845928, 1.1, 0.000000102115, 0.00006845928], size = (skip, n_params))
+            actual_params = np.random.uniform(low=[params], high=[params], size = (skip, n_params))
         env.param_guesses = DM(actual_params)
 
         states = [env.get_initial_RL_state_parallel() for i in range(skip)]
@@ -244,6 +245,7 @@ if __name__ == '__main__':
         print('explore rate: ', explore_rate)
         print('alpha:', alpha)
         print('av return: ', np.mean(all_returns[-skip:]))
+
         print()
 
         #print('us:', np.array(e_us)[0, :])
@@ -260,8 +262,21 @@ if __name__ == '__main__':
             print('test return:', np.sum(np.array(e_rewards)[-1, :]))
             print()
 
-    print(trajectories[0][0].shape)
-    #plt.plot(trajectories[0])
+
+
+    sols = np.array(env.Ys)
+
+
+    plt.plot(sols[:,0], label = 'N1')
+    plt.plot(sols[:,1], label = 'N2')
+    plt.legend()
+
+    plt.figure()
+    plt.plot(sols[:, 2], label = 'C1')
+    plt.plot(sols[:, 3], label = 'C2')
+    plt.plot(sols[:, 4], label = 'C0')
+    plt.legend()
+    plt.show()
     print('time:', time.time() - total_t)
     print(env.detFIMs[-1])
     print(env.logdetFIMs[-1])

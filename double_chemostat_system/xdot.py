@@ -20,6 +20,7 @@ def monod(C, C0, umax, Km, Km0):
 
     growth_rate = ((umax * C) / (Km + C)) * (C0 / (Km0 + C0))
 
+
     return growth_rate
 
 
@@ -46,7 +47,12 @@ def xdot(sym_y, sym_theta, sym_u):
 
     #y, y0, umax, Km, Km0 = [sym_theta[2*i:2*(i+1)] for i in range(len(sym_theta.elements())//2)]
 
-    umax, Km, Km0 = [sym_theta[2*i:2*(i+1)] for i in range(3)]
+
+    #sym_theta = [1, 0.00048776, 0.00006845928, 1.1, 0.000000102115, 0.00006845928]
+    umax = sym_theta[0::3]
+    Km = sym_theta[1::3]
+    Km0 = sym_theta[2::3]
+    print(umax, Km, Km0)
     #A = sym_theta[6:]
     #A = reshape(A, (2,2))
 
@@ -63,6 +69,7 @@ def xdot(sym_y, sym_theta, sym_u):
     print(N.shape, C.shape, C0.shape)
     R = monod(C, C0, umax, Km, Km0)
     print(R.shape)
+    print(num_species)
     # calculate derivatives
     #dN = N * (R + mtimes(A, N) - q)  # q term takes account of the dilution
     dN = N * (R - q)  # q term takes account of the dilution
@@ -80,9 +87,14 @@ def xdot(sym_y, sym_theta, sym_u):
 
     xdot[0:num_species] = dN
     xdot[num_species:2*num_species] = dC
+    print(dC)
+
     xdot[-1] = dC0
 
 
     return xdot
+
+
+#((q*(C1in-C1))-((1/y*(((umax1*C1)/(Km01+C1))*(C0/(+Y_4))))*Y_0))
 
 
