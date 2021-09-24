@@ -180,7 +180,7 @@ class OED_env():
         trajectory_solver = G.mapaccum('trajectory', int(N_control_intervals * control_interval_time / dt))
         return trajectory_solver
 
-    def gauss_newton(self, e,nlp,V):
+    def gauss_newton(self, e,nlp,V, max_iter = 1000):
 
         J = jacobian(e,V)
         print('jacobian init')
@@ -196,7 +196,7 @@ class OED_env():
         #return nlpsol("solver","ipopt", nlp, dict(ipopt={'max_iter':20}, hess_lag=hessLag, jit=False, compiler='clang', verbose_init = False, verbose = False))
 
         # using the limited memory hessian approximation for ipopt seems to make it unstable
-        return nlpsol("solver","ipopt", nlp, dict(ipopt = {'max_iter': 1000}, hess_lag=hessLag, jit=False, compiler='clang', verbose_init = False, verbose = False))
+        return nlpsol("solver","ipopt", nlp, dict(ipopt = {'max_iter': max_iter}, hess_lag=hessLag, jit=False, compiler='clang', verbose_init = False, verbose = False))
         #'acceptable_tol':10, 'acceptable_iter':30,'s_max':1e10,  'obj_scaling_factor': 1e5
         #return nlpsol("solver","ipopt", nlp, dict(ipopt={'hessian_approximation':'limited_memory'}))
 
@@ -260,7 +260,7 @@ class OED_env():
         nlp = {'x': sym_theta, 'f': 0.5 * dot(e / (0.05 * trajectory[0:self.n_observed_variables, :].T + 0.00000001),
                                               e)}  # weighted least squares
         print('nlp initialised')
-        solver = self.gauss_newton(e, nlp, sym_theta)
+        solver = self.gauss_newton(e, nlp, sym_theta, max_iter = 100000)
         print('solver initialised')
 
 
