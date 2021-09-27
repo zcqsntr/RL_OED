@@ -4,18 +4,14 @@ import os
 IMPORT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'imports')
 
 sys.path.append(IMPORT_PATH)
-sys.path.append('/Users/neythen/Desktop/Projects/ROCC/')
 
-import math
+
 from casadi import *
 import numpy as np
 import matplotlib.pyplot as plt
 from OED_env import *
-from DQN_agent import *
-import tensorflow as tf
-import time
 
-from ROCC import *
+
 from xdot import xdot
 import json
 def disablePrint():
@@ -29,6 +25,7 @@ def enablePrint():
 if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
     params = json.load(open('/home/ntreloar/RL_OED/double_chemostat_system/params.json'))
+    #params = json.load(open('params.json'))
     n_episodes, skip, y0, actual_params, input_bounds, n_controlled_inputs, num_inputs, dt, lb, ub, N_control_intervals, control_interval_time, n_observed_variables, prior, normaliser = \
         [params[k] for k in params.keys()]
 

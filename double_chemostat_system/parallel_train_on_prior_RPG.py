@@ -265,7 +265,7 @@ if __name__ == '__main__':
 
 
     sols = np.array(env.Ys)
-
+    print(sols.shape)
 
     plt.plot(sols[:,0], label = 'N1')
     plt.plot(sols[:,1], label = 'N2')

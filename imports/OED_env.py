@@ -1,11 +1,9 @@
 from casadi import *
 import numpy as np
-import matplotlib.pyplot as plt
-import copy
+
 import math
 import time
-import scipy as sp
-from multiprocessing import Pool
+
 def disablePrint():
     sys.stdout = open(os.devnull, 'w')
 

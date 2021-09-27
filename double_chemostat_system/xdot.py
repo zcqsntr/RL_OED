@@ -87,7 +87,7 @@ def xdot(sym_y, sym_theta, sym_u):
 
     xdot[0:num_species] = dN
     xdot[num_species:2*num_species] = dC
-    print(dC)
+
 
     xdot[-1] = dC0
 
