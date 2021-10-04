@@ -167,7 +167,9 @@ all_actions = []
 env.mapped_trajectory_solver = env.CI_solver.map(skip, "thread", n_cores)
 for i in range(1): # run in parrallel as array jobs on server
 
-    if prior: actual_params = np.random.uniform(low=lb, high=ub)
+    if prior:
+        actual_params = np.random.uniform(low=lb, high=ub)
+        actual_params = DM(actual_params)
     param_guesses = np.random.uniform(low=lb, high=ub)
     initial_params = param_guesses
 
