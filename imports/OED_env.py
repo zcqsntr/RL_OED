@@ -261,7 +261,7 @@ class OED_env():
         nlp = {'x': sym_theta, 'f': 0.5 * dot(e / (0.05 * trajectory[0:self.n_observed_variables, :].T + 0.00000001),
                                               e)}  # weighted least squares
         print('nlp initialised')
-        solver = self.gauss_newton(e, nlp, sym_theta, max_iter = 10)
+        solver = self.gauss_newton(e, nlp, sym_theta, max_iter = 100000)
         print('solver initialised')
 
 
