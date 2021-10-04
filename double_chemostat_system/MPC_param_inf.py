@@ -58,7 +58,7 @@ if __name__ == '__main__':
         obj = -trace(log(r))
         # obj = -log(det(FIM))
         nlp = {'x': us, 'f': obj}
-        solver = env.gauss_newton(obj, nlp, us)
+        solver = env.gauss_newton(obj, nlp, us, limited_mem = True)
         # solver.print_options()
         # sys.exit()
 
