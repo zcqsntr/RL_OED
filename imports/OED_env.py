@@ -144,7 +144,7 @@ class OED_env():
         return G_1
 
     def get_control_interval_solver(self, control_interval_time, dt, mode = 'OED'):
-        # this doesnt seem to work, solution explodes
+
         theta = SX.sym('theta', len(self.actual_params.elements()))
         u = SX.sym('u', self.n_controlled_inputs)
 
@@ -162,8 +162,10 @@ class OED_env():
         return G
 
     def get_sampled_trajectory_solver(self, N_control_intervals, control_interval_time, dt, mode = 'OED'):
-        # this doesnt work, solution explodes
+
         #CI_solver = self.get_control_interval_solver(control_interval_time, dt, mode = mode)
+
+        #opt = {'base':1}
         trajectory_solver = self.CI_solver.mapaccum('trajectory', N_control_intervals)
 
         return trajectory_solver
