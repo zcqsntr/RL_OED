@@ -264,22 +264,7 @@ if __name__ == '__main__':
 
 
 
-    sols = np.array(env.Ys)
-    print(sols.shape)
-
-    plt.plot(sols[:,0], label = 'N1')
-    plt.plot(sols[:,1], label = 'N2')
-    plt.legend()
-
-    plt.figure()
-    plt.plot(sols[:, 2], label = 'C1')
-    plt.plot(sols[:, 3], label = 'C2')
-    plt.plot(sols[:, 4], label = 'C0')
-    plt.legend()
-    plt.show()
-    print('time:', time.time() - total_t)
-    print(env.detFIMs[-1])
-    print(env.logdetFIMs[-1])
+    
     np.save(save_path + 'all_returns.npy', np.array(all_returns))
     if test_episode:
         np.save(save_path + 'all_test_returns.npy', np.array(all_test_returns))
