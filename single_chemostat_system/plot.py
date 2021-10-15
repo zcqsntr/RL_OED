@@ -68,7 +68,7 @@ all_returns = []
 all_us = []
 all_trajectories =[]
 
-for i in range(11,21):
+for i in range(1,11):
     '''
     us = np.load(path + '/repeat' + str(i) +'/us.npy')
     print(us.shape)
