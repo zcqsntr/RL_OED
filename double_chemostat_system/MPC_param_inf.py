@@ -24,8 +24,8 @@ def enablePrint():
 
 if __name__ == '__main__':
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
-    params = json.load(open('/home/ntreloar/RL_OED/double_chemostat_system/params.json'))
-    #params = json.load(open('params.json'))
+    #params = json.load(open('/home/ntreloar/RL_OED/double_chemostat_system/params.json'))
+    params = json.load(open('params.json'))
     n_episodes, skip, y0, actual_params, input_bounds, n_controlled_inputs, num_inputs, dt, lb, ub, N_control_intervals, control_interval_time, n_observed_variables, prior, normaliser = \
         [params[k] for k in params.keys()]
 
@@ -49,16 +49,20 @@ if __name__ == '__main__':
     e_rewards = []
 
     def get_full_u_solver():
-        us = SX.sym('us', N_control_intervals * n_controlled_inputs)
+        us = MX.sym('us', N_control_intervals * n_controlled_inputs)
         trajectory_solver = env.get_sampled_trajectory_solver(N_control_intervals, control_interval_time, dt)
         est_trajectory = trajectory_solver(env.initial_Y, param_guesses, reshape(us , (n_controlled_inputs, N_control_intervals)))
         FIM = env.get_FIM(est_trajectory)
-        q, r = qr(FIM)
 
-        obj = -trace(log(r))
-        # obj = -log(det(FIM))
+        print('hello')
+        FIM = FIM
+
+        #q, r = qr(FIM)
+
+        #obj = -trace(log(r))
+        obj = -log(det(FIM))
         nlp = {'x': us, 'f': obj}
-        solver = env.gauss_newton(obj, nlp, us, limited_mem = True)
+        solver = env.gauss_newton(obj, nlp, us, limited_mem = False)
         # solver.print_options()
         # sys.exit()
 
