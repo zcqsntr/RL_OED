@@ -186,7 +186,7 @@ class OED_env():
         print('jacobian init')
         H = triu(mtimes(J.T, J))
         print('hessian init')
-        sigma = SX.sym("sigma")
+        sigma = MX.sym("sigma")
         hessLag = Function('nlp_hess_l',{'x':V,'lam_f':sigma, 'hess_gamma_x_x':sigma*H},
                        ['x','p','lam_f','lam_g'], ['hess_gamma_x_x'],
                        dict(jit=False, compiler='clang', verbose = False))
