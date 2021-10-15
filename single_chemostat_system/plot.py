@@ -51,10 +51,10 @@ path = '/home/neythen/Desktop/Projects/RL_OED/results/continuous/param_scan_0809
 
 
 #1-10 are non prior, 11-20 are prior
-path = '/Users/neythen/Desktop/Projects/RL_OED/results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG'
+path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/non_prior_and_prior_180921'
 
 
-step = 1000
+step = 100
 n_repeats = 3
 
 
@@ -65,7 +65,7 @@ all_returns = []
 all_us = []
 all_trajectories =[]
 
-for i in range(11, 21):
+for i in range(1, 11):
     '''
     us = np.load(path + '/repeat' + str(i) +'/us.npy')
     print(us.shape)
@@ -159,8 +159,8 @@ plt.errorbar(x, np.mean(all_returns, axis = 0), np.std(all_returns, axis = 0), l
 #plt.plot(x,all_returns[2])
 
 plt.plot(len(returns)+step,  16.612377905628856, 'o', label = 'Optimisation = 16.61')
-plt.plot(len(returns)+step, 15.2825, 'o', label = 'Rational design = 15.28')
-#plt.plot(len(returns)+step, 19.59, 'o', label = 'Best RL = 19.59', color='C0')
+plt.plot(len(returns)+step, 15.2825, 'o', label = 'Rational = 15.28')
+plt.plot(len(returns)+step, 20.27, 'o', label = 'Best RL = 20.27', color='C0')
 plt.plot(len(returns)+step, 20.07, 'o', label = 'MPC = 20.07')
 ax1.set_ylabel('Return')
 ax1.set_xlabel('Episode')
@@ -174,10 +174,10 @@ ax2.set_ylabel('Explore Rate')
 ax2.set_xlabel('Episode')
 plt.tight_layout()
 
-ax1.legend(bbox_to_anchor=(0.65, 0.7))
-ax2.legend(bbox_to_anchor=(0.6, 0.7))
+ax1.legend(loc=(0.2, 0.7))
+ax2.legend(loc=(0.2,0.63))
 #plt.title('LR: ' + str(pol_learning_rate) + ' ' + 'Layer sizes: ' + str(hidden_layer_size))
-
+plt.savefig('./plot.png', dpi = 300)
 plt.show()
 
 
