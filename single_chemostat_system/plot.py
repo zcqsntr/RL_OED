@@ -53,6 +53,9 @@ path = '/home/neythen/Desktop/Projects/RL_OED/results/continuous/param_scan_0809
 #1-10 are non prior, 11-20 are prior
 path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/non_prior_and_prior_180921'
 
+#1-10 are non prior, 11-20 are prior
+path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/double_chemostat_151021'
+
 
 step = 100
 n_repeats = 3
@@ -65,7 +68,7 @@ all_returns = []
 all_us = []
 all_trajectories =[]
 
-for i in range(1, 11):
+for i in range(11,21):
     '''
     us = np.load(path + '/repeat' + str(i) +'/us.npy')
     print(us.shape)
