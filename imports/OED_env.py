@@ -487,7 +487,7 @@ class OED_env():
 
         return self.normalise_RL_state(state)
 
-    def map_parallel_step(self, actions, actual_params, continuous = False):
+    def map_parallel_step(self, actions, actual_params, continuous = False, Ds = False):
         self.current_tstep += 1
         # actions, actual_params = args
 
@@ -529,7 +529,7 @@ class OED_env():
             true_trajectory = true_trajectories[:, i]
 
 
-            reward = self.get_reward_parallel(true_trajectory, i)
+            reward = self.get_reward_parallel(true_trajectory, i, Ds = Ds)
 
             done = False
 
@@ -570,19 +570,36 @@ class OED_env():
 
         return np.clip(Cin, self.input_bounds[0], self.input_bounds[1])
 
-    def get_reward_parallel(self, est_trajectory, i):
+    def get_reward_parallel(self, est_trajectory, i, Ds = False):
         FIM = self.get_FIM(est_trajectory)
 
+        if Ds: # partition FIM and get determinant of the params we are interested in (the elements of LV matrix)
+            M11 = FIM[0:-4, 0:-4]
+            print('shape:', M11.shape)
+            q11, r11 = qr(M11)
+
+            det_M11 = np.prod(diag(r11).elements())
+
+            logdet_M11 = trace(log(r11)).elements()[0]  # do it like this to protect from numerical errors from multiplying large EVs
 
 
-        # use this method to remove the small negatvie eigenvalues
+            q, r = qr(FIM)
 
-        # casadi QR seems better,gives same results as np but some -ves in different places and never gives -ve determinant
-        q, r = qr(FIM)
+            det_FIM = np.prod(diag(r).elements())
 
-        det_FIM = np.prod(diag(r).elements())
+            logdet_FIM = trace(log(r)).elements()[0]  # do it like this to protect from numerical errors from multiplying large EVs
 
-        logdet_FIM = trace(log(r)).elements()[0]  # do it like this to protect from numerical errors from multiplying large EVs
+            logdet_FIM -= logdet_M11
+
+        else:
+            # use this method to remove the small negatvie eigenvalues
+
+            # casadi QR seems better,gives same results as np but some -ves in different places and never gives -ve determinant
+            q, r = qr(FIM)
+
+            det_FIM = np.prod(diag(r).elements())
+
+            logdet_FIM = trace(log(r)).elements()[0]  # do it like this to protect from numerical errors from multiplying large EVs
 
         if det_FIM <= 0:
             print('----------------------------------------smaller than 0')

@@ -125,7 +125,7 @@ def xdot_LV(sym_y, sym_theta, sym_u):
     umax = sym_theta[0:-4:3]
     Km = sym_theta[1:-4:3]
     Km0 = sym_theta[2:-4:3]
-    A = sym_theta[-4:].reshape(2,2)
+    A = sym_theta[-4:].reshape((2,2))
     print(umax, Km, Km0)
     #A = sym_theta[6:]
     #A = reshape(A, (2,2))
@@ -133,7 +133,7 @@ def xdot_LV(sym_y, sym_theta, sym_u):
     y = np.array([480000., 480000.])
     y0 = np.array([520000., 520000.])
 
-    print('params:', y, y0, umax, Km, Km0 )
+    print('params:', y, y0, umax, Km, Km0)
     num_species = Km.size()[0]
 
     # extract variables
