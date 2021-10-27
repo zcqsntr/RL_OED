@@ -5,6 +5,18 @@ import numpy as np
 import math
 import numpy as np
 
+SMALL_SIZE = 11
+MEDIUM_SIZE = 14
+BIGGER_SIZE = 17
+
+plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
+plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
+plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
+plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
+plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
 
 def get_rate( episode, MIN_RATE, MAX_RATE, denominator):
     '''
@@ -15,7 +27,7 @@ def get_rate( episode, MIN_RATE, MAX_RATE, denominator):
         MIN_LEARNING_RATE: the minimum possible step size
         MAX_LEARNING_RATE: maximum step size
         denominator: controls the rate of decay of the step size
-    Returns:
+    Returns:----------------------------------------------------------------------------------------------------------+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         step_size: the Q-learning step size
     '''
 
@@ -51,10 +63,10 @@ path = '/home/neythen/Desktop/Projects/RL_OED/results/continuous/param_scan_0809
 
 
 #1-10 are non prior, 11-20 are prior
-path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/non_prior_and_prior_180921'
+path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/non_prior_and_prior_180921/single_chemostat_FDDPG'
 
 #1-10 are non prior, 11-20 are prior
-path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/double_chemostat_151021'
+#path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/double_chemostat_151021'
 
 
 step = 100
@@ -117,6 +129,8 @@ for i in range(1,11):
     print('end:', returns[-1])
     print('max:', np.max(returns))
 
+    actions = np.load(path + '/repeat' + str(i) +'/actions.npy')
+    print('actions', actions[-10:])
 
     y = [np.mean(returns[i * step: (i + 1) * step]) for i in range(0, len(returns) // step)]
     print(i, 'everage max ', y[-1])
@@ -156,17 +170,18 @@ print(explore_rates[-100:])
 
 fig, ax1 = plt.subplots()
 
-plt.errorbar(x, np.mean(all_returns, axis = 0), np.std(all_returns, axis = 0), label = 'Average Return')
+ax1.errorbar(x, np.mean(all_returns, axis = 0), np.std(all_returns, axis = 0), label = 'Average Return')
 #plt.plot(x,all_returns[0])
 #plt.plot(x,all_returns[1])
 #plt.plot(x,all_returns[2])
 
-plt.plot(len(returns)+step,  16.612377905628856, 'o', label = 'Optimisation = 16.61')
-plt.plot(len(returns)+step, 15.2825, 'o', label = 'Rational = 15.28')
-plt.plot(len(returns)+step, 20.27, 'o', label = 'Best RL = 20.27', color='C0')
-plt.plot(len(returns)+step, 20.07, 'o', label = 'MPC = 20.07')
+#plt.plot(len(returns)+step,  16.612377905628856, 'o', label = 'OSAO = 16.61')
+#plt.plot(len(returns)+step, 15.2825, 'o', label = 'Rational = 15.28')
+#plt.plot(len(returns)+step, 20.27, 'o', label = 'Best RL = 20.27', color='C0')
+#plt.plot(len(returns)+step, 20.07, 'o', label = 'MPC = 20.07')
 ax1.set_ylabel('Return')
 ax1.set_xlabel('Episode')
+#ax1.set_ylim(bottom=26)
 
 
 ax2 = ax1.twinx()
@@ -177,10 +192,10 @@ ax2.set_ylabel('Explore Rate')
 ax2.set_xlabel('Episode')
 plt.tight_layout()
 
-ax1.legend(loc=(0.2, 0.7))
-ax2.legend(loc=(0.2,0.63))
+ax1.legend(loc=(0.2, 0.9))
+ax2.legend(loc=(0.2,0.83))
 #plt.title('LR: ' + str(pol_learning_rate) + ' ' + 'Layer sizes: ' + str(hidden_layer_size))
-plt.savefig('./plot.png', dpi = 300)
+plt.savefig('./plot.pdf')
 plt.show()
 
 

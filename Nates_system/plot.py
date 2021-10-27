@@ -1,5 +1,17 @@
 import matplotlib.pyplot as plt
 import numpy as np
+SMALL_SIZE = 11
+MEDIUM_SIZE = 14
+BIGGER_SIZE = 17
+
+plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
+plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
+plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
+plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
+plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
 
 path = '/home/neythen/Desktop/Projects/RL_OED/Nates_system/results/first_three/first_three'
 step = 200
@@ -53,7 +65,7 @@ for i in range(1, n_repeats +1):
 
 
 
-#plt.close('all')
+plt.close('all')
 all_returns = np.array(all_returns)
 all_us = np.array(all_us)
 all_trajectories = np.array(all_trajectories)
@@ -62,6 +74,7 @@ print(all_returns[:, -1])
 x = [(i+1) * step for i in range(0, len(returns)//step)]
 x.append(len(returns)+step)
 print(len(x), len(y))
+plt.figure()
 plt.errorbar(x, np.mean(all_returns, axis = 0), np.std(all_returns, axis = 0), label = 'Reinforcement learning = 0.74')
 plt.plot(len(returns)+step, 0.71, 'o', label = 'Optimisation = 0.71')
 plt.plot(len(returns)+step, 0.6773, 'o', label = 'Rational design = 0.68')
@@ -69,6 +82,7 @@ plt.ylabel('Return')
 plt.xlabel('Episode')
 
 plt.legend()
+plt.savefig('./plot.pdf')
 plt.show()
 
 
