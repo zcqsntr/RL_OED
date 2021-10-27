@@ -51,10 +51,15 @@ path = '/home/neythen/Desktop/Projects/RL_OED/results/continuous/param_scan_0809
 
 
 #1-10 are non prior, 11-20 are prior
-path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/non_prior_and_prior_180921'
+path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/non_prior_and_prior_180921' #desktop
+
 
 #1-10 are non prior, 11-20 are prior
-path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/double_chemostat_151021'
+#path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/double_chemostat_151021'
+
+
+#1-10 are normal, 11-20 are Ds optimal design
+#path = '/Users/neythen/Desktop/Projects/RL_OED/results/double_chemostat_MD'
 
 
 step = 100
@@ -161,10 +166,10 @@ plt.errorbar(x, np.mean(all_returns, axis = 0), np.std(all_returns, axis = 0), l
 #plt.plot(x,all_returns[1])
 #plt.plot(x,all_returns[2])
 
-plt.plot(len(returns)+step,  16.612377905628856, 'o', label = 'Optimisation = 16.61')
-plt.plot(len(returns)+step, 15.2825, 'o', label = 'Rational = 15.28')
-plt.plot(len(returns)+step, 20.27, 'o', label = 'Best RL = 20.27', color='C0')
-plt.plot(len(returns)+step, 20.07, 'o', label = 'MPC = 20.07')
+#plt.plot(len(returns)+step,  16.612377905628856, 'o', label = 'Optimisation = 16.61')
+#plt.plot(len(returns)+step, 15.2825, 'o', label = 'Rational = 15.28')
+#plt.plot(len(returns)+step, 20.27, 'o', label = 'Best RL = 20.27', color='C0')
+#plt.plot(len(returns)+step, 20.07, 'o', label = 'MPC = 20.07')
 ax1.set_ylabel('Return')
 ax1.set_xlabel('Episode')
 
