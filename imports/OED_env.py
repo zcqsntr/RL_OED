@@ -149,6 +149,8 @@ class OED_env():
         u = SX.sym('u', self.n_controlled_inputs)
 
         G_1 = self.get_one_step_RK(theta, u, dt, mode = mode)  # pass theta and u in just in case#
+
+
         if mode == 'OED':
             Y_0 = SX.sym('Y_0', self.n_tot)
         else:
@@ -159,6 +161,10 @@ class OED_env():
             Y_iter = G_1(Y_iter, theta, u)
 
         G = Function('G', [Y_0, theta, u], [Y_iter])
+        
+
+
+        #G = G_1.mapaccum('control_interval', int(control_interval_time / dt)) # should use less memory than the for loop.. This messes up the shap of action inputs
         return G
 
     def get_sampled_trajectory_solver(self, N_control_intervals, control_interval_time, dt, mode = 'OED'):
@@ -186,7 +192,7 @@ class OED_env():
         print('jacobian init')
         H = triu(mtimes(J.T, J))
         print('hessian init')
-        sigma = MX.sym("sigma")
+        sigma = SX.sym("sigma")
         hessLag = Function('nlp_hess_l',{'x':V,'lam_f':sigma, 'hess_gamma_x_x':sigma*H},
                        ['x','p','lam_f','lam_g'], ['hess_gamma_x_x'],
                        dict(jit=False, compiler='clang', verbose = False))

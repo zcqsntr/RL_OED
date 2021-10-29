@@ -10,7 +10,7 @@ sys.path.append('/Users/neythen/Desktop/Projects/ROCC/')
 from OED_env import *
 from DQN_agent import *
 from xdot import xdot
-
+import json
 def disablePrint():
     sys.stdout = open(os.devnull, 'w')
 
@@ -35,49 +35,37 @@ if __name__ == '__main__':
 
     #y, y0, umax, Km, Km0, A
     #actual_params = DM([480000, 480000, 520000, 520000, 1, 1.1, 0.00048776, 0.000000102115, 0.00006845928, 0.00006845928,0, 0,0, 0])
-    actual_params = DM([1,  0.00048776, 0.00006845928])
+    params = json.load(open('params.json'))
+    n_episodes, skip, y0, actual_params, input_bounds, n_controlled_inputs, num_inputs, dt, lb, ub, N_control_intervals, control_interval_time, n_observed_variables, prior, normaliser = \
+        [params[k] for k in params.keys()]
 
-    input_bounds = [0.01, 1]
-    n_controlled_inputs = 2
-
-    n_params = actual_params.size()[0]
-
-    y0 = [200000, 0, 1]
-    n_system_variables = len(y0)
-    n_FIM_elements = sum(range(n_params + 1))
-
-    n_tot = n_system_variables + n_params * n_system_variables + n_FIM_elements
-    print(n_params, n_system_variables, n_FIM_elements)
-    num_inputs = 10  # number of discrete inputs available to RL
-
-    dt = 1 / 4000
+    actual_params = DM(actual_params)
+    normaliser = np.array(normaliser)
 
     param_guesses = actual_params
 
-    N_control_intervals = 10
-    control_interval_time = 2
-
-    n_observed_variables = 1
-
-    print('rl state', n_observed_variables + n_params + n_FIM_elements + 2)
-
-    normaliser = np.array([1e7, 1e2, 1e-2, 1e-3, 1e6, 1e5, 1e6, 1e5, 1e6, 1e9, 1e2, 1e2])
     env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser)
     explore_rate = 1
 
-    '''
+
     env.us = np.array([[1.0, 0.1615823448123995], [1.0, 0.4336093024588776], [0.9999999979860146, 0.19768733890665968], [1.0, 1.0], [0.9999998826183215, 0.01], [0.9999990555025431, 0.01], [0.9999999501891313, 0.9999999122666077], [0.01, 0.9999999662247943], [0.24225329656112216, 0.9999998645026003], [0.06287889843771714, 0.9999975484376613]]).T# optimiser
     # return:  16.612377905628856
 
 
 
     mpc_us = np.array([0.560999, 0.54773, 0.255089, 0.0104364, 0.0109389, 0.0100051, 0.0111674, 0.0100002, 0.012649, 0.0100002, 0.996536,
-     0.0100027, 0.997582, 0.0100001, 0.998122, 0.01, 0.998209, 0.991815, 0.992791, 0.96563]).reshape(  N_control_intervals, n_controlled_inputs) #MPC return = 20.1118
+     0.0100027, 0.997582, 0.0100001, 0.998122, 0.01, 0.998209, 0.991815, 0.992791, 0.96563]).reshape(n_controlled_inputs,  N_control_intervals, order = 'F') #MPC return = 20.1118
 
-    print(mpc_us.T)
 
-    env.us = mpc_us.T
-    
+    print('us:', mpc_us.shape)
+
+
+
+
+    #print('us: ',mpc_us)
+
+    env.us = mpc_us
+
     env.us = np.array([[0.01, 0.2, 0.01, 0.4, 0.01, 0.6, 0.01, 0.8, 0.01, 1.],
                        [ 1, 0.01, 0.8, 0.01, 0.6, 0.01, 0.4, 0.01, 0.2, 0.01]])  # rational retuirn: 15.2825
 
@@ -89,7 +77,7 @@ if __name__ == '__main__':
 
     env.us = np.array([[0.45, 0.01, 1. ,  1.,   0.45, 0.23, 0.23, 0.23, 0.56, 0.34],
  [0.12, 0.56, 1. ,  0.45, 0.12, 0.01, 0.01, 0.01, 0.01, 0.01]] )# DQN return: 20.1493
-    '''
+    
     env.us = np.array([[5.41915059e-01, 9.96091664e-01],
     [2.55120009e-01, 2.58627385e-01],
     [5.63390143e-02, 9.85946596e-01],
@@ -103,14 +91,22 @@ if __name__ == '__main__':
 
 
 
+    solver = env.get_sampled_trajectory_solver(N_control_intervals, control_interval_time, dt)
+    trajectory = solver(env.initial_Y, env.actual_params, mpc_us)
 
-    print(env.us)
+    print(trajectory.shape)
+    FIM = env.get_FIM(trajectory)
+    q, r = qr(FIM)
+
+    obj = -trace(log(r))
+    print('sampled obj:', obj)
+
+
+
     inputs = []
-
-
     for i in range(N_control_intervals):
         inputs.extend([env.us[:,i]] *int(control_interval_time/dt))  # int(control_interval_time * 2 / dt))
-
+    #print(inputs)
     inputs = np.array(inputs).T
 
     solver = env.get_full_trajectory_solver(N_control_intervals, control_interval_time, dt)
@@ -120,7 +116,7 @@ if __name__ == '__main__':
     q, r = qr(FIM)
 
     obj = -trace(log(r))
-    print('obj:', obj)
+    print('full obj:', obj)
 
     sol = transpose(trajectory)
     t = np.arange(0, N_control_intervals*control_interval_time, dt)
