@@ -145,6 +145,8 @@ class OED_env():
 
     def get_control_interval_solver(self, control_interval_time, dt, mode = 'OED'):
 
+        # TODO: try mapaccum in here to reduce memory usage
+
         theta = SX.sym('theta', len(self.actual_params.elements()))
         u = SX.sym('u', self.n_controlled_inputs)
 
@@ -199,7 +201,7 @@ class OED_env():
         ipopt_opt = {'max_iter': max_iter}
         if limited_mem:
             ipopt_opt['hessian_approximation'] = 'limited_memory'
-        return nlpsol("solver","ipopt", nlp, dict(ipopt = ipopt_opt, hess_lag=hessLag, jit=False, compiler='clang', verbose_init = False, verbose = False))
+        return nlpsol("solver","ipopt", nlp, dict(ipopt = ipopt_opt, hess_lag=hessLag, jit=False, compiler='clang', verbose_init=False, verbose=False))
         #'acceptable_tol':10, 'acceptable_iter':30,'s_max':1e10,  'obj_scaling_factor': 1e5
         #return nlpsol("solver","ipopt", nlp, dict(ipopt={'hessian_approximation':'limited_memory'}))
 
