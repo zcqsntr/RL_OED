@@ -27,14 +27,25 @@ except:
 import multiprocessing
 import json
 
+SMALL_SIZE = 11
+MEDIUM_SIZE = 14
+BIGGER_SIZE = 17
+
+plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
+plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
+plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
+plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
+plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 
 if __name__ == '__main__':
 
     #tf.debugging.set_log_device_placement(True)
 
-
-
+    n_cores = multiprocessing.cpu_count()
+    print('Num CPU cores:', n_cores)
     all_returns = []
     n_unstables = []
 
@@ -45,7 +56,7 @@ if __name__ == '__main__':
 
     actual_params = DM(actual_params)
     normaliser = np.array(normaliser)
-
+    skip = 1
     n_params = actual_params.size()[0]
     n_system_variables = len(y0)
     n_FIM_elements = sum(range(n_params + 1))
@@ -53,10 +64,9 @@ if __name__ == '__main__':
 
     param_guesses = actual_params
 
-    N_control_intervals = 10
-    control_interval_time = 2
 
-    n_observed_variables = 1
+
+
 
     print('rl state', n_observed_variables + n_params + n_FIM_elements + 2)
 
@@ -71,38 +81,58 @@ if __name__ == '__main__':
     agent.batch_size = int(N_control_intervals * skip)
     agent.max_length = 11
     agent.mem_size = 500000000
+    agent.std = 0.1
+    agent.noise_bounds = [-0.25, 0.25]
+    agent.action_bounds = [0, 1]
 
 
     #p = Pool(skip)
-    normaliser = np.array([1e7, 1e2, 1e-2, 1e-3, 1e6, 1e5, 1e6, 1e5, 1e6, 1e9, 1e2, 1e2])#*10
+
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time, normaliser
     env = OED_env(*args)
-
+    env.mapped_trajectory_solver = env.CI_solver.map(skip, "thread", n_cores)
+    env.reset()
+    env.param_guesses = DM(actual_params)
+    env.logdetFIMs = [[] for _ in range(skip)]
+    env.detFIMs = [[] for _ in range(skip)]
 
     explore_rate = 0
     unstable = 0
-    print(agent.network.layers[1].get_weights()[0])
-    agent.load_network('/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/single_chem/single_chemostat_fixed/repeat4')
-    print(agent.network.layers[1].get_weights()[0])
+    #print(agent.policy_network.layers[1].get_weights()[0][0])
+    agent.load_network('/home/neythen/Desktop/Projects/RL_OED/results/final_results/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat12')
 
-    state = env.get_initial_RL_state()
+    #print(agent.policy_network.layers[1].get_weights()[0][0])
+
+    states = [env.get_initial_RL_state_parallel()]
+    sequences = [[[0] * pol_layer_sizes[1]]]
+
+    e_actions = []
+    e_rewards = []
+
+
+    # run the sim to get actions from trained agent
     for e in range(0, N_control_intervals):
         t = time.time()
+        inputs = [states, sequences]
+        actions = agent.get_actions0(inputs, explore_rate, test_episode = False, recurrent = False)
+        print(actions)
+        outputs = env.map_parallel_step(np.array(actions).T, actual_params, continuous=True)
+        next_state, reward, done, _, u = outputs[0]
+        e_actions.append(actions)
+        e_rewards.append(reward)
 
-        action = agent.get_action(state, explore_rate)
-        next_state, reward, done, _ = env.step(action)
 
 
         if e == N_control_intervals - 1:
             next_state = [None]*24
             done = True
 
+        sequences[0].append(np.concatenate((states[0], actions[0])))
+        states = [next_state]
 
-        state = next_state
 
-
-    print(np.array(env.us)[:,:,0].T)
+    #apply these actions again with the full solver to get nice plots
 
 
     print('det fims:', env.detFIMs)
@@ -111,25 +141,68 @@ if __name__ == '__main__':
 
     t = np.arange(N_control_intervals) * int(control_interval_time)
 
-    plt.plot(env.true_trajectory[0, :].elements(), label = 'true')
-    #plt.plot(env.est_trajectory[0, :].elements(), label = 'est')
+    print()
+    print('actions:', e_actions)
+    print()
+    print('rewards:', e_rewards)
+    print()
+    print('return', np.sum(e_rewards))
+
+
+
+    true_trajectory = np.array(env.Ys).T
+
+
+    e_actions = np.array(e_actions)
+    print(e_actions.shape)
+    inputs = []
+    for i in range(N_control_intervals):
+        inputs.extend([e_actions[i,0, :]] * int(control_interval_time / dt))  # int(control_interval_time * 2 / dt))
+
+    inputs = np.array(inputs).T
+
+    solver = env.get_full_trajectory_solver(N_control_intervals, control_interval_time, dt)
+    trajectory = solver(env.initial_Y, env.actual_params, inputs)
+    print('shape: ', trajectory.shape)
+    FIM = env.get_FIM(trajectory[:, -1])
+    q, r = qr(FIM)
+
+    obj = -trace(log(r))
+    print('obj:', obj)
+
+    sol = transpose(trajectory)
+    t = np.arange(0, N_control_intervals * control_interval_time, dt)
+
+    fig, ax1 = plt.subplots()
+
+    ax1.plot(t, sol[:, 0], label='Population')
+    ax1.set_ylabel('Population ($10^5$ cells/L)')
+    ax1.set_xlabel('Time (min)')
+
+    ax2 = ax1.twinx()
+    ax2.plot(t, sol[:, 1], ':', color='red', label='C')
+    ax2.set_ylabel('C ($g/L$)')
+    ax2.set_xlabel('Time (min)')
+
+    ax2.plot(t, sol[:, 2], ':', color='black', label='$C_0$')
+    ax2.set_ylabel('Concentration ($g/L$)')
+    ax2.set_xlabel('Time (min)')
+    fig.tight_layout()
+    fig.legend(loc=(0.65, 0.8))
+    plt.savefig('traj.pdf')
+
+    plt.figure(figsize=(5.5, 4.5))
+    # plt.figure()
+
+    t = np.arange(0, N_control_intervals +1) * control_interval_time
+
+    e_actions = np.vstack(([e_actions[0]], e_actions))
+    plt.step(t, e_actions[:, 0, 0], ':', color='red', label='$C_{in}$')
+    plt.step(t, e_actions[:, 0, 1], ':', color='black', label='$C_{0, in}$')
+    plt.ylim(bottom=0, top=1.01)
+    plt.ylabel('u')
+    plt.xlabel('Time (min)')
     plt.legend()
-    plt.ylabel('bacteria')
-    plt.xlabel('time (mins)')
+    plt.savefig('us.pdf')
 
-
-    plt.figure()
-    plt.plot( env.true_trajectory[1, :].elements(), label = 'true')
-    #plt.plot(env.est_trajectory[1, :].elements(), label = 'est')
-    plt.legend()
-    plt.ylabel( 'C')
-    plt.xlabel('time (mins)')
-
-
-    plt.figure()
-    plt.plot(env.true_trajectory[2, :].elements(), label='true')
-    # plt.plot(env.est_trajectory[1, :].elements(), label = 'est')
-    plt.legend()
-    plt.ylabel('C0')
-    plt.xlabel('time (mins)')
     plt.show()

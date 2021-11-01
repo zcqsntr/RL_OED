@@ -73,8 +73,7 @@ step = 100
 n_repeats = 3
 
 
-N_control_intervals = 10
-control_interval_time = 30
+
 
 all_returns = []
 all_us = []
@@ -131,6 +130,7 @@ for i in range(1,11):
 
     actions = np.load(path + '/repeat' + str(i) +'/actions.npy')
     print('actions', actions[-10:])
+    print('actions', actions.shape)
 
     y = [np.mean(returns[i * step: (i + 1) * step]) for i in range(0, len(returns) // step)]
     print(i, 'everage max ', y[-1])

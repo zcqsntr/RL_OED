@@ -49,7 +49,7 @@ if __name__ == '__main__':
     e_rewards = []
 
     def get_full_u_solver():
-        us = MX.sym('us', N_control_intervals * n_controlled_inputs)
+        us = SX.sym('us', N_control_intervals * n_controlled_inputs)
         trajectory_solver = env.get_sampled_trajectory_solver(N_control_intervals, control_interval_time, dt)
         est_trajectory = trajectory_solver(env.initial_Y, param_guesses, reshape(us , (n_controlled_inputs, N_control_intervals)))
         FIM = env.get_FIM(est_trajectory)
