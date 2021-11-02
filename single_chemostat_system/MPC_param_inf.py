@@ -63,6 +63,7 @@ if __name__ == '__main__':
     env = OED_env(*args)
     explore_rate = 1
     u0 = [(input_bounds[1] - input_bounds[0])/2]*n_controlled_inputs
+    #u0 = [0]*n_controlled_inputs
 
     print('u0:', u0)
 
@@ -73,13 +74,16 @@ if __name__ == '__main__':
         us = SX.sym('us', N_control_intervals * n_controlled_inputs)
         trajectory_solver = env.get_sampled_trajectory_solver(N_control_intervals, control_interval_time, dt)
         est_trajectory = trajectory_solver(env.initial_Y, param_guesses, reshape(us , (n_controlled_inputs, N_control_intervals)))
+
+        print(est_trajectory.shape)
         FIM = env.get_FIM(est_trajectory)
+        print(FIM.shape)
         q, r = qr(FIM)
 
         obj = -trace(log(r))
         # obj = -log(det(FIM))
         nlp = {'x': us, 'f': obj}
-        solver = env.gauss_newton(obj, nlp, us, max_iter = 100)
+        solver = env.gauss_newton(obj, nlp, us)
         # solver.print_options()
         # sys.exit()
 
