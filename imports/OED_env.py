@@ -206,10 +206,12 @@ class OED_env():
         # using the limited memory hessian approximation for ipopt seems to make it unstable
         ipopt_opt = {'max_iter': max_iter}
         if limited_mem:
-            ipopt_opt['hessian_approximation'] = 'limited_memory'
+            ipopt_opt['hessian_approximation'] = 'limited-memory'
         return nlpsol("solver","ipopt", nlp, dict(ipopt = ipopt_opt, hess_lag=hessLag, jit=False, compiler='clang', verbose_init=False, verbose=False))
         #'acceptable_tol':10, 'acceptable_iter':30,'s_max':1e10,  'obj_scaling_factor': 1e5
         #return nlpsol("solver","ipopt", nlp, dict(ipopt={'hessian_approximation':'limited_memory'}))
+
+
 
     def get_u_solver(self):
         '''
