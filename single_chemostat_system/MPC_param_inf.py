@@ -55,8 +55,11 @@ if __name__ == '__main__':
     save_path = './'
 
 
-    #param_guesses = DM((np.array(lb) + np.array(ub))/2)
-    param_guesses = actual_params
+    param_guesses = DM([1.45073, 0.000810734, 9.61402e-05])
+    #param_guesses = DM((np.array(ub) + np.array(lb))/2)
+    print(param_guesses)
+
+    #param_guesses = actual_params
 
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
@@ -148,9 +151,4 @@ if __name__ == '__main__':
     plt.ylabel('u')
     plt.xlabel('Timestep')
     plt.savefig(save_path + 'log_us.pdf')
-
-
-
-
-
     plt.show()

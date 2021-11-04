@@ -11,6 +11,8 @@ sys.path.append('/Users/neythen/Desktop/Projects/ROCC/')
 import math
 from casadi import *
 import numpy as np
+import matplotlib as mpl
+mpl.use('tkagg')
 import matplotlib.pyplot as plt
 from OED_env import *
 from PG_agent import *
@@ -63,10 +65,11 @@ if __name__ == '__main__':
     n_tot = n_system_variables + n_params * n_system_variables + n_FIM_elements
 
     param_guesses = actual_params
+    #actual_params = DM(np.array(ub))
 
-
-
-
+    actual_params = DM(np.random.uniform(low=lb, high=ub))
+    print(actual_params)
+    #actual_params = DM([1.72955, 0.000227728, 2.15571e-05])
 
     print('rl state', n_observed_variables + n_params + n_FIM_elements + 2)
 
@@ -100,7 +103,8 @@ if __name__ == '__main__':
     explore_rate = 0
     unstable = 0
     #print(agent.policy_network.layers[1].get_weights()[0][0])
-    agent.load_network('/home/neythen/Desktop/Projects/RL_OED/results/final_results/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat12')
+    #agent.load_network('/home/neythen/Desktop/Projects/RL_OED/results/final_results/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat12') #desktop
+    agent.load_network('/Users/neythen/Desktop/Projects/RL_OED/results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat12') #mac
 
     #print(agent.policy_network.layers[1].get_weights()[0][0])
 
@@ -146,7 +150,9 @@ if __name__ == '__main__':
     print()
     print('rewards:', e_rewards)
     print()
-    print('return', np.sum(e_rewards))
+    print(actual_params)
+    print('Rl return', np.sum(e_rewards))
+
 
 
 
