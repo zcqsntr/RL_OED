@@ -81,6 +81,10 @@ if __name__ == '__main__':
                        hidden_layer_size[0], hidden_layer_size[1], 1]
     agent = DDPG_agent(val_layer_sizes=val_layer_sizes, pol_layer_sizes=pol_layer_sizes, policy_act=tf.nn.sigmoid,
                        val_learning_rate=0.0001, pol_learning_rate=pol_learning_rate)  # , pol_learning_rate=0.0001)
+
+
+
+
     agent.batch_size = int(N_control_intervals * skip)
     agent.max_length = 11
     agent.mem_size = 500000000

@@ -38,6 +38,8 @@ def xdot(sym_y, sym_theta, sym_u):
         dsol: array of the derivatives for all state variables
     '''
 
+    print(sym_y)
+
     #q = sym_u[0]
     Cin = sym_u[0]
     C0in = sym_u[1]

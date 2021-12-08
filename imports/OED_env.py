@@ -47,8 +47,9 @@ class OED_env():
 
         self.Y = self.initial_Y
 
+
         #TODO: remove t his as too much memory
-        self.Ys = [self.initial_Y.elements()]
+        #self.Ys = [self.initial_Y.elements()]
         self.xdot = xdot # f(x, u, params)
         self.all_param_guesses = []
         self.all_RL_states = []
@@ -507,50 +508,30 @@ class OED_env():
         if not continuous:
             us = self.actions_to_inputs(actions)
         else:
-            #us = np.clip(actions, 0.00001, 1)
-            #us = 0.01 + (1-0.01)*actions*10
-            us = 0.01 + (1-0.01)*actions
-        # all_us.append(np.array(us)[:,:,0].T)
+            us = self.input_bounds[:, 0].reshape(-1, 1) + (self.input_bounds[:,1] - self.input_bounds[:, 0]).reshape(-1, 1)*actions
 
-        # print(np.array(all_us).shape)
-
-        # us = np.hstack(all_us)
-        # print('us:', us.shape)
 
         actual_params = DM(actual_params)
-        # us = np.random.random(tuple([2] + list(actions.T.shape)))
-        # us = np.random.random((2, len(actions)))
-        # print('us:', us.shape)
-        # print('us:', us[:,:,0].T.shape)
-        # print('aparams:', actual_params.T.shape)
+
         N_control_intervals = len(us)
 
         # set sampled trajectory solver in script to ensure thread safety
         true_trajectories = self.mapped_trajectory_solver(self.Y, actual_params.T, np.array(us))
-
-        # print(np.array(np.hsplit(np.array(true_trajectories), actions.shape[1])).shape)
-
-        # true_trajectories = np.array(np.hsplit(np.array(true_trajectories), actions.shape[1])) # Make sure this reshpe is working properly!!
-
         transitions = []
         t = time.time()
 
         for i in range(true_trajectories.shape[1]):
             true_trajectory = true_trajectories[:, i]
-
-
             reward = self.get_reward_parallel(true_trajectory, i, Ds = Ds)
 
             done = False
 
             # state = self.get_RL_state(self.true_trajectory, self.est_trajectory)
             state = self.get_RL_state_parallel(true_trajectory, true_trajectory, i)
-
-
             transitions.append((state, reward, done, None, us[:,i]))
 
         self.Y = true_trajectories
-        self.Ys.append(self.Y.elements())
+        #self.Ys.append(self.Y.elements())
         return transitions
 
     def actions_to_inputs(self, actions):
