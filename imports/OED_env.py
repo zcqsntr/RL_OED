@@ -47,8 +47,9 @@ class OED_env():
 
         self.Y = self.initial_Y
 
+
         #TODO: remove t his as too much memory
-        self.Ys = [self.initial_Y.elements()]
+        #self.Ys = [self.initial_Y.elements()]
         self.xdot = xdot # f(x, u, params)
         self.all_param_guesses = []
         self.all_RL_states = []
@@ -145,6 +146,8 @@ class OED_env():
 
     def get_control_interval_solver(self, control_interval_time, dt, mode = 'OED'):
 
+        # TODO: try mapaccum in here to reduce memory usage
+
         theta = SX.sym('theta', len(self.actual_params.elements()))
         u = SX.sym('u', self.n_controlled_inputs)
 
@@ -204,10 +207,12 @@ class OED_env():
         # using the limited memory hessian approximation for ipopt seems to make it unstable
         ipopt_opt = {'max_iter': max_iter}
         if limited_mem:
-            ipopt_opt['hessian_approximation'] = 'limited_memory'
-        return nlpsol("solver","ipopt", nlp, dict(ipopt = ipopt_opt, hess_lag=hessLag, jit=False, compiler='clang', verbose_init = False, verbose = False))
+            ipopt_opt['hessian_approximation'] = 'limited-memory'
+        return nlpsol("solver","ipopt", nlp, dict(ipopt = ipopt_opt, hess_lag=hessLag, jit=False, compiler='clang', verbose_init=False, verbose=False))
         #'acceptable_tol':10, 'acceptable_iter':30,'s_max':1e10,  'obj_scaling_factor': 1e5
         #return nlpsol("solver","ipopt", nlp, dict(ipopt={'hessian_approximation':'limited_memory'}))
+
+
 
     def get_u_solver(self):
         '''
@@ -512,38 +517,20 @@ class OED_env():
         if not continuous:
             us = self.actions_to_inputs(actions)
         else:
-            #us = np.clip(actions, 0.00001, 1)
-            #us = 0.01 + (1-0.01)*actions*10
-            us = self.input_bounds[0]  + (self.input_bounds[1] - self.input_bounds[0])*actions
-        # all_us.append(np.array(us)[:,:,0].T)
+            us = self.input_bounds[:, 0].reshape(-1, 1) + (self.input_bounds[:,1] - self.input_bounds[:, 0]).reshape(-1, 1)*actions
 
-        # print(np.array(all_us).shape)
-
-        # us = np.hstack(all_us)
-        # print('us:', us.shape)
 
         actual_params = DM(actual_params)
-        # us = np.random.random(tuple([2] + list(actions.T.shape)))
-        # us = np.random.random((2, len(actions)))
-        # print('us:', us.shape)
-        # print('us:', us[:,:,0].T.shape)
-        # print('aparams:', actual_params.T.shape)
+
         N_control_intervals = len(us)
 
         # set sampled trajectory solver in script to ensure thread safety
         true_trajectories = self.mapped_trajectory_solver(self.Y, actual_params.T, np.array(us))
-
-        # print(np.array(np.hsplit(np.array(true_trajectories), actions.shape[1])).shape)
-
-        # true_trajectories = np.array(np.hsplit(np.array(true_trajectories), actions.shape[1])) # Make sure this reshpe is working properly!!
-
         transitions = []
         t = time.time()
 
         for i in range(true_trajectories.shape[1]):
             true_trajectory = true_trajectories[:, i]
-
-
             reward = self.get_reward_parallel(true_trajectory, i, Ds = Ds)
 
             done = False
@@ -555,7 +542,7 @@ class OED_env():
             transitions.append((state, reward, done, None, us[:,i]))
 
         self.Y = true_trajectories
-        self.Ys.append(self.Y.elements())
+        #self.Ys.append(self.Y.elements())
         return transitions
 
     def actions_to_inputs(self, actions):
@@ -681,6 +668,9 @@ class OED_env():
         #state = np.append(state, 0)
 
         #state = np.append(state, self.logdetFIMs[i][-1])
+
+
+
 
         return self.normalise_RL_state(state)
 

@@ -44,6 +44,8 @@ if __name__ == '__main__':
 
 
     actual_params = DM(actual_params)
+
+
     normaliser = np.array(normaliser)
 
     n_params = actual_params.size()[0]
@@ -53,8 +55,6 @@ if __name__ == '__main__':
 
 
     param_guesses = actual_params
-
-
 
     if len(sys.argv) == 3:
 

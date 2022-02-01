@@ -55,14 +55,18 @@ if __name__ == '__main__':
     save_path = './'
 
 
-    #param_guesses = DM((np.array(lb) + np.array(ub))/2)
-    param_guesses = actual_params
+    param_guesses = DM([1.45073, 0.000810734, 9.61402e-05])
+    #param_guesses = DM((np.array(ub) + np.array(lb))/2)
+    print(param_guesses)
+
+    #param_guesses = actual_params
 
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
     env = OED_env(*args)
     explore_rate = 1
     u0 = [(input_bounds[1] - input_bounds[0])/2]*n_controlled_inputs
+    #u0 = [0]*n_controlled_inputs
 
     print('u0:', u0)
 
@@ -73,13 +77,16 @@ if __name__ == '__main__':
         us = SX.sym('us', N_control_intervals * n_controlled_inputs)
         trajectory_solver = env.get_sampled_trajectory_solver(N_control_intervals, control_interval_time, dt)
         est_trajectory = trajectory_solver(env.initial_Y, param_guesses, reshape(us , (n_controlled_inputs, N_control_intervals)))
+
+        print(est_trajectory.shape)
         FIM = env.get_FIM(est_trajectory)
+        print(FIM.shape)
         q, r = qr(FIM)
 
         obj = -trace(log(r))
         # obj = -log(det(FIM))
         nlp = {'x': us, 'f': obj}
-        solver = env.gauss_newton(obj, nlp, us, max_iter = 100)
+        solver = env.gauss_newton(obj, nlp, us, limited_mem = True) # for some reason limited mem works better for the MPC
         # solver.print_options()
         # sys.exit()
 
@@ -144,9 +151,4 @@ if __name__ == '__main__':
     plt.ylabel('u')
     plt.xlabel('Timestep')
     plt.savefig(save_path + 'log_us.pdf')
-
-
-
-
-
     plt.show()

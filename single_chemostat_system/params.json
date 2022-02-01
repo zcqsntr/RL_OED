@@ -1,9 +1,9 @@
 {
-    "n_episodes": 20000,
+    "n_episodes": 17500,
     "skip": 10,
     "y0": [200000, 0, 1],
     "actual_params": [1, 0.00048776, 0.00006845928],
-    "input_bounds": [0.01, 1],
+    "input_bounds": [[0.01, 1],[0.01, 1]],
     "n_controlled_inputs": 2,
     "num_inputs": 10,
     "dt":0.00025,

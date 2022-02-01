@@ -35,7 +35,7 @@ if __name__ == '__main__':
     save_path = './working_dir/'
 
 
-    param_guesses = DM((np.array(lb) + np.array(ub))/2)
+    #param_guesses = DM((np.array(lb) + np.array(ub))/2)
 
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
@@ -57,10 +57,10 @@ if __name__ == '__main__':
         print('hello')
         FIM = FIM
 
-        #q, r = qr(FIM)
+        q, r = qr(FIM)
 
-        #obj = -trace(log(r))
-        obj = -log(det(FIM))
+        obj = -trace(log(r))
+        #obj = -log(det(FIM))
         nlp = {'x': us, 'f': obj}
         solver = env.gauss_newton(obj, nlp, us, limited_mem = False)
         # solver.print_options()
