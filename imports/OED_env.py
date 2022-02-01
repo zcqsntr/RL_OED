@@ -160,6 +160,7 @@ class OED_env():
             Y_0 = SX.sym('Y_0', self.n_system_variables)
         Y_iter = Y_0
 
+
         for i in range(int(control_interval_time / dt)):
             Y_iter = G_1(Y_iter, theta, u)
 
@@ -563,50 +564,37 @@ class OED_env():
 
     def get_reward_parallel(self, est_trajectory, i, Ds = False):
         FIM = self.get_FIM(est_trajectory)
-
         if Ds: # partition FIM and get determinant of the params we are interested in (the elements of LV matrix)
             M11 = FIM[0:-4, 0:-4]
-            print('shape:', M11.shape)
             q11, r11 = qr(M11)
 
-            det_M11 = np.prod(diag(r11).elements())
-
             logdet_M11 = trace(log(r11)).elements()[0]  # do it like this to protect from numerical errors from multiplying large EVs
-
-
             q, r = qr(FIM)
-
             det_FIM = np.prod(diag(r).elements())
-
             logdet_FIM = trace(log(r)).elements()[0]  # do it like this to protect from numerical errors from multiplying large EVs
-
             logdet_FIM -= logdet_M11
-
         else:
             # use this method to remove the small negatvie eigenvalues
 
             # casadi QR seems better,gives same results as np but some -ves in different places and never gives -ve determinant
             q, r = qr(FIM)
-
             det_FIM = np.prod(diag(r).elements())
-
             logdet_FIM = trace(log(r)).elements()[0]  # do it like this to protect from numerical errors from multiplying large EVs
+            if det_FIM <= 0:
+                print('----------------------------------------smaller than 0')
+                eigs = np.real(np.linalg.eig(FIM)[0])
+                eigs[eigs < 0] = 0.00000000000000000000000001
+                det_FIM = np.prod(eigs)
+                logdet_FIM = np.log(det_FIM)
 
-        if det_FIM <= 0:
-            print('----------------------------------------smaller than 0')
-            eigs = np.real(np.linalg.eig(FIM)[0])
-            eigs[eigs < 0] = 0.00000000000000000000000001
-            det_FIM = np.prod(eigs)
-            logdet_FIM = np.log(det_FIM)
+                print(det_FIM)
 
         self.detFIMs[i].append(det_FIM)
         self.logdetFIMs[i].append(logdet_FIM)
 
         try:
-            # reward = np.log(det_FIM-self.detFIMs[-2])
             reward = logdet_FIM - self.logdetFIMs[i][-2]
-            # print('det adfa: ', det_FIM)
-            # print(det_FIM - self.detFIMs[-2])
+
         except:
 
             reward = logdet_FIM
@@ -617,15 +605,6 @@ class OED_env():
             print('nan reward, FIM might have negative determinant !!!!')
 
             reward = -100
-
-        # testing new reward condition
-
-        '''
-        if len(self.logdetFIMs[i]) == 10:
-            reward = logdet_FIM
-        else:
-            reward = 0
-        '''
 
         return reward/100
 
