@@ -162,8 +162,6 @@ class DQN_agent():
         # construct target
         values = self.predict(states)
 
-
-
         # update the value for the taken action using cost function and current Q
         for i in range(len(next_states)):
             # print(actions[i], rewards[i])
@@ -232,7 +230,7 @@ class DQN_agent():
         assert targets.shape[1] == self.n_actions, 'targets for network wrong size'
         return inputs, targets
 
-    def Q_update(self, inputs = None, targets = None, alpha = 1):
+    def Q_update(self, inputs=None, targets=None, alpha=1):
         '''
         Uses a set of inputs and targets to update the Q network
         '''
