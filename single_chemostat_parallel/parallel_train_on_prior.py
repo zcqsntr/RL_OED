@@ -7,7 +7,7 @@ IMPORT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 sys.path.append(IMPORT_PATH)
 IMPORT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'single_chemostat_system')
 sys.path.append(IMPORT_PATH)
-sys.path.append('/Users/neythen/Desktop/Projects/ROCC/')
+#sys.path.append('/Users/neythen/Desktop/Projects/ROCC/')
 
 import math
 from casadi import *
@@ -15,6 +15,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from OED_env import *
 from DQN_agent import *
+from parallel_fitted_Q_agent import KerasFittedQAgent
 import time
 
 from ROCC import *
@@ -75,24 +76,8 @@ if __name__ == '__main__':
 
     param_guesses = actual_params
     if len(sys.argv) == 3:
-        if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
-            prior = True
-            n_episodes = 200000
-        elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
-            prior = True
-            n_episodes = 400000
-        elif sys.argv[2] == '7' or sys.argv[2] == '8' or sys.argv[2] == '9':
-            prior = True
-            n_episodes = 600000
-        elif sys.argv[2] == '10' or sys.argv[2] == '11' or sys.argv[2] == '12':
-            prior = True
-            n_episodes = 200000
-        elif sys.argv[2] == '13' or sys.argv[2] == '14' or sys.argv[2] == '15':
-            prior = True
-            n_episodes = 400000
-        elif sys.argv[2] == '16' or sys.argv[2] == '17' or sys.argv[2] == '18':
-            prior = True
-            n_episodes = 600000
+
+
 
         save_path = sys.argv[1] + sys.argv[2] + '/'
         print(n_episodes)
@@ -225,6 +210,7 @@ if __name__ == '__main__':
             explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11*skip))
             alpha = agent.get_rate(episode, 0, 1, n_episodes / (10*skip))
             #explore_rate = 0
+            print(len(agent.memory))
             if explore_rate == 1:
                 n_iters = 0
             elif len(agent.memory[0]) * len(agent.memory) < 10000:
@@ -236,7 +222,7 @@ if __name__ == '__main__':
             else:
                 n_iters = 1
 
-
+            t = time.time()
             for iter in range(n_iters):
 
                 #print(iter, n_iters)
@@ -246,7 +232,7 @@ if __name__ == '__main__':
                 print('loss:', history.history['loss'])
                 print('val loss:', history.history['val_loss'])
 
-
+            print('fitting time', time.time()-t)
         #print('all returns:', all_returns)
         '''
         trajectory = trajectory_solver(y0, us, actual_params)

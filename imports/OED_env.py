@@ -4,6 +4,7 @@ import numpy as np
 import math
 import time
 
+
 def disablePrint():
     sys.stdout = open(os.devnull, 'w')
 
@@ -568,10 +569,10 @@ class OED_env():
         buckets = np.unravel_index(actions, [self.num_inputs] * self.n_controlled_inputs)
         buckets = np.array(buckets)
         # convert each bucket to a continuous state variable
+        # TODO: make this work with multiple different input doounds
+        Cin = self.input_bounds[0][0] + buckets * (self.input_bounds[0][1] - self.input_bounds[0][0]) / (self.num_inputs - 1)
 
-        Cin = self.input_bounds[0] + buckets * (self.input_bounds[1] - self.input_bounds[0]) / (self.num_inputs - 1)
-
-        return np.clip(Cin, self.input_bounds[0], self.input_bounds[1])
+        return np.clip(Cin, self.input_bounds[0][0], self.input_bounds[0][1])
 
     def get_reward_parallel(self, est_trajectory, i, Ds = False):
         FIM = self.get_FIM(est_trajectory)
