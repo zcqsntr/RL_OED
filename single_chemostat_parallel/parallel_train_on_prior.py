@@ -46,7 +46,7 @@ def reset_wrapper(env):
 def sq(x):
     return x**2
 
-
+use_old_state = True
 if __name__ == '__main__':
     print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
     n_cores = multiprocessing.cpu_count()
@@ -60,15 +60,18 @@ if __name__ == '__main__':
         [params[k] for k in params.keys()]
 
     actual_params = DM(actual_params)
+
+    if use_old_state:
+        normaliser = np.array([1e6, 1e1, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2])
     normaliser = np.array(normaliser)
 
     n_params = actual_params.size()[0]
     n_system_variables = len(y0)
     n_FIM_elements = sum(range(n_params + 1))
-    n_tot = n_system_variables + n_params * n_system_variables + n_FIM_elements
-    print(n_params, n_system_variables, n_FIM_elements)
+    n_tot = n_observed_variables + n_params * n_system_variables + n_FIM_elements
+    print(n_observed_variables, n_params, n_FIM_elements)
 
-    print('rl state', n_observed_variables + n_params + n_FIM_elements + 2)
+    print('rl state', n_observed_variables + n_params + n_FIM_elements + 1)
 
     param_guesses = actual_params
     if len(sys.argv) == 3:
@@ -101,7 +104,8 @@ if __name__ == '__main__':
         save_path = './'
 
     # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
-    agent = DQN_agent(layer_sizes=[n_observed_variables + 1, 50, 50, num_inputs ** n_controlled_inputs])
+    #agent = DQN_agent(layer_sizes=[n_observed_variables + 1, 50, 50, num_inputs ** n_controlled_inputs])
+    agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 1, 150, 150, 150, num_inputs ** n_controlled_inputs])
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time, normaliser
     env = OED_env(*args)
@@ -119,7 +123,7 @@ if __name__ == '__main__':
         #actual_params = np.random.uniform(low=[0.5, 0.0003, 0.00005], high=[1.5, 0.001, 0.0001],  size = (skip, 3))
         #actual_params = np.random.uniform(low=[1,  0.00048776, 0.00006845928], high=[1,  0.00048776, 0.00006845928], size = (skip, 3))
         #actual_params = np.random.uniform(low=lb, high=ub, size=(skip, 3))
-        states  = [env.get_initial_RL_state_parallel(i) for i in range(skip)]
+        states  = [env.get_initial_RL_state_parallel(use_old_state = use_old_state) for i in range(skip)]
 
         e_returns = [0 for _ in range(skip)]
         e_actions = []
@@ -145,7 +149,7 @@ if __name__ == '__main__':
             #env.mapped_trajectory_solver = env.get_sampled_trajectory_solver(e+1).map(skip, "thread", 8)
             t1 = time.time()
             #outputs = env.map_parallel_step(np.array(e_actions).T, actual_params)
-            outputs = env.map_parallel_step(np.array(actions).T, actual_params.T)
+            outputs = env.map_parallel_step(np.array(actions).T, actual_params.T, use_old_state = use_old_state)
 
             #outputs = env.parallel_step(args[0])
 
@@ -154,7 +158,7 @@ if __name__ == '__main__':
             for i,o in enumerate(outputs):
 
 
-                next_state, reward, done, _ = o
+                next_state, reward, done, _, u = o
                 next_states.append(next_state)
                 state = states[i]
                 action = actions[i]

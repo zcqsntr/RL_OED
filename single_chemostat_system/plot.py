@@ -45,25 +45,26 @@ def get_rate( episode, MIN_RATE, MAX_RATE, denominator):
 
     return rate
 
-path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/one_hour_tstep/no_prior/single_chemostat_fixed'
-#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/one_hour_tstep/no_prior_more_eps'
+#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/one_hour_tstep/no_prior/single_chemostat_fixed'
+#path = '/home/neythen/Desktop/Projects/RL_OED/results/fixed/single_chemostat_fixed'
+#path = '/home/neythen/Desktop/Projects/RL_OED/results/parallel_no_prior/single_chemostat_parallel'
 #path = '/home/neythen/Desktop/Projects/RL_OED/results/parallel_no_prior_fixed'
-path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/single_chem/single_chemostat_fixed'
-path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/prior/single_chem_prior/single_chemostat_fixed'
+#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/single_chem/single_chemostat_fixed'
+#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/prior/single_chem_prior/single_chemostat_fixed'
 #path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/double_eps/single_chemostat_fixed'
-path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps'
-path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps_new_ICS_reduced_state'
-path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps_reduced_state'
-path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/single_chemostat_rec_fitted_q'
-path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/rec_fitted_q_050721/single_chemostat_prior'
+#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps'
+#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps_new_ICS_reduced_state'
+#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps_reduced_state'
+#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/single_chemostat_rec_fitted_q'
+#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/rec_fitted_q_050721/single_chemostat_prior'
 
-path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_PG_220721'
-path = '/home/neythen/Desktop/Projects/RL_OED/results/continuous/sing_chem_cont_18-08-21/single_chemostat_FDDPG'
-path = '/home/neythen/Desktop/Projects/RL_OED/results/continuous/param_scan_080921/single_chemostat_FDDPG'
+#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_PG_220721'
+#path = '/home/neythen/Desktop/Projects/RL_OED/results/continuous/sing_chem_cont_18-08-21/single_chemostat_FDDPG'
+#path = '/home/neythen/Desktop/Projects/RL_OED/results/continuous/param_scan_080921/single_chemostat_FDDPG'
 
 
 #1-10 are non prior, 11-20 are prior
-path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/non_prior_and_prior_180921/single_chemostat_FDDPG'
+#path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/non_prior_and_prior_180921/single_chemostat_FDDPG'
 
 #1-10 are non prior, 11-20 are prior
 #path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/double_chemostat_151021'
@@ -158,7 +159,7 @@ all_returns = np.array(all_returns)
 all_us = np.array(all_us)
 all_trajectories = np.array(all_trajectories)
 print(all_returns.shape, all_us.shape, all_trajectories.shape)
-print(all_returns[:, -1])
+#print(all_returns[:, -1])
 x = [(i+1) * step for i in range(0, len(returns)//step)]
 #x.append(len(returns)+step)
 print(len(x), len(y))
@@ -169,8 +170,9 @@ explore_rates = [get_rate(episode, 0, 1, len(returns)/11) for episode in episode
 print(explore_rates[-100:])
 
 fig, ax1 = plt.subplots()
-
-ax1.errorbar(x, np.mean(all_returns, axis = 0), np.std(all_returns, axis = 0), label = 'Average Return')
+for i in range(len(all_returns)):
+    print(len(all_returns[i]))
+ax1.errorbar(x, np.mean(np.array(all_returns), axis = 0), np.std(all_returns, axis = 0), label = 'Average Return')
 #plt.plot(x,all_returns[0])
 #plt.plot(x,all_returns[1])
 #plt.plot(x,all_returns[2])

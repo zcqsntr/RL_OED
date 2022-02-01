@@ -473,27 +473,36 @@ class OED_env():
 
         return self.normalise_RL_state(state)
 
-    def get_initial_RL_state(self):
-        #state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])) + self.param_guesses.elements() + [0] * self.n_FIM_elements)
-        state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])))
+    def get_initial_RL_state(self, use_old_state = False):
+        if use_old_state:
+            state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])) + self.param_guesses.elements() + [0] * self.n_FIM_elements)
+        else:
+            state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])))
         state = np.append(state, 0) #time
         #state = np.append(state, 0) #logdetFIM
 
         return self.normalise_RL_state(state)
 
-    def get_initial_RL_state_parallel(self, o0 = None):
+    def get_initial_RL_state_parallel(self, o0 = None, use_old_state = False):
 
         #state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])) + self.param_guesses[i,:].elements() + [0] * self.n_FIM_elements)
-        if o0 is not None:
-            state = np.array(list(np.sqrt(o0)))
+        if o0 is None:
+            o0 = self.x0
+
+
+        if use_old_state:
+            state = np.array(list(np.sqrt(o0[0:self.n_observed_variables])) + self.param_guesses.elements() + [
+                0] * self.n_FIM_elements)
         else:
-            state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])) )
+            state = np.array(list(np.sqrt(o0[0:self.n_observed_variables])))
+
+
         state = np.append(state, 0) #time
         #state = np.append(state, 0) #logdetFIM
 
         return self.normalise_RL_state(state)
 
-    def map_parallel_step(self, actions, actual_params, continuous = False, Ds = False):
+    def map_parallel_step(self, actions, actual_params, continuous = False, Ds = False, use_old_state = False):
         self.current_tstep += 1
         # actions, actual_params = args
 
@@ -505,7 +514,7 @@ class OED_env():
         else:
             #us = np.clip(actions, 0.00001, 1)
             #us = 0.01 + (1-0.01)*actions*10
-            us = 0.01 + (1-0.01)*actions
+            us = self.input_bounds[0]  + (self.input_bounds[1] - self.input_bounds[0])*actions
         # all_us.append(np.array(us)[:,:,0].T)
 
         # print(np.array(all_us).shape)
@@ -540,7 +549,7 @@ class OED_env():
             done = False
 
             # state = self.get_RL_state(self.true_trajectory, self.est_trajectory)
-            state = self.get_RL_state_parallel(true_trajectory, true_trajectory, i)
+            state = self.get_RL_state_parallel(true_trajectory, true_trajectory,i, use_old_state = use_old_state)
 
 
             transitions.append((state, reward, done, None, us[:,i]))
@@ -644,9 +653,11 @@ class OED_env():
 
         return reward/100
 
-    def get_RL_state_parallel(self, true_trajectory, est_trajectory, i):
+    def get_RL_state_parallel(self, true_trajectory, est_trajectory,i, use_old_state = False):
 
         # get the current measured system state
+
+
         sys_state = true_trajectory[:self.n_observed_variables, -1]  # TODO: measurement noise
 
         state = np.sqrt(sys_state)
@@ -663,15 +674,13 @@ class OED_env():
         FIM_elements = FIM_signs * sqrt(fabs(FIM_elements))
 
 
-        #state = np.append(state, np.append(self.param_guesses[i, :], FIM_elements))
+        if use_old_state:
+            state = np.append(state, np.append(self.param_guesses, FIM_elements))
 
         state = np.append(state, self.current_tstep)
         #state = np.append(state, 0)
 
         #state = np.append(state, self.logdetFIMs[i][-1])
-
-
-
 
         return self.normalise_RL_state(state)
 
