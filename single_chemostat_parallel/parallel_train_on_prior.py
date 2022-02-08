@@ -147,6 +147,7 @@ if __name__ == '__main__':
                 next_states.append(next_state)
                 state = states[i]
                 action = actions[i]
+                print(action)
 
                 if e == N_control_intervals - 1 or np.all(np.abs(next_state) >= 1) or math.isnan(np.sum(next_state)):
                     next_state = [None]*agent.layer_sizes[0]
@@ -181,7 +182,7 @@ if __name__ == '__main__':
             else:
                 unstable += 1
                 print('UNSTABLE!!!')
-                print((trajectory[-1][0]))
+
 
                 i = 0
                 new_traj = []
