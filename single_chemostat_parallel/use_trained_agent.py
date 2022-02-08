@@ -18,6 +18,7 @@ import time
 
 from ROCC import *
 from xdot import *
+import json
 import tensorflow as tf
 
 
@@ -26,48 +27,39 @@ if __name__ == '__main__':
 
     #tf.debugging.set_log_device_placement(True)
 
-
-
+    use_old_state = True
     all_returns = []
     n_unstables = []
-    #y, y0, umax, Km, Km0, A
-    #actual_params = DM([480000, 480000, 520000, 520000, 1, 1.1, 0.00048776, 0.000000102115, 0.00006845928, 0.00006845928,0, 0,0, 0])
-    actual_params = DM([1,  0.00048776, 0.00006845928])
+    params = json.load(open(IMPORT_PATH + '/params.json'))
+    n_episodes, skip, y0, actual_params, input_bounds, n_controlled_inputs, num_inputs, dt, lb, ub, N_control_intervals, control_interval_time, n_observed_variables, prior, normaliser = \
+        [params[k] for k in params.keys()]
 
-    print(actual_params)
-    input_bounds = [0.01, 1]
-    n_controlled_inputs = 2
+    actual_params = DM(actual_params)
+
+    if use_old_state:
+        normaliser = np.array([1e6, 1e1, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2])
+    normaliser = np.array(normaliser)
+
 
     n_params = actual_params.size()[0]
-
-    y0 = [200000, 0, 1]
-    y0_scaled = [0.2, 0, 1]
-    #y0 = y0_scaled
-
     n_system_variables = len(y0)
     n_FIM_elements = sum(range(n_params + 1))
+    n_tot = n_observed_variables + n_params * n_system_variables + n_FIM_elements
+    print(n_observed_variables, n_params, n_FIM_elements)
 
-    n_tot = n_system_variables + n_params * n_system_variables + n_FIM_elements
-    print(n_params, n_system_variables, n_FIM_elements)
-    num_inputs = 10  # number of discrete inputs available to RL
-
-    dt = 1 / 4000
-
+    print('rl state', n_observed_variables + n_params + n_FIM_elements + 1)
 
     param_guesses = actual_params
 
-    N_control_intervals = 10
-    control_interval_time = 2
-
-    n_observed_variables = 1
-
-    print('rl state', n_observed_variables + n_params + n_FIM_elements + 2)
-
-    agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 500, 500, num_inputs ** n_controlled_inputs])
 
 
-    #p = Pool(skip)
-    normaliser = np.array([1e7, 1e2, 1e-2, 1e-3, 1e6, 1e5, 1e6, 1e5, 1e6, 1e9, 1e2, 1e2])#*10
+
+
+    #agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 1, 500, 500, num_inputs ** n_controlled_inputs])
+    agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 1, 150, 150, 150,
+                                           num_inputs ** n_controlled_inputs])
+
+
 
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time,normaliser
 
@@ -76,16 +68,19 @@ if __name__ == '__main__':
 
     explore_rate = 0
     unstable = 0
-    print(agent.network.layers[1].get_weights()[0])
+    print(agent.network.layers[1].get_weights()[0].shape)
     agent.load_network('/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/single_chem/single_chemostat_fixed/repeat4')
-    print(agent.network.layers[1].get_weights()[0])
+    agent.load_network('/home/neythen/Desktop/Projects/RL_OED/results/final_results/figure_2_chemostat/50000_eps/repeat10')
+    print(agent.network.layers[1].get_weights()[0].shape)
 
-    state = env.get_initial_RL_state()
+    state = env.get_initial_RL_state(use_old_state = use_old_state)
+    print(state.shape)
     for e in range(0, N_control_intervals):
         t = time.time()
 
-        action = agent.get_action(state, explore_rate)
-        next_state, reward, done, _ = env.step(action)
+        action = agent.get_action(state.reshape(-1,11), explore_rate)
+        print(action)
+        next_state, reward, done, _ = env.step(action, continuous = False, use_old_state = use_old_state)
 
 
         if e == N_control_intervals - 1:

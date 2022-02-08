@@ -285,7 +285,7 @@ class OED_env():
 
         return solver
 
-    def step(self, action = None, continuous = True):
+    def step(self, action = None, continuous = True, use_old_state = False):
 
         self.current_tstep += 1
         if action is None: # Traditional OED step
@@ -308,7 +308,7 @@ class OED_env():
         #trajectory_solver = self.get_full_trajectory_solver(N_control_intervals, control_interval_time, self.dt) # the true trajectory of the system
         #trajectory_solver = trajectory_solver(N_control_intervals, control_interval_time, dt ) #this si the symbolic trajectory
         t = time.time()
-        self.true_trajectory = sampled_trajectory_solver(self.initial_Y,  self.actual_params, np.array(self.us).T)
+        self.true_trajectory = sampled_trajectory_solver(self.initial_Y,  self.actual_params, self.us)
         #self.est_trajectory = sampled_trajectory_solver(self.initial_Y, self.param_guesses, self.us )
 
         #param_solver = self.get_param_solver(sampled_trajectory_solver)
@@ -326,7 +326,7 @@ class OED_env():
 
         #state = self.get_RL_state(self.true_trajectory, self.est_trajectory)
 
-        state = self.get_RL_state(self.true_trajectory, self.true_trajectory)
+        state = self.get_RL_state(self.true_trajectory, self.true_trajectory, use_old_state = use_old_state)
 
 
 
@@ -458,12 +458,15 @@ class OED_env():
 
         return state / self.normaliser
 
-    def get_RL_state(self, true_trajectory, est_trajectory):
+    def get_RL_state(self, true_trajectory, est_trajectory, use_old_state = False):
 
         # get the current measured system state
         sys_state = true_trajectory[:self.n_observed_variables, -1]  # TODO: measurement noise
 
-        state = np.sqrt(sys_state)
+        if use_old_state:
+            state = sys_state
+        else:
+            state = np.sqrt(sys_state)
         # get current fim elements
         FIM_start = self.n_system_variables + self.n_sensitivities
 
@@ -475,7 +478,8 @@ class OED_env():
         FIM_signs = np.sign(FIM_elements)
         FIM_elements = FIM_signs * sqrt(fabs(FIM_elements))
 
-        #state = np.append(sys_state, np.append(self.param_guesses, FIM_elements))
+        if use_old_state:
+            state = np.append(sys_state, np.append(self.param_guesses, FIM_elements))
 
         state = np.append(state, self.current_tstep)
 
@@ -485,7 +489,7 @@ class OED_env():
 
     def get_initial_RL_state(self, use_old_state = False):
         if use_old_state:
-            state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])) + self.param_guesses.elements() + [0] * self.n_FIM_elements)
+            state = np.array(list(self.x0[0:self.n_observed_variables]) + self.param_guesses.elements() + [0] * self.n_FIM_elements)
         else:
             state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])))
         state = np.append(state, 0) #time
@@ -501,7 +505,7 @@ class OED_env():
 
 
         if use_old_state:
-            state = np.array(list(np.sqrt(o0[0:self.n_observed_variables])) + self.param_guesses.elements() + [
+            state = np.array(list(o0[0:self.n_observed_variables]) + self.param_guesses.elements() + [
                 0] * self.n_FIM_elements)
         else:
             state = np.array(list(np.sqrt(o0[0:self.n_observed_variables])))
