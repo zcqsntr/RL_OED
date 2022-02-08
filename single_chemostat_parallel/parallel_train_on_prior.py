@@ -115,7 +115,7 @@ if __name__ == '__main__':
         e_rewards = [[] for _ in range(skip)]
         trajectories = [[] for _ in range(skip)]
 
-        all_actions = [10, 50, 99, 10, 50, 99, 10, 50, 99,99]
+
 
 
         env.reset()
@@ -125,6 +125,8 @@ if __name__ == '__main__':
 
             t1 = time.time()
             #actions = [agent.get_action(state, explore_rate) for state in states] #parallelise this
+
+            print(states[0])
             actions = agent.get_actions(states, explore_rate)
 
             #actions = [all_actions[e]]
@@ -228,7 +230,7 @@ if __name__ == '__main__':
                 #print(iter, n_iters)
                 enablePrint()
 
-                history = agent.fitted_Q_update(alpha = alpha)
+                history = agent.fitted_Q_update(alpha = alpha, low_mem = True)
                 print('loss:', history.history['loss'])
                 print('val loss:', history.history['val_loss'])
 

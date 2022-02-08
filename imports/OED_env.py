@@ -61,9 +61,12 @@ class OED_env():
         self.current_tstep = 0 # to keep track of time in parallel
         self.CI_solver = self.get_control_interval_solver(control_interval_time, dt)
 
-    def reset(self):
+    def reset(self, partial = False):
         self.param_guesses = self.initial_params
-        self.Y = self.initial_Y
+        if partial:
+            self.Y[self.n_system_variables:] = self.initial_Y[self.n_system_variables:]
+        else:
+            self.Y = self.initial_Y
         self.FIMs = []
         self.detFIMs = []
         self.logdetFIMs =[]
@@ -627,7 +630,12 @@ class OED_env():
 
         sys_state = true_trajectory[:self.n_observed_variables, -1]  # TODO: measurement noise
 
-        state = np.sqrt(sys_state)
+
+        if use_old_state:
+            state = sys_state
+        else:
+            state = np.sqrt(sys_state)
+
 
         # get current fim elements
         FIM_start = self.n_system_variables + self.n_sensitivities

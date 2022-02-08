@@ -555,9 +555,122 @@ class DDPG_agent():
 
         return inputs, actions, targets
 
-    def Q_update(self, recurrent = True, monte_carlo =False, policy = True, fitted = True, verbose = False):
 
-        inputs, actions, targets = self.get_inputs_targets(recurrent = recurrent, monte_carlo = monte_carlo, fitted=fitted)
+
+    def get_inputs_targets_low_mem(self, recurrent = True, monte_carlo = False, fitted = False):
+        '''
+        gets fitted Q inputs and calculates targets for training the Q-network for episodic training
+        '''
+
+        #TODO:: enable all the options here
+
+        '''
+                gets fitted Q inputs and calculates targets for training the Q-network for episodic training
+                '''
+
+
+
+        self.memory = self.memory[-self.mem_size:]
+
+        sample_size = int(self.batch_size*10)
+
+        indices = np.random.randint(0, min(self.mem_size, len(self.memory)), size=(sample_size))
+
+
+        sample = np.array(self.memory)[indices]
+        #print(sample)
+
+        sequences = []
+        next_sequences = []
+        states = []
+        next_states = []
+        actions = []
+        rewards = []
+        dones = []
+
+        # iterate over all exprienc in memory and create fitted Q targets
+        for i, trajectory in enumerate(sample):
+
+            e_rewards = []
+            sequence = [[0] * self.layer_sizes[1]]
+            for j, transition in enumerate(trajectory):
+                sequences.append(copy.deepcopy(sequence))
+                state, action, reward, next_state, done = transition
+
+                sequence.append(np.concatenate((state, action)))
+                next_sequences.append(copy.deepcopy(sequence))
+                states.append(state)
+                next_states.append(next_state)
+                actions.append(action)
+                rewards.append(reward)
+                e_rewards.append(reward)
+                dones.append(done)
+
+
+
+        padded = pad_sequences(sequences, maxlen=self.max_length, dtype='float64')
+        next_padded = pad_sequences(next_sequences, maxlen=self.max_length, dtype='float64')
+
+        next_states = np.array(next_states, dtype=np.float64)
+        rewards = np.array(rewards).reshape(-1, 1)
+        dones = np.array(dones).reshape(-1, 1)
+        states = np.array(states)
+        actions = np.array(actions)
+
+
+
+
+        #values = self.predict([states, padded])
+        Q1_target = self.Q1_target
+        Q2_target = self.Q2_target
+        policy_target = self.policy_target
+
+        next_actions = policy_target([next_states, next_padded]) if recurrent else self.policy_target([next_states])
+
+        # target policy smoothing
+
+        noise = np.clip(np.random.normal( 0, self.std, next_actions.shape), self.noise_bounds[0], self.noise_bounds[1])
+
+
+        next_actions = np.clip(next_actions + noise, self.action_bounds[0], self.action_bounds[1])
+
+        #next_actions = np.vstack((actions[1:], actions[0])) #sarsa
+        Q1 = Q1_target.predict([tf.concat((next_states, next_actions), 1), next_padded]) if recurrent else Q1_target.predict([tf.concat((next_states, next_actions), 1)])
+        Q2 = Q2_target.predict([tf.concat((next_states, next_actions), 1), next_padded]) if recurrent else Q2_target.predict([tf.concat((next_states, next_actions), 1)])
+
+        next_values = np.minimum(Q1, Q2)
+        #next_values = Q1
+        targets = rewards + self.gamma*(1-dones)*next_values
+
+
+
+
+        randomize = np.arange(len(states))
+        np.random.shuffle(randomize)
+
+        states = states[randomize]
+        actions = actions[randomize]
+
+        padded = padded[randomize]
+
+        targets = targets[randomize]
+
+        inputs = [states, padded]
+        #print('inputs, actions, targets', inputs[0].shape, actions.shape, targets.shape)
+
+        return inputs, actions, targets
+
+
+
+    def Q_update(self, recurrent = True, monte_carlo =False, policy = True, fitted = True, verbose = False, low_mem = True):
+
+        if low_mem:
+            inputs, actions, targets = self.get_inputs_targets_low_mem(recurrent=recurrent, monte_carlo=monte_carlo,
+                                                                       fitted=fitted)
+        else:
+            inputs, actions, targets = self.get_inputs_targets(recurrent=recurrent, monte_carlo=monte_carlo,
+                                                               fitted=fitted)
+
         if recurrent:
             states, sequences = inputs
         else:
