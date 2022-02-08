@@ -125,8 +125,6 @@ if __name__ == '__main__':
 
             t1 = time.time()
             #actions = [agent.get_action(state, explore_rate) for state in states] #parallelise this
-
-            print(states[0])
             actions = agent.get_actions(states, explore_rate)
 
             #actions = [all_actions[e]]
@@ -230,7 +228,7 @@ if __name__ == '__main__':
                 #print(iter, n_iters)
                 enablePrint()
 
-                history = agent.fitted_Q_update(alpha = alpha, low_mem = True)
+                history = agent.fitted_Q_update(alpha = alpha)
                 print('loss:', history.history['loss'])
                 print('val loss:', history.history['val_loss'])
 

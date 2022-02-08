@@ -70,7 +70,7 @@ if __name__ == '__main__':
     unstable = 0
     print(agent.network.layers[1].get_weights()[0].shape)
     agent.load_network('/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/single_chem/single_chemostat_fixed/repeat4')
-    agent.load_network('/home/neythen/Desktop/Projects/RL_OED/results/final_results/figure_2_chemostat/50000_eps/repeat10')
+    #agent.load_network('/home/neythen/Desktop/Projects/RL_OED/results/final_results/figure_2_chemostat/50000_eps/repeat10')
     print(agent.network.layers[1].get_weights()[0].shape)
 
     state = env.get_initial_RL_state(use_old_state = use_old_state)
