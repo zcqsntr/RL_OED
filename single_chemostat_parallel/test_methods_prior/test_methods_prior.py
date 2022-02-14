@@ -51,11 +51,11 @@ network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_f
 network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps_reduced_state/repeat4'
 
 
-network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat10' # best non pror
-network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat12' # best prior
+network_path = '/Users/neythen/Desktop/Projects/RL_OED/results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat10'
+network_path = '/Users/neythen/Desktop/Projects/RL_OED/results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat12'
 
 actions_from_agent = True
-
+prior = True
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 n_cores = multiprocessing.cpu_count()//2
 print('Num CPU cores:', n_cores)
@@ -177,10 +177,7 @@ for i in range(30): # run in parrallel as array jobs on server
     param_guesses = np.random.uniform(low=lb, high=ub)
     initial_params = param_guesses
 
-
-
     print('SAMPLE: ', i)
-
     #param_guesses = np.random.uniform(low=[0.5, 0.0003, 0.00005], high=[1.5, 0.001, 0.0001])
     #param_guesses = DM(actual_params) + np.random.normal(loc=0, scale=np.sqrt(0.05 * actual_params))
 
