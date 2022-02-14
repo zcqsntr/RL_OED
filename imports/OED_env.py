@@ -279,7 +279,8 @@ class OED_env():
         nlp = {'x': sym_theta, 'f': 0.5 * dot(e / (0.05 * trajectory[0:self.n_observed_variables, :].T + 0.00000001),
                                               e)}  # weighted least squares
         print('nlp initialised')
-        solver = self.gauss_newton(e, nlp, sym_theta, max_iter = 100000)
+        #solver = self.gauss_newton(e, nlp, sym_theta, max_iter = 100000)
+        solver = self.gauss_newton(e, nlp, sym_theta)
         print('solver initialised')
 
 
@@ -308,7 +309,7 @@ class OED_env():
         #trajectory_solver = self.get_full_trajectory_solver(N_control_intervals, control_interval_time, self.dt) # the true trajectory of the system
         #trajectory_solver = trajectory_solver(N_control_intervals, control_interval_time, dt ) #this si the symbolic trajectory
         t = time.time()
-        self.true_trajectory = sampled_trajectory_solver(self.initial_Y,  self.actual_params, np.array(self.us))
+        self.true_trajectory = sampled_trajectory_solver(self.initial_Y,  self.actual_params, np.array(self.us).T)
         #self.est_trajectory = sampled_trajectory_solver(self.initial_Y, self.param_guesses, self.us )
 
         #param_solver = self.get_param_solver(sampled_trajectory_solver)

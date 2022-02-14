@@ -64,7 +64,7 @@ def get_rate( episode, MIN_RATE, MAX_RATE, denominator):
 
 
 #1-10 are non prior, 11-20 are prior
-#path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/non_prior_and_prior_180921/single_chemostat_FDDPG'
+path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/non_prior_and_prior_180921/single_chemostat_FDDPG'
 
 #1-10 are non prior, 11-20 are prior
 #path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/double_chemostat_151021'
@@ -80,7 +80,7 @@ all_returns = []
 all_us = []
 all_trajectories =[]
 
-for i in range(1,11):
+for i in range(1,21):
     '''
     us = np.load(path + '/repeat' + str(i) +'/us.npy')
     print(us.shape)
@@ -130,8 +130,8 @@ for i in range(1,11):
     print('max:', np.max(returns))
 
     actions = np.load(path + '/repeat' + str(i) +'/actions.npy')
-    print('actions', actions[-10:])
-    print('actions', actions.shape)
+    #print('actions', actions[-10:])
+    #print('actions', actions.shape)
 
     y = [np.mean(returns[i * step: (i + 1) * step]) for i in range(0, len(returns) // step)]
     print(i, 'everage max ', y[-1])

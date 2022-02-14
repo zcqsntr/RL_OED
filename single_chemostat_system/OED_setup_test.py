@@ -74,7 +74,12 @@ if __name__ == '__main__':
                        [0.01, 0.2, 0.01, 0.4, 0.01, 0.6, 0.01, 0.8, 0.01, 1.]]) #rational: return = 8.4336
 
     
+    # fitted Q, return = 0.18875599037357077
+    actions = np.array([3, 3, 3, 13, 13, 13, 20, 91, 91, 91])
 
+    env.us = env.actions_to_inputs(actions)
+
+    '''
     env.us = np.array([[0.45, 0.01, 1. ,  1.,   0.45, 0.23, 0.23, 0.23, 0.56, 0.34],
  [0.12, 0.56, 1. ,  0.45, 0.12, 0.01, 0.01, 0.01, 0.01, 0.01]] )# DQN return: 20.1493
     
@@ -89,7 +94,7 @@ if __name__ == '__main__':
     [6.75407708e-01, 1.07866724e-03],
     [9.93295372e-01, 3.97822623e-05]]).T #t3d return = 20.27
 
-
+    '''
 
     solver = env.get_sampled_trajectory_solver(N_control_intervals, control_interval_time, dt)
     trajectory = solver(env.initial_Y, env.actual_params, mpc_us)

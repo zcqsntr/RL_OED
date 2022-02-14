@@ -51,9 +51,11 @@ network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_f
 network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps_reduced_state/repeat4'
 
 
-network_path = '/Users/neythen/Desktop/Projects/RL_OED/results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat10'
+network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat10' # best non pror
+network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat12' # best prior
 
 actions_from_agent = True
+
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 n_cores = multiprocessing.cpu_count()//2
 print('Num CPU cores:', n_cores)
@@ -123,12 +125,15 @@ us = np.array([[1.0, 0.1615823448123995], [1.0, 0.4336093024588776], [0.99999999
 # return:  16.612377905628856
 '''
 
+us = np.array([[0.01, 0.01, 0.01, 0.12, 0.12, 0.12, 0.23, 1. ,  1.,   1.  ],
+ [0.34 ,0.34 ,0.34, 0.34, 0.34, 0.34, 0.01, 0.12, 0.12, 0.12]]).T # fitted Q return = 0.18875599037357077
+
 env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time, normaliser)
 
 print('trajectory solver initialised')
 all_inferred_params = []
 all_initial_params = []
-
+prior = True
 if actions_from_agent:
     #agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
     #agent = KerasFittedQAgent(layer_sizes=[n_observed_variables +1, 50, 50, num_inputs ** n_controlled_inputs])
@@ -165,7 +170,7 @@ all_losses = []
 all_actual_params = []
 all_actions = []
 env.mapped_trajectory_solver = env.CI_solver.map(skip, "thread", n_cores)
-for i in range(1): # run in parrallel as array jobs on server
+for i in range(30): # run in parrallel as array jobs on server
 
     if prior:
         actual_params = np.random.uniform(low=lb, high=ub)
@@ -173,7 +178,10 @@ for i in range(1): # run in parrallel as array jobs on server
     param_guesses = np.random.uniform(low=lb, high=ub)
     initial_params = param_guesses
 
+
+
     print('SAMPLE: ', i)
+
     #param_guesses = np.random.uniform(low=[0.5, 0.0003, 0.00005], high=[1.5, 0.001, 0.0001])
     #param_guesses = DM(actual_params) + np.random.normal(loc=0, scale=np.sqrt(0.05 * actual_params))
 

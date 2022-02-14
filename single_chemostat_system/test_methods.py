@@ -76,6 +76,10 @@ us = np.array([[0.45, 0.01, 1. ,  1.,   0.45, 0.23, 0.23, 0.23, 0.56, 0.34],
  [0.12, 0.56, 1. ,  0.45, 0.12, 0.01, 0.01, 0.01, 0.01, 0.01]] ).T# DQN return: 20.1493
 '''
 
+
+us = np.array([[1. ,  1.,   1., 0.23, 0.12, 0.12, 0.12, 0.01, 0.01, 0.01 ],
+ [0.12, 0.12, 0.12, 0.01, 0.34 ,0.34 ,0.34, 0.34, 0.34, 0.34]]).T # fitted Q return = 0.18875599037357077
+
 env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time, normaliser)
 trajectory_solver = env.get_sampled_trajectory_solver(N_control_intervals, control_interval_time, dt)
 print('trajectory solver initialised')
