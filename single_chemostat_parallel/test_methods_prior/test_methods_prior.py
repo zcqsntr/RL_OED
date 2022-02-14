@@ -125,8 +125,7 @@ us = np.array([[1.0, 0.1615823448123995], [1.0, 0.4336093024588776], [0.99999999
 # return:  16.612377905628856
 '''
 
-us = np.array([[0.01, 0.01, 0.01, 0.12, 0.12, 0.12, 0.23, 1. ,  1.,   1.  ],
- [0.34 ,0.34 ,0.34, 0.34, 0.34, 0.34, 0.01, 0.12, 0.12, 0.12]]).T # fitted Q return = 0.18875599037357077
+
 
 env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time, normaliser)
 

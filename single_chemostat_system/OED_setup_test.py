@@ -75,9 +75,16 @@ if __name__ == '__main__':
 
     
     # fitted Q, return = 0.18875599037357077
-    actions = np.array([3, 3, 3, 13, 13, 13, 20, 91, 91, 91])
 
-    env.us = env.actions_to_inputs(actions)
+    actions = np.array([91, 91, 91, 20, 13, 13, 13, 3, 3, 3])
+
+
+
+    env.us = np.array([[1., 1., 1., 0.23, 0.12, 0.12, 0.12, 0.01, 0.01, 0.01],
+                   [0.12, 0.12, 0.12, 0.01, 0.34, 0.34, 0.34, 0.34, 0.34,
+                    0.34]])  # fitted Q return = 0.18875599037357077
+
+
 
     '''
     env.us = np.array([[0.45, 0.01, 1. ,  1.,   0.45, 0.23, 0.23, 0.23, 0.56, 0.34],
@@ -140,7 +147,7 @@ if __name__ == '__main__':
 
     ax2.plot(t, sol[:, 2],':', color='black', label='$C_0$')
     ax2.set_ylabel('Concentration ($g/L$)')
-    ax2.set_xlabel('Time (min)')
+    ax2.set_xlabel('Time (hours)')
     fig.tight_layout()
     fig.legend(loc=(0.65,0.8))
     plt.savefig('traj.pdf')
@@ -159,7 +166,7 @@ if __name__ == '__main__':
     plt.step(t, us[:, 1], ':', color='black', label='$C_{0, in}$')
     plt.ylim(bottom=0, top=1.01)
     plt.ylabel('u')
-    plt.xlabel('Time (min)')
+    plt.xlabel('Time (hours)')
     plt.legend()
     plt.savefig('us.pdf')
 
