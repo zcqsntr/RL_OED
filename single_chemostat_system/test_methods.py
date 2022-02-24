@@ -63,6 +63,8 @@ us = np.array([0.560999, 0.54773, 0.255089, 0.0104364, 0.0109389, 0.0100051, 0.0
 
 us = np.array([[1.0, 0.1615823448123995], [1.0, 0.4336093024588776], [0.9999999979860146, 0.19768733890665968], [1.0, 1.0], [0.9999998826183215, 0.01], [0.9999990555025431, 0.01], [0.9999999501891313, 0.9999999122666077], [0.01, 0.9999999662247943], [0.24225329656112216, 0.9999998645026003], [0.06287889843771714, 0.9999975484376613]])# optimiser
 # return:  16.612377905628856
+
+
 '''
 
 us = np.array([[0.01, 0.2, 0.01, 0.4, 0.01, 0.6, 0.01, 0.8, 0.01, 1.],
@@ -77,10 +79,10 @@ us = np.array([[0.45, 0.01, 1. ,  1.,   0.45, 0.23, 0.23, 0.23, 0.56, 0.34],
 '''
 
 
-
+'''
 us = np.array([[1. ,  1.,   1., 0.23, 0.12, 0.12, 0.12, 0.01, 0.01, 0.01 ],
  [0.12, 0.12, 0.12, 0.01, 0.34 ,0.34 ,0.34, 0.34, 0.34, 0.34]]).T # fitted Q return = 0.18875599037357077
-
+'''
 env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time, normaliser)
 trajectory_solver = env.get_sampled_trajectory_solver(N_control_intervals, control_interval_time, dt)
 print('trajectory solver initialised')

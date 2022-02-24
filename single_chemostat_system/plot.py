@@ -49,7 +49,7 @@ def get_rate( episode, MIN_RATE, MAX_RATE, denominator):
 #path = '/home/neythen/Desktop/Projects/RL_OED/results/fixed/single_chemostat_fixed'
 #path = '/home/neythen/Desktop/Projects/RL_OED/results/parallel_no_prior/single_chemostat_parallel'
 #path = '/home/neythen/Desktop/Projects/RL_OED/results/parallel_no_prior_fixed'
-#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/single_chem/single_chemostat_fixed'
+path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/single_chem/single_chemostat_fixed'
 #path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/prior/single_chem_prior/single_chemostat_fixed'
 #path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/double_eps/single_chemostat_fixed'
 #path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps'
@@ -64,7 +64,7 @@ def get_rate( episode, MIN_RATE, MAX_RATE, denominator):
 
 
 #1-10 are non prior, 11-20 are prior
-path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/non_prior_and_prior_180921/single_chemostat_FDDPG'
+#path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/non_prior_and_prior_180921/single_chemostat_FDDPG'
 
 #1-10 are non prior, 11-20 are prior
 #path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/double_chemostat_151021'
