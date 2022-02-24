@@ -54,8 +54,8 @@ network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_f
 network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat10' # best non pror
 network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat12' # best prior
 
-actions_from_agent = False
-
+actions_from_agent = True
+prior = True
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 n_cores = multiprocessing.cpu_count()//2
 print('Num CPU cores:', n_cores)
@@ -113,9 +113,10 @@ print('rl state', n_observed_variables + n_params + n_FIM_elements + 2)
 
 param_guesses = actual_params
 
-
+us = np.array([[0.999689, 0.33334, 0.997734, 0.0100728, 0.768316, 0.288047, 0.010472, 0.211805, 0.0100995, 0.0477429, 0.0110883, 0.0100006, 0.0100019, 0.0100003, 0.0113684, 0.952852, 0.0100003, 0.909282, 0.0100001, 0.714238]]) #MPC return = 19.78, middle of prior with y0 = [2000, 0, 0]
 us = np.array([0.999867, 0.934508, 0.558757, 0.297468, 0.060432, 0.0556838, 0.0110066, 0.0100698, 0.0111597, 0.010017, 0.0117102, 0.0100075, 0.0331355, 0.0100085, 0.956229, 0.0100054, 0.940603, 0.0100027, 0.894397, 0.894773]) #MPC return = 20.79, middle of prior with y0 = [200000, 0, 1]
-#us = np.array([0.560999, 0.54773, 0.255089, 0.0104364, 0.0109389, 0.0100051, 0.0111674, 0.0100002, 0.012649, 0.0100002, 0.996536, 0.0100027, 0.997582, 0.0100001, 0.998122, 0.01, 0.998209, 0.991815, 0.992791, 0.96563]).reshape(  N_control_intervals, n_controlled_inputs) #MPC return = 20.1118, true param values with y0 = [200000, 0, 1]
+us = np.array([0.560999, 0.54773, 0.255089, 0.0104364, 0.0109389, 0.0100051, 0.0111674, 0.0100002, 0.012649, 0.0100002, 0.996536,
+     0.0100027, 0.997582, 0.0100001, 0.998122, 0.01, 0.998209, 0.991815, 0.992791, 0.96563]).reshape(  N_control_intervals, n_controlled_inputs) #MPC return = 20.1118, true param values with y0 = [200000, 0, 1]
 '''
 us = np.array([[0.1, 0.01, 0.3, 0.01, 0.5, 0.01, 0.7, 0.01, 0.9, 0.01],
                        [0.01, 0.2, 0.01, 0.4, 0.01, 0.6, 0.01, 0.8, 0.01, 1.]]).T # rational return: 8.43368
