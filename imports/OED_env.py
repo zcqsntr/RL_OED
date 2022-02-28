@@ -64,7 +64,8 @@ class OED_env():
     def reset(self, partial = False):
         self.param_guesses = self.initial_params
         if partial:
-            self.Y[self.n_system_variables:] = self.initial_Y[self.n_system_variables:]
+            for i in range(self.Y[self.n_system_variables:, :].size()[1]):
+                self.Y[self.n_system_variables:, i] = self.initial_Y[self.n_system_variables:]
         else:
             self.Y = self.initial_Y
         self.FIMs = []
