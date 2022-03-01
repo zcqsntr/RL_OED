@@ -298,7 +298,7 @@ class OED_env():
             if continuous:
                 u = action
             else:
-                u = self.action_to_input(action)
+                u = self.action_to_input(action).T
             #self.us.append(10**u)
             self.us.append(u)
         N_control_intervals = len(self.us)
@@ -490,7 +490,7 @@ class OED_env():
 
     def get_initial_RL_state(self, use_old_state = False):
         if use_old_state:
-            state = np.array(list(self.x0[0:self.n_observed_variables]) + self.param_guesses.elements() + [0] * self.n_FIM_elements)
+            state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])) + self.param_guesses.elements() + [0] * self.n_FIM_elements)
         else:
             state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])))
         state = np.append(state, 0) #time
@@ -637,7 +637,7 @@ class OED_env():
 
 
         if use_old_state:
-            state = sys_state
+            state = np.sqrt(sys_state)
         else:
             state = np.sqrt(sys_state)
 
@@ -654,8 +654,10 @@ class OED_env():
         FIM_elements = FIM_signs * sqrt(fabs(FIM_elements))
 
 
+
         if use_old_state:
-            state = np.append(state, np.append(self.param_guesses, FIM_elements))
+            state = np.append(state, np.append(self.param_guesses[i], FIM_elements))
+
 
         state = np.append(state, self.current_tstep)
         #state = np.append(state, 0)

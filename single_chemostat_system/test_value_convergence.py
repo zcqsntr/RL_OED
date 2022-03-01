@@ -45,7 +45,7 @@ save_path = "./"
 n_params = actual_params.size()[0]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
-N_episodes = 20000
+N_episodes = 1000
 
 trajectory = []
 actions = []
@@ -68,7 +68,7 @@ for repeat in range(1,n_repeats+1):
     test_times = []
     test_rewards = []
 
-    normaliser = np.array([1e6, 1e1, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2, 1e2])#*10
+    normaliser = np.array([1e6, 1e1, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2])#*10
 
     env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time, normaliser)
 
@@ -89,11 +89,11 @@ for repeat in range(1,n_repeats+1):
         if ep%100==0:
             print('episode:', ep)
         env.reset()
-        state = env.get_initial_RL_state()
+        state = env.get_initial_RL_state(use_old_state=True)
         explore_rate = 1
 
         test_env.reset()
-        test_state = test_env.get_initial_RL_state()
+        test_state = test_env.get_initial_RL_state(use_old_state=True)
 
 
         e_actions = []
@@ -113,9 +113,9 @@ for repeat in range(1,n_repeats+1):
             action = agent.get_action(state, explore_rate)
             test_action = agent.get_action(state, explore_rate)
 
-            next_state, reward, done, _ = env.step(action)
+            next_state, reward, done, _ = env.step(action,continuous = False, use_old_state = True)
 
-            test_next_state, test_reward, test_done, _ = test_env.step(test_action)
+            test_next_state, test_reward, test_done, _ = test_env.step(test_action,continuous = False, use_old_state = True)
 
             if e == N_control_intervals - 1:
                 next_state = [None] *agent.layer_sizes[0]

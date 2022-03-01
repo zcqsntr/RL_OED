@@ -132,7 +132,7 @@ class DQN_agent():
         dones = []
         all_values = []
         #sample = self.sample(32, 50000)
-        sample = self.memory[-100:]
+        sample = self.memory[-self.batch_size:]
         # iterate over all exprienc in memory and create fitted Q targets
 
 
