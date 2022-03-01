@@ -32,12 +32,12 @@ plt.legend()
 plt.savefig('RL_MPC_comp.pdf')
 
 
-D_opt = np.array([8.43, 16.6, 20.07, 20.27])
-error = np.array([33.0, 26.7, 6.1, 3.4])
-cov = np.array([-3.76, -5.47, -8.72, -11.85])
+D_opt = np.array([8.43, 16.6, 18.88, 20.07, 20.27])
+error = np.array([33.0, 26.7,8.04, 6.1, 3.4])
+cov = np.array([-3.76, -5.47,-8.56, -8.72 , -11.85])
 
 x = np.arange(len(D_opt))*3
-ticks = ['Rational', 'OSAO', 'MPC', 'RT3D']
+ticks = ['Rational', 'OSAO', 'FQ', 'MPC', 'RT3D']
 plt.figure(figsize = [12., 9.0])
 
 
