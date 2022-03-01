@@ -12,7 +12,7 @@ sys.path.append(SINGLE_CHEMOSTAT_PATH)
 IMPORT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'single_chemostat_system')
 sys.path.append(IMPORT_PATH)
 from OED_env import *
-from ROCC import *
+#from ROCC import *
 from xdot import xdot
 import multiprocessing
 import tensorflow as tf
@@ -64,7 +64,7 @@ skip = 100
 trajectory = []
 actions = []
 rewards = []
-n_iters = 500
+n_iters = 5000
 n_repeats = 1
 
 n_cores = multiprocessing.cpu_count()//2
@@ -298,13 +298,10 @@ for ep in range(int(n_episodes//skip)):
             trajectories[i].append(transition)
 
             #one_hot_a = np.array([int(i == action) for i in range(agent.layer_sizes[-1])])/10
-            sequences[i].append(np.concatenate((state, u)))
-
-
-
+            sequences[i].append(np.concatenate((state, u/10)))
 
             #one_hot_test_a = np.array([int(i == test_action) for i in range(test_agent.layer_sizes[-1])])/10
-            test_sequences[i].append(np.concatenate((test_state, test_u)))
+            test_sequences[i].append(np.concatenate((test_state, test_u/10)))
 
             e_actions[i].append(action)
             e_rewards[i].append(reward)
