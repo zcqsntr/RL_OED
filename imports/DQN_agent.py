@@ -231,26 +231,37 @@ class DQN_agent():
         assert targets.shape[1] == self.n_actions, 'targets for network wrong size'
         return inputs, targets
 
-    def Q_update(self, inputs=None, targets=None, alpha=1):
+    def Q_update(self, inputs = None, targets = None, alpha = 1, fitted = True, verbose = True, monte_carlo = False, patience = 1, epochs= 500):
         '''
         Uses a set of inputs and targets to update the Q network
         '''
 
-
+        print(fitted, patience)
         if inputs is None and targets is None:
-            inputs, targets = self.get_inputs_targets_MC(alpha)
-            #print(inputs, targets)
+            if monte_carlo:
+                inputs, targets = self.get_inputs_targets_MC(alpha=alpha)
+            else:
+                inputs, targets = self.get_inputs_targets(alpha =alpha)
 
-            #inputs_old, targets_old = self.get_inputs_targets_old()
-            #print(inputs ==inputs_old)
-            #print(np.isclose(targets, targets_old))
-        #print('inputs: ', inputs)
-        #print('target: ', targets)
-        #print('target old: ', targets_old)
+        if fitted:
 
+            batch_size = 256
 
-        history = self.network.fit(inputs, targets, epochs = 1, verbose = True)
+            self.reset_weights()
+            callback = tf.keras.callbacks.EarlyStopping(monitor = 'loss', patience=patience, restore_best_weights=True)
+            callbacks = [callback]
+        else:
+
+            epochs = 1
+            batch_size = 256
+
+            callbacks = []
+        t = time.time()
+        #print(callbacks)
+        history = self.network.fit(inputs, targets, epochs = epochs, verbose = verbose, validation_split =0., batch_size=batch_size, callbacks = callbacks)
+        print('fit time:', time.time() - t)
         return history
+
 
     def update_target_network(self): # tested
 
@@ -367,6 +378,18 @@ class DQN_agent():
         sample = [self.memory[i] for i in indices]
 
         return np.array(sample)
+
+    def reset_weights(self):
+        '''
+        Reinitialises weights to random values
+        '''
+        #sess = tf.keras.backend.get_session()
+        #sess.run(tf.global_variables_initializer())
+        del self.network
+        gc.collect()
+        tf.keras.backend.clear_session()
+        tf.compat.v1.reset_default_graph()
+        self.network = self.initialise_network(self.layer_sizes)
 
 class DRQN_agent(DQN_agent):
     def __init__(self,layer_sizes, learning_rate ):
@@ -572,7 +595,7 @@ class DRQN_agent(DQN_agent):
 
         return self.target_network.predict({'S_input': inputs[0], 'sequence_input':inputs[1]})
 
-    def Q_update(self, inputs = None, targets = None, alpha = 1, fitted = True, verbose = True, monte_carlo = False):
+    def Q_update(self, inputs = None, targets = None, alpha = 1, fitted = True, verbose = True, monte_carlo = False, patience = 1, epochs = 500):
         '''
         Uses a set of inputs and targets to update the Q network
         '''
@@ -582,11 +605,11 @@ class DRQN_agent(DQN_agent):
             inputs, targets = self.get_inputs_targets(alpha =alpha, fitted=fitted, monte_carlo=monte_carlo)
 
         if fitted:
-            epochs = 500
+
             batch_size = 256
 
             self.reset_weights()
-            callback = tf.keras.callbacks.EarlyStopping(monitor = 'loss', patience=1, restore_best_weights=True)
+            callback = tf.keras.callbacks.EarlyStopping(monitor = 'loss', patience=patience, restore_best_weights=True)
             callbacks = [callback]
         else:
 
@@ -596,7 +619,7 @@ class DRQN_agent(DQN_agent):
             callbacks = []
         t = time.time()
 
-        history = self.network.fit({'S_input': inputs[0], 'sequence_input':inputs[1]}, targets, epochs = epochs, verbose = False, validation_split =0., batch_size=batch_size, callbacks = callbacks)
+        history = self.network.fit({'S_input': inputs[0], 'sequence_input':inputs[1]}, targets, epochs = epochs, verbose = verbose, validation_split =0., batch_size=batch_size, callbacks = callbacks)
         print('fit time:', time.time() - t)
         return history
 
