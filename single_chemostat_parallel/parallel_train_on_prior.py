@@ -25,6 +25,16 @@ import json
 
 import multiprocessing
 
+try:
+    physical_devices = tf.config.list_physical_devices('GPU')
+    print(physical_devices)
+    tf.config.experimental.set_memory_growth(physical_devices[0], True)
+
+except:
+    print()
+    print('no GPU found')
+    print()
+
 def disablePrint():
     sys.stdout = open(os.devnull, 'w')
 
