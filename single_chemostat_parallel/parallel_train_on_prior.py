@@ -64,6 +64,7 @@ if __name__ == '__main__':
 
     if use_old_state:
         normaliser = np.array([1e6, 1e1, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2])
+        normaliser = np.array([1e3, 1e1, 1e-3, 1e-4, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e2])
     normaliser = np.array(normaliser)
 
     n_params = actual_params.size()[0]
@@ -95,6 +96,10 @@ if __name__ == '__main__':
     args = y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time, normaliser
     env = OED_env(*args)
 
+    actual_params = np.random.uniform(low=[1, 0.00048776, 0.00006845928], high=[1, 0.00048776, 0.00006845928],
+                                      size=(skip, 3))
+    env.param_guesses = DM(actual_params)
+
     unstable = 0
     explore_rate = 1
     alpha = 1
@@ -108,7 +113,7 @@ if __name__ == '__main__':
         #actual_params = np.random.uniform(low=[0.5, 0.0003, 0.00005], high=[1.5, 0.001, 0.0001],  size = (skip, 3))
         #actual_params = np.random.uniform(low=[1,  0.00048776, 0.00006845928], high=[1,  0.00048776, 0.00006845928], size = (skip, 3))
         #actual_params = np.random.uniform(low=lb, high=ub, size=(skip, 3))
-        states  = [env.get_initial_RL_state_parallel(use_old_state = use_old_state) for i in range(skip)]
+        states  = [env.get_initial_RL_state_parallel(use_old_state = use_old_state, i=i) for i in range(skip)]
 
         e_returns = [0 for _ in range(skip)]
         e_actions = []
@@ -119,6 +124,9 @@ if __name__ == '__main__':
 
 
         env.reset()
+        env.param_guesses = DM(actual_params)
+
+
         env.logdetFIMs = [[] for _ in range(skip)]
         env.detFIMs = [[] for _ in range(skip)]
         for e in range(0, N_control_intervals):
@@ -134,7 +142,7 @@ if __name__ == '__main__':
             #env.mapped_trajectory_solver = env.get_sampled_trajectory_solver(e+1).map(skip, "thread", 8)
             t1 = time.time()
             #outputs = env.map_parallel_step(np.array(e_actions).T, actual_params)
-            outputs = env.map_parallel_step(np.array(actions).T, actual_params.T, use_old_state = use_old_state)
+            outputs = env.map_parallel_step(np.array(actions).T, actual_params, use_old_state = use_old_state)
 
             #outputs = env.parallel_step(args[0])
 
@@ -173,7 +181,7 @@ if __name__ == '__main__':
         for j, trajectory in enumerate(trajectories):
 
 
-            if np.all( [np.all(np.abs(trajectory[i][0]) < 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
+            if np.all( [np.all(np.abs(trajectory[i][0]) <= 1) for i in range(len(trajectory))] ) and not math.isnan(np.sum(trajectory[-1][0])): # check for instability
                 #plt.figure()
                 #plt.plot([trajectory[i][0][0] for i in range(len(trajectory))])
                 agent.memory.append(trajectory)
@@ -184,21 +192,7 @@ if __name__ == '__main__':
                 print('UNSTABLE!!!')
 
 
-                i = 0
-                new_traj = []
-                e_return = 0
-                while np.all(np.abs(trajectory[i][3]) < 1) and not math.isnan(np.sum(trajectory[i][3])):
-                    new_traj.append(trajectory[i])
-                    e_return += e_rewards[j][i]
-                    i += 1
-                trans = trajectory[i]
-                new_trans = (trans[0], trans[1], trans[2], [None]*agent.layer_sizes[0], True)
-                all_returns.append(e_return)
-                new_traj.append(new_trans)
 
-                agent.memory.append(new_traj)
-
-                print('new traj: ',len(new_traj))
 
 
         print('n unstable ', unstable)

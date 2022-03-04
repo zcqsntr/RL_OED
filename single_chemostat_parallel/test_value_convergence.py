@@ -26,6 +26,8 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 import copy
 import tensorflow as tf
 
+
+
 try:
     physical_devices = tf.config.list_physical_devices('GPU')
     print(physical_devices)
@@ -35,9 +37,6 @@ except:
     print()
     print('no GPU found')
     print()
-
-print()
-print()
 
 
 
@@ -85,20 +84,23 @@ cluster = False
 DDPG = False
 
 if fitted:
-    learning_rate = 0.01
-else:
     learning_rate = 0.001
+else:
+    learning_rate = 0.0001
 
 if len(sys.argv) == 3:
     cluster = False #TODO: change this for cluster
+
     prior = True
     layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64, 64], [100, 100],
                    num_inputs ** n_controlled_inputs]
 
     if int(sys.argv[2]) in list(range(1, 11)): # do agent I with full state and no recurrent
         print('Agent I')
-        fitted = True
+
         normaliser = np.array([1e3, 1e2, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2])
+
+        normaliser = np.array([1e3, 1e1, 1e-3, 1e-4, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e2])
         use_full_state = True
         DRQN = False
         DQN = True
@@ -106,15 +108,16 @@ if len(sys.argv) == 3:
     elif int(sys.argv[2]) in list(range(11, 21)): # do agent II with partial state and no recurrent
         print('Agent II')
         normaliser = np.array([1e3, 1e2])
-        fitted = True
+
         use_full_state = False
         DRQN = False
         DQN = True
 
     elif int(sys.argv[2]) in list(range(21, 31)):  # do agent III with partial state and recurrent
+        learning_rate /= 10
         print('Agent III')
         normaliser = np.array([1e3, 1e2])
-        fitted = True
+
         DRQN = True
         use_full_state = False
         DQN = False
@@ -177,9 +180,9 @@ elif use_full_state:
     #test_agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + 1, 50, 50,  num_inputs ** n_controlled_inputs])
 
     agent = DQN_agent(
-        layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 1, 100, 100, num_inputs ** n_controlled_inputs])
+        layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 1, 100, 100, num_inputs ** n_controlled_inputs], learning_rate=learning_rate)
     test_agent = DQN_agent(
-        layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 1, 100, 100, num_inputs ** n_controlled_inputs])
+        layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 1, 100, 100, num_inputs ** n_controlled_inputs], learning_rate=learning_rate)
     agent.batch_size = 100000
     test_agent.batch_size = 100000
 else:
@@ -499,9 +502,11 @@ for iter in range(1,n_iters+1):
         #alpha = 1 - iter/n_iters
         #print('alpha:', alpha)
         for i in range(1):
-            history = agent.Q_update(fitted=fitted, monte_carlo=monte_carlo, verbose=False, patience=200, epochs = 200)
+            history = agent.Q_update(fitted=fitted, monte_carlo=monte_carlo, verbose=False, patience=5, epochs = 500)
             print('n epochs:', len(history.history['loss']))
             print('Loss:', history.history['loss'][0], history.history['loss'][-1])
+            #for h in history.history['loss']:
+            #    print(h)
             #print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
     else:
         history = agent.Q_update()
@@ -511,8 +516,6 @@ for iter in range(1,n_iters+1):
 
 
     if iter % 100 ==0:
-
-
 
         if not cluster:
             np.save(save_path + 'value_graphs/train_pred' + str(iter) + '.npy', training_pred)
@@ -583,7 +586,7 @@ if not cluster:
 
 
 
-    plt.show()
+    #plt.show()
 
 
 

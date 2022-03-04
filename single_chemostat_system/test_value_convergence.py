@@ -15,14 +15,7 @@ import tensorflow as tf
 from time import time
 print()
 print()
-if tf.test.gpu_device_name():
-    print()
-    print('-----------------------------------------------------------------------')
-    print('Default GPU Device: {}'.format(tf.test.gpu_device_name()))
-else:
-    print()
-    print('-----------------------------------------------------------------------')
-    print("Please install GPU version of TF")
+
 np.set_printoptions(precision = 16)
 
 

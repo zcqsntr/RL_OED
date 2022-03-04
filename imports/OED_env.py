@@ -499,7 +499,7 @@ class OED_env():
 
         return self.normalise_RL_state(state)
 
-    def get_initial_RL_state_parallel(self, o0 = None, use_old_state = False):
+    def get_initial_RL_state_parallel(self, o0 = None, use_old_state = False, i = 0):
 
         #state = np.array(list(np.sqrt(self.x0[0:self.n_observed_variables])) + self.param_guesses[i,:].elements() + [0] * self.n_FIM_elements)
         if o0 is None:
@@ -507,7 +507,7 @@ class OED_env():
 
 
         if use_old_state:
-            state = np.array(list(o0[0:self.n_observed_variables]) + self.param_guesses.elements() + [
+            state = np.array(list(np.sqrt(o0[0:self.n_observed_variables])) + self.param_guesses[i,:].elements() + [
                 0] * self.n_FIM_elements)
         else:
             state = np.array(list(np.sqrt(o0[0:self.n_observed_variables])))
@@ -657,15 +657,14 @@ class OED_env():
 
 
         if use_old_state:
-            state = np.append(state, np.append(self.param_guesses[i], FIM_elements))
+            state = np.append(state, np.append(self.param_guesses[i,:], FIM_elements))
 
 
         state = np.append(state, self.current_tstep)
-        #state = np.append(state, 0)
+        #state = np.append(state, 0) #TODO: remove this
+
 
         #state = np.append(state, self.logdetFIMs[i][-1])
-
-
 
 
         return self.normalise_RL_state(state)

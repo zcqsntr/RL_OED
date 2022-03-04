@@ -26,15 +26,7 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 import copy
 import tensorflow as tf
 
-try:
-    physical_devices = tf.config.list_physical_devices('GPU')
-    print(physical_devices)
-    tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
-except:
-    print()
-    print('no GPU found')
-    print()
 
 print()
 print()

@@ -1,11 +1,6 @@
 import tensorflow as tf
 
-try:
-    physical_devices = tf.config.list_physical_devices('GPU')
-    print(physical_devices)
-    tf.config.experimental.set_memory_growth(physical_devices[0], True)
-except:
-    pass
+
 #tf.compat.v1.disable_eager_execution()
 from tensorflow import keras
 import numpy as np
@@ -20,20 +15,20 @@ import gc
 
 class DQN_agent():
 
-    def __init__(self,layer_sizes ):
+    def __init__(self,layer_sizes, learning_rate = 1e-5 ):
         self.memory = []
         self.layer_sizes = layer_sizes
         self.gamma = 1.
         self.state_size = layer_sizes[0]
         self.n_actions = layer_sizes[-1]
-        self.network = self.initialise_network(layer_sizes)
-        self.target_network = self.initialise_network(layer_sizes)
+        self.network = self.initialise_network(layer_sizes, learning_rate)
+        self.target_network = self.initialise_network(layer_sizes, learning_rate)
         self.buffer = ExperienceBuffer()
         self.values = []
         self.actions = []
 
 
-    def initialise_network(self, layer_sizes):
+    def initialise_network(self, layer_sizes, learning_rate = 1e-5):
 
         '''
         Creates Q network for value function approximation
@@ -48,7 +43,7 @@ class DQN_agent():
             network.add(keras.layers.Dense(l, activation=tf.nn.relu, kernel_regularizer=regulariser))
         network.add(keras.layers.Dense(layer_sizes[-1], kernel_regularizer=regulariser))  # linear output layer
 
-        opt = keras.optimizers.Adam(learning_rate=1e-5)
+        opt = keras.optimizers.Adam(learning_rate=learning_rate)
         #opt = keras.optimizers.Adam()
         #opt = tf.keras.optimizers.SGD(learning_rate=0.1)
         #opt = tf.keras.optimizers.RMSprop()
@@ -247,8 +242,9 @@ class DQN_agent():
 
             batch_size = 256
 
-            self.reset_weights()
-            callback = tf.keras.callbacks.EarlyStopping(monitor = 'loss', patience=patience, restore_best_weights=True)
+            if not monte_carlo:
+                self.reset_weights()
+            callback = tf.keras.callbacks.EarlyStopping(monitor = 'loss', patience=int(patience), restore_best_weights=True)
             callbacks = [callback]
         else:
 
@@ -413,7 +409,7 @@ class DRQN_agent(DQN_agent):
         self.next_sequences = []
         self.all_values = []
 
-    def initialise_network(self, layer_sizes, learning_rate = 0.01):
+    def initialise_network(self, layer_sizes, learning_rate = 1e-5):
 
         '''
         Creates Q network for value function approximation
@@ -608,8 +604,9 @@ class DRQN_agent(DQN_agent):
 
             batch_size = 256
 
-            self.reset_weights()
-            callback = tf.keras.callbacks.EarlyStopping(monitor = 'loss', patience=patience, restore_best_weights=True)
+            if not monte_carlo:
+                self.reset_weights()
+            callback = tf.keras.callbacks.EarlyStopping(monitor = 'loss', patience=int(patience), restore_best_weights=True)
             callbacks = [callback]
         else:
 
