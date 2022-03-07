@@ -27,17 +27,7 @@ import copy
 import tensorflow as tf
 
 cluster = True
-if not cluster:
-    try:
-        physical_devices = tf.config.list_physical_devices('GPU')
-        print(physical_devices)
-        tf.config.experimental.set_memory_growth(physical_devices[0], True)
-        print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
-        print('number of cores available: ', multiprocessing.cpu_count())
-    except:
-        print()
-        print('no GPU found')
-        print()
+
 
 
 
@@ -142,6 +132,18 @@ else:
     save_path = '../single_chemostat_continuous/'
     layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64], [100],
      num_inputs ** n_controlled_inputs]
+
+
+    try:
+        physical_devices = tf.config.list_physical_devices('GPU')
+        print(physical_devices)
+        tf.config.experimental.set_memory_growth(physical_devices[0], True)
+        print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
+        print('number of cores available: ', multiprocessing.cpu_count())
+    except:
+        print()
+        print('no GPU found')
+        print()
 
 
 train_times = []
