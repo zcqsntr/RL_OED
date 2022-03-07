@@ -26,17 +26,18 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 import copy
 import tensorflow as tf
 
-
-
-try:
-    physical_devices = tf.config.list_physical_devices('GPU')
-    print(physical_devices)
-    tf.config.experimental.set_memory_growth(physical_devices[0], True)
-
-except:
-    print()
-    print('no GPU found')
-    print()
+cluster = True
+if not cluster:
+    try:
+        physical_devices = tf.config.list_physical_devices('GPU')
+        print(physical_devices)
+        tf.config.experimental.set_memory_growth(physical_devices[0], True)
+        print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
+        print('number of cores available: ', multiprocessing.cpu_count())
+    except:
+        print()
+        print('no GPU found')
+        print()
 
 
 
@@ -57,13 +58,13 @@ normaliser = np.array(normaliser)
 n_params = actual_params.size()[0]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
-n_episodes = 1000
+n_episodes = 100
 skip = 100
 
 trajectory = []
 actions = []
 rewards = []
-n_iters = 500
+n_iters = 5
 n_repeats = 1
 
 n_cores = multiprocessing.cpu_count()//2
@@ -73,14 +74,13 @@ param_guesses = actual_params
 all_value_SSEs = []
 
 
-print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
-print('number of cores available: ', multiprocessing.cpu_count())
+
 
 fitted = True
 DQN = False
 DRQN = True
 monte_carlo = True # use this for value fitting
-cluster = False
+
 DDPG = False
 
 if fitted:
@@ -95,17 +95,24 @@ if len(sys.argv) == 3:
     layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64, 64], [100, 100],
                    num_inputs ** n_controlled_inputs]
 
-    if int(sys.argv[2]) in list(range(1, 11)): # do agent I with full state and no recurrent
+    if int(sys.argv[2]) in list(range(16,31)):
+        use_time = False
+    else:
+        use_time = True
+
+    print('use time', use_time)
+
+    if int(sys.argv[2]) in list(range(1, 6)) + list(range(16,21)): # do agent I with full state and no recurrent
         print('Agent I')
 
-        normaliser = np.array([1e3, 1e2, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2])
+        #normaliser = np.array([1e3, 1e2, 1e-3, 1e-4, 1e11, 1e11, 1e11, 1e10, 1e10, 1e10, 1e2])
 
         normaliser = np.array([1e3, 1e1, 1e-3, 1e-4, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e2])
         use_full_state = True
         DRQN = False
         DQN = True
 
-    elif int(sys.argv[2]) in list(range(11, 21)): # do agent II with partial state and no recurrent
+    elif int(sys.argv[2]) in list(range(6, 11)) + list(range(21,26)): # do agent II with partial state and no recurrent
         print('Agent II')
         normaliser = np.array([1e3, 1e2])
 
@@ -113,7 +120,7 @@ if len(sys.argv) == 3:
         DRQN = False
         DQN = True
 
-    elif int(sys.argv[2]) in list(range(21, 31)):  # do agent III with partial state and recurrent
+    elif int(sys.argv[2]) in list(range(11, 16))+ list(range(26,31)):  # do agent III with partial state and recurrent
         learning_rate /= 10
         print('Agent III')
         normaliser = np.array([1e3, 1e2])
@@ -268,9 +275,9 @@ for ep in range(int(n_episodes//skip)):
             actions = agent.get_actions(states, explore_rate)
             test_actions = agent.get_actions(states, explore_rate)
 
-        outputs = env.map_parallel_step(np.array(actions).T, actual_params, use_old_state=use_full_state)
+        outputs = env.map_parallel_step(np.array(actions).T, actual_params, use_old_state=use_full_state, use_time=use_time)
 
-        test_outputs = test_env.map_parallel_step(np.array(test_actions).T, test_actual_params, use_old_state=use_full_state)
+        test_outputs = test_env.map_parallel_step(np.array(test_actions).T, test_actual_params, use_old_state=use_full_state, use_time=use_time)
 
         next_states = []
         test_next_states = []

@@ -460,7 +460,7 @@ class OED_env():
 
         return state / self.normaliser
 
-    def get_RL_state(self, true_trajectory, est_trajectory, use_old_state = False):
+    def get_RL_state(self, true_trajectory, est_trajectory, use_old_state = False, use_time = True):
 
         # get the current measured system state
         sys_state = true_trajectory[:self.n_observed_variables, -1]  # TODO: measurement noise
@@ -483,9 +483,12 @@ class OED_env():
         if use_old_state:
             state = np.append(sys_state, np.append(self.param_guesses, FIM_elements))
 
-        state = np.append(state, self.current_tstep)
+        if use_time:
+            state = np.append(state, self.current_tstep)
+        else:
+            state = np.append(state, 0)
 
-        #state = np.append(state, self.logdetFIMs[-1])
+            #state = np.append(state, self.logdetFIMs[-1])
 
         return self.normalise_RL_state(state)
 
@@ -518,7 +521,7 @@ class OED_env():
 
         return self.normalise_RL_state(state)
 
-    def map_parallel_step(self, actions, actual_params, continuous = False, Ds = False, use_old_state = False):
+    def map_parallel_step(self, actions, actual_params, continuous = False, Ds = False, use_old_state = False, use_time = True):
         self.current_tstep += 1
         # actions, actual_params = args
 
@@ -547,7 +550,7 @@ class OED_env():
             done = False
 
             # state = self.get_RL_state(self.true_trajectory, self.est_trajectory)
-            state = self.get_RL_state_parallel(true_trajectory, true_trajectory,i, use_old_state = use_old_state)
+            state = self.get_RL_state_parallel(true_trajectory, true_trajectory,i, use_old_state = use_old_state, use_time=use_time)
 
 
             transitions.append((state, reward, done, None, us[:,i]))
@@ -629,7 +632,7 @@ class OED_env():
 
         return reward/100
 
-    def get_RL_state_parallel(self, true_trajectory, est_trajectory,i, use_old_state = False):
+    def get_RL_state_parallel(self, true_trajectory, est_trajectory,i, use_old_state = False, use_time = True):
 
         # get the current measured system state
 
@@ -660,8 +663,10 @@ class OED_env():
             state = np.append(state, np.append(self.param_guesses[i,:], FIM_elements))
 
 
-        state = np.append(state, self.current_tstep)
-        #state = np.append(state, 0) #TODO: remove this
+        if use_time:
+            state = np.append(state, self.current_tstep)
+        else:
+            state = np.append(state, 0)
 
 
         #state = np.append(state, self.logdetFIMs[i][-1])
