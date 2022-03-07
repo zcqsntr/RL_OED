@@ -48,13 +48,13 @@ normaliser = np.array(normaliser)
 n_params = actual_params.size()[0]
 n_system_variables = len(y0)
 n_FIM_elements = sum(range(n_params + 1))
-n_episodes = 100
+n_episodes = 10000
 skip = 100
 
 trajectory = []
 actions = []
 rewards = []
-n_iters = 5
+n_iters = 1000
 n_repeats = 1
 
 n_cores = multiprocessing.cpu_count()//2
