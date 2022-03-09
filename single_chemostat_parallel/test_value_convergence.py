@@ -289,6 +289,8 @@ for ep in range(int(n_episodes//skip)):
             next_state, reward, done, _, u = o
             test_next_state, test_reward, test_done, _, test_u = test_outputs[i]
 
+            print((reward))
+
             next_states.append(next_state)
             test_next_states.append(test_next_state)
 
