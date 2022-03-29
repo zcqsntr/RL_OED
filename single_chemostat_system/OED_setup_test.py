@@ -17,9 +17,9 @@ def disablePrint():
 def enablePrint():
     sys.stdout = sys.__stdout__
 
-SMALL_SIZE = 11
-MEDIUM_SIZE = 14
-BIGGER_SIZE = 17
+SMALL_SIZE = 17
+MEDIUM_SIZE = 21
+BIGGER_SIZE = 23
 
 plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
 plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     #print('us: ',mpc_us)
 
     env.us = mpc_us
-
+    
     env.us = np.array([[0.01, 0.2, 0.01, 0.4, 0.01, 0.6, 0.01, 0.8, 0.01, 1.],
                        [ 1, 0.01, 0.8, 0.01, 0.6, 0.01, 0.4, 0.01, 0.2, 0.01]])  # rational retuirn: 15.2825
 
@@ -86,10 +86,10 @@ if __name__ == '__main__':
 
 
 
-    '''
+    
     env.us = np.array([[0.45, 0.01, 1. ,  1.,   0.45, 0.23, 0.23, 0.23, 0.56, 0.34],
  [0.12, 0.56, 1. ,  0.45, 0.12, 0.01, 0.01, 0.01, 0.01, 0.01]] )# DQN return: 20.1493
-    
+
     env.us = np.array([[5.41915059e-01, 9.96091664e-01],
     [2.55120009e-01, 2.58627385e-01],
     [5.63390143e-02, 9.85946596e-01],
@@ -101,8 +101,8 @@ if __name__ == '__main__':
     [6.75407708e-01, 1.07866724e-03],
     [9.93295372e-01, 3.97822623e-05]]).T #t3d return = 20.27
 
+    
     '''
-
     solver = env.get_sampled_trajectory_solver(N_control_intervals, control_interval_time, dt)
     trajectory = solver(env.initial_Y, env.actual_params, mpc_us)
 
@@ -112,6 +112,7 @@ if __name__ == '__main__':
 
     obj = -trace(log(r))
     print('sampled obj:', obj)
+    '''
 
 
 
@@ -135,21 +136,20 @@ if __name__ == '__main__':
 
     fig, ax1 = plt.subplots()
 
-    ax1.plot(t, sol[:, 0], label='Population')
-    ax1.set_ylabel('Population ($10^5$ cells/L)')
-    ax1.set_xlabel('Time (min)')
+    ax1.plot(t, sol[:, 0]/10000, label='Population')
+    ax1.set_ylabel('Population ($10^9$ cells/L)')
+    ax1.set_xlabel('Time (hours)')
 
     ax2 = ax1.twinx()
     ax2.plot(t, sol[:, 1],':', color='red', label='C')
-    ax2.set_ylabel('C ($g/L$)')
-    ax2.set_xlabel('Time (min)')
-
-
     ax2.plot(t, sol[:, 2],':', color='black', label='$C_0$')
     ax2.set_ylabel('Concentration ($g/L$)')
     ax2.set_xlabel('Time (hours)')
+    ax2.set_xticks(ticks = range(0,21,2))
+    ax2.set_xlim(left = 0, right = 20)
     fig.tight_layout()
-    fig.legend(loc=(0.65,0.8))
+    fig.legend(loc=(0.49,0.7))
+
     plt.savefig('traj.pdf')
 
     plt.figure(figsize=(5.5,4.5))
@@ -162,12 +162,15 @@ if __name__ == '__main__':
     print(env.us.shape)
     print(env.us[:, 0].shape)
     us = np.vstack((env.us[:, 0], env.us.T))
-    plt.step(t, us[:, 0], ':', color='red', label='$C_{in}$')
-    plt.step(t, us[:, 1], ':', color='black', label='$C_{0, in}$')
+    plt.step(t, us[:, 0], '--', color='red', label='$C_{in}$')
+    plt.step(t, us[:, 1], '--', color='black', label='$C_{0, in}$')
     plt.ylim(bottom=0, top=1.01)
+    plt.xticks(ticks = range(0,21,2))
+    plt.xlim(left = 0, right = 20)
     plt.ylabel('u')
     plt.xlabel('Time (hours)')
     plt.legend()
+    plt.tight_layout()
     plt.savefig('us.pdf')
 
 

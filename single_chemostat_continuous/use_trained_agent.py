@@ -26,9 +26,9 @@ physical_devices = tf.config.list_physical_devices('GPU')
 import multiprocessing
 import json
 
-SMALL_SIZE = 11
-MEDIUM_SIZE = 14
-BIGGER_SIZE = 17
+SMALL_SIZE = 17
+MEDIUM_SIZE = 21
+BIGGER_SIZE = 23
 
 plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
 plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
@@ -62,9 +62,9 @@ if __name__ == '__main__':
     n_tot = n_system_variables + n_params * n_system_variables + n_FIM_elements
 
     param_guesses = actual_params
-    #actual_params = DM(np.array(ub))
+    actual_params = DM((np.array(ub) + np.array(lb))/2)
 
-    actual_params = DM(np.random.uniform(low=lb, high=ub))
+    #actual_params = DM(np.random.uniform(low=lb, high=ub))
     print(actual_params)
     #actual_params = DM([1.72955, 0.000227728, 2.15571e-05])
 
@@ -182,34 +182,48 @@ if __name__ == '__main__':
 
     fig, ax1 = plt.subplots()
 
-    ax1.plot(t, sol[:, 0], label='Population')
-    ax1.set_ylabel('Population ($10^5$ cells/L)')
-    ax1.set_xlabel('Time (min)')
+    ax1.plot(t, sol[:, 0] / 10000, label='Population')
+    ax1.set_ylabel('Population ($10^9$ cells/L)')
+    ax1.set_xlabel('Time (hours)')
 
     ax2 = ax1.twinx()
     ax2.plot(t, sol[:, 1], ':', color='red', label='C')
-    ax2.set_ylabel('C ($g/L$)')
-    ax2.set_xlabel('Time (min)')
-
     ax2.plot(t, sol[:, 2], ':', color='black', label='$C_0$')
     ax2.set_ylabel('Concentration ($g/L$)')
-    ax2.set_xlabel('Time (min)')
+    ax2.set_xlabel('Time (hours)')
+    ax2.set_xticks(ticks=range(0, 21, 2))
+    ax2.set_xlim(left=0, right=20)
     fig.tight_layout()
-    fig.legend(loc=(0.65, 0.8))
+    fig.legend(loc=(0.49, 0.7))
+
     plt.savefig('traj.pdf')
 
     plt.figure(figsize=(5.5, 4.5))
     # plt.figure()
 
-    t = np.arange(0, N_control_intervals +1) * control_interval_time
+    t = np.arange(0, N_control_intervals + 1) * control_interval_time
 
-    e_actions = np.vstack(([e_actions[0]], e_actions))
-    plt.step(t, e_actions[:, 0, 0], ':', color='red', label='$C_{in}$')
-    plt.step(t, e_actions[:, 0, 1], ':', color='black', label='$C_{0, in}$')
+
+
+    env.us = np.array(e_actions)[:, 0].T
+    print(env.us[:, 0])
+    print(env.us.shape)
+    print(env.us[:, 0].shape)
+    print('env us', env.us)
+    us = np.vstack((env.us[:, 0], env.us.T))
+    plt.step(t, us[:, 0], '--', color='red', label='$C_{in}$')
+    plt.step(t, us[:, 1], '--', color='black', label='$C_{0, in}$')
     plt.ylim(bottom=0, top=1.01)
+    plt.xticks(ticks=range(0, 21, 2))
+    plt.xlim(left=0, right=20)
     plt.ylabel('u')
-    plt.xlabel('Time (min)')
+    plt.xlabel('Time (hours)')
     plt.legend()
+    plt.tight_layout()
     plt.savefig('us.pdf')
 
     plt.show()
+
+
+
+

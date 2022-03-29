@@ -50,7 +50,7 @@ class OED_env():
 
 
         #TODO: remove t his as too much memory
-        #self.Ys = [self.initial_Y.elements()]
+        self.Ys = [self.initial_Y.elements()]
         self.xdot = xdot # f(x, u, params)
         self.all_param_guesses = []
         self.all_RL_states = []
@@ -556,7 +556,7 @@ class OED_env():
             transitions.append((state, reward, done, None, us[:,i]))
 
         self.Y = true_trajectories
-        #self.Ys.append(self.Y.elements())
+        self.Ys.append(self.Y.elements())
         return transitions
 
     def actions_to_inputs(self, actions):
