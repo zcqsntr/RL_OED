@@ -64,28 +64,7 @@ if __name__ == '__main__':
 
     param_guesses = actual_params
     if len(sys.argv) == 3:
-        if sys.argv[2] == '1' or sys.argv[2] == '2' or sys.argv[2] == '3':
-            done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 100000
-            skip = 100
-        elif sys.argv[2] == '4' or sys.argv[2] == '5' or sys.argv[2] == '6':
-            done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 200000
-            skip = 100
-        elif sys.argv[2] == '7' or sys.argv[2] == '8' or sys.argv[2] == '9':
-            done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 300000
-            skip = 100
-
-        elif sys.argv[2] == '10' or sys.argv[2] == '11' or sys.argv[2] == '12':
-            done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 400000
-            skip = 100
-
-        elif sys.argv[2] == '13' or sys.argv[2] == '14' or sys.argv[2] == '15':
-            done_MC = True  # have we done the initial MC fitting? et to true to turn off MC fitting
-            n_episodes = 500000
-            skip = 100
+       
 
 
 
