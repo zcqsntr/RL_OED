@@ -60,9 +60,6 @@ if __name__ == '__main__':
     #actual_params = DM(np.random.uniform(low=[10000, 10000, 0.1, 0.00001, 0.000001], high=[100000, 100000, 10, 0.001, 0.0001]))
 
 
-
-
-
     params = json.load(open('./params.json'))
 
     print(params)
@@ -129,9 +126,10 @@ if __name__ == '__main__':
             e_return += reward
         print(env.actual_params)
         print(env.FIMs[-1])
-
+        print('return:', e_return)
+        print('rewards:', e_rewards)
         sensitivities = env.true_trajectory[env.n_system_variables:env.n_system_variables + env.n_sensitivities,:]
-
+        '''
         print()
         print(sensitivities.shape)
         print('S:', sensitivities)
@@ -143,6 +141,7 @@ if __name__ == '__main__':
         print(V[:, -1])
         print('sing: ',singular_values)
         agent.memory.append(trajectory)
+        '''
 
 
 

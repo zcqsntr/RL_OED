@@ -50,10 +50,10 @@ if __name__ == '__main__':
 
     print('rl state', n_observed_variables + n_params + n_FIM_elements + 2)
 
-    fitted = False
+    fitted = True
     DQN = False
     DRQN = True
-    monte_carlo = True
+    monte_carlo = False
     cluster = False
     done_MC = True
     done_inital_fit = True # fit on the data gathered during random explore phase before explore rate < 1
@@ -98,7 +98,7 @@ if __name__ == '__main__':
     else:
         save_path = './'
 
-    layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64], [100],
+    layer_sizes = [n_observed_variables + 1, n_observed_variables + 1 + n_controlled_inputs, [64, 64], [128, 128],
                    num_inputs ** n_controlled_inputs]
     # agent = DQN_agent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
 
@@ -159,6 +159,7 @@ if __name__ == '__main__':
 
 
             actions, exploit_flags = agent.get_actions([states, sequences], explore_rate, test_episode)
+            print(actions)
 
             e_actions.append(actions)
             e_exploit_flags.append(exploit_flags)
@@ -231,8 +232,8 @@ if __name__ == '__main__':
                 done_inital_fit = True
 
 
-            else:
-                history = agent.Q_update(fitted=fitted, monte_carlo=monte_carlo, verbose=False)
+        if fitted:
+            history = agent.Q_update(fitted=fitted, monte_carlo=monte_carlo, verbose=False)
 
             print('Loss:', history.history['loss'][0], history.history['loss'][-1])
             #print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])

@@ -12,12 +12,27 @@ def enablePrint():
     sys.stdout = sys.__stdout__
 
 class OED_env():
+    '''
+    Class for OED for time course experiments on systems governed by differential equations
+    '''
 
     def __init__(self, x0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time, normaliser):
-
+        '''
+        initialises the environment
+        :param x0: initial system state
+        :param xdot: the governig differential equations
+        :param param_guesses: inital parameter guesses
+        :param actual_params: the actual system params
+        :param n_observed_variables: number of variables that can be measured
+        :param n_controlled_inputs: number of inputs that can be controlled
+        :param num_inputs:
+        :param input_bounds:
+        :param dt:
+        :param control_interval_time:
+        :param normaliser:
+        '''
 
         # build the reinforcement learning state
-
         self.n_system_variables = len(x0)
         self.FIMs = []
         self.detFIMs = []
@@ -338,6 +353,8 @@ class OED_env():
 
     def get_reward(self, est_trajectory):
         FIM = self.get_FIM(est_trajectory)
+
+        #FIM += np.ones(FIM.shape)*0.00001 # this can stop the FIM being singular
 
         #use this method to remove the small negatvie eigenvalues
 
