@@ -14,68 +14,7 @@ from DQN_agent import *
 import tensorflow as tf
 import time
 
-def xdot(sym_y, sym_theta, sym_u):
-    a, Kt, Krt, d, b = [sym_theta[i] for i in range(sym_theta.size()[0])] #intrinsic parameters
-    #a = 20min^-1
-    Kr = 40 # practically unidentifiable
-    Km = 750
-    #Kt = 5e5
-    #Krt = 1.09e9
-    #d = 2.57e-4 um^-3min^-1
-    #b = 4 min-1
-    #Km = 750 um^-3
-
-    u = sym_u[0] # for now just choose u
-    lam = 0.03465735902799726 #min^-1 GROWTH RATE
-    #lam = 0.006931471805599453
-    #lam = sym_u[1]
-
-    C = 40
-    D = 20
-    V0 = 0.28
-    V = V0*np.exp((C+D)*lam) #eq 2
-    G =1/(lam*C) *(np.exp((C+D)*lam) - np.exp(D*lam)) #eq 3
-
-    l_ori = 0.26 # chose this so that g matched values for table 2 for both growth rates as couldnt find it defined in paper
-
-    g = np.exp( (C+D-l_ori*C)*lam)#eq 4
-
-    rho = 0.55
-    k_pr = -6.47
-    TH_pr0 = 0.65
-
-    k_p = 0.3
-    TH_p0 = 0.0074
-    m_rnap = 6.3e-7
-
-    k_a = -9.3
-    TH_a0 = 0.59
-
-    Pa = rho*V0/m_rnap *(k_a*lam + TH_a0) * (k_p*lam + TH_p0) * (k_pr*lam + TH_pr0) *np.exp((C+D)*lam) #eq 10
-
-    k_r = 5.48
-    TH_r0 = 0.03
-    m_rib = 1.57e-6
-    Rtot = (k_r*lam + TH_r0) * (k_pr*lam + TH_pr0)*(rho*V0*np.exp((C+D)*lam))/m_rib
-
-    TH_f = 0.1
-    Rf = TH_f*Rtot #eq 17
-    n = 5e6
-    eta = 900  # um^-3min^-1
-
-
-    rna, prot = sym_y[0], sym_y[1]
-
-    rna_dot = a*(g/V)*(  (Pa/(n*G)*Kr + (Pa*Krt*u)/(n*G)**2)  /  (1 + (Pa/n*G)*Kr + (Kt/(n*G) + Pa*Krt/(n*G)**2) *u )) - d*eta*rna/V
-
-    prot_dot = ((b*Rf/V) / (Km + Rf/V))  * rna/V - lam*prot/V
-
-    xdot = SX.sym('xdot', 2)
-
-    xdot[0] = rna_dot
-    xdot[1] = prot_dot
-
-    return xdot
+from xdot import xdot
 
 def check_symmetric(a, rtol=1e-05, atol=1e-08):
     return numpy.allclose(a, a.T, rtol=rtol, atol=atol)
@@ -115,12 +54,16 @@ control_interval_time = 100
 normaliser = np.array([1e3, 1e4, 1e2, 1e6, 1e10, 1e-3, 1e1, 1e9, 1e9, 1e9, 1e9, 1, 1e9, 1e9, 1e9, 1, 1e9, 1e9, 1, 1e9, 1, 1e7,10, 100])
 logus = [1,-3,2,-3,3,-3]
 us = 10. ** np.array(logus) # rational design -67.73 optimality score, log(detcov) = 66.96
+
+logus = [2.99997, -2.93105, 1.48927, -2.90577, -2.91904, -2.94369]
+us = 10.**np.array(logus) # mpc -73.9751 OS
+
 #us = np.array([9.99995957e+02, 1.00000000e-03, 1.84705323e+00, 1.00000000e-03,1.00000000e-03, 1.00000000e-03]) # 71.00  u optimisation log(det(cov)) = 34.17
 #us = np.array([2.84803587e+02, 1.23284674e-02, 2.31012970e+01, 3.51119173e-03, 1.23284674e-02, 3.51119173e-03]) #-73.2607748599451 fitted Q, log(det(cov)
-us = np.array([1.00000000e+03, 1.00000000e-03, 2.31012970e+01, 1.00000000e-03, 3.51119173e-03, 3.51119173e-03]) # -73.84706840763531 fitted Q log(det(cov) = 28.388134466657768
+#us = np.array([1.00000000e+03, 1.00000000e-03, 2.31012970e+01, 1.00000000e-03, 3.51119173e-03, 3.51119173e-03]) # -73.84706840763531 fitted Q log(det(cov) = 28.388134466657768
 
 env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time, normaliser)
-trajectory_solver = env.get_sampled_trajectory_solver(N_control_intervals)
+trajectory_solver = env.get_sampled_trajectory_solver(N_control_intervals,control_interval_time, dt,)
 
 
 for i in range(30):
@@ -172,7 +115,7 @@ for i in range(30):
 
     all_final_params.append(param_guesses.elements())
 
-np.save('results/all_final_params.npy', all_final_params)
+np.save('./working_dir/all_final_params.npy', all_final_params)
 print(np.array(all_final_params))
 all_final_params = np.array(all_final_params)
 cov = np.cov(all_final_params.T)

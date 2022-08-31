@@ -37,7 +37,7 @@ if __name__ == '__main__':
     n_FIM_elements = sum(range(n_params + 1))
 
     n_tot = n_system_variables + n_params * n_system_variables + n_FIM_elements
-    print(n_params, n_system_variables, n_FIM_elements)
+
     num_inputs = 12  # number of discrete inputs available to RL
 
     dt = 1 / 100
