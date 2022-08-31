@@ -35,7 +35,7 @@ for i in range(1, n_repeats +1):
     plt.ylabel('log(u)')
     plt.xlabel('Time (min)')
 
-    trajectory = np.load(path + '/repeat' + str(i) +'/true_trajectory.npy')
+    trajectory = np.load(path + '/repeat' + str(i) +'/trajectory.npy')
     all_trajectories.append(trajectory)
 
     print(trajectory.shape)

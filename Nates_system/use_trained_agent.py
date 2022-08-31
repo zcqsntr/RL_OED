@@ -3,11 +3,15 @@ import os
 
 
 env_path = '/home/neythen/Desktop/Projects/RED_master/RED/environments'
+env_path = '/Users/neythen/Desktop/Projects/RED_master/RED/environments'
 sys.path.append(env_path)
-env_path = '/home/neythen/Desktop/Projects/RED_master/RED/environments/gene_transcription'
 
+env_path = '/home/neythen/Desktop/Projects/RED_master/RED/environments/gene_transcription'
+env_path = '/Users/neythen/Desktop/Projects/RED_master/RED/environments/gene_transcription'
 sys.path.append(env_path)
+
 agents_path = '/home/neythen/Desktop/Projects/RED_master/RED/agents'
+agents_path = '/Users/neythen/Desktop/Projects/RED_master/RED/agents'
 sys.path.append(agents_path)
 
 import math
@@ -108,7 +112,8 @@ if __name__ == '__main__':
     unstable = 0
     #print(agent.policy_network.layers[1].get_weights()[0][0])
     #agent.load_network('') #mac
-    agent.load_network('/home/neythen/Desktop/Projects/RL_OED/results/rt3d_gene_transcription_230822/repeat6') #desktop
+    #agent.load_network('/home/neythen/Desktop/Projects/RL_OED/results/rt3d_gene_transcription_230822/repeat6') #desktop
+    agent.load_network('/Users/neythen/Desktop/Projects/RL_OED/results/rt3d_gene_transcription_230822/repeat6') #desktop
 
     #print(agent.policy_network.layers[1].get_weights()[0][0])
 
@@ -123,7 +128,7 @@ if __name__ == '__main__':
     for e in range(0, N_control_intervals):
         t = time.time()
         inputs = [states, sequences]
-        actions = agent.get_actions(inputs, explore_rate, test_episode = False, recurrent = False)
+        actions = agent.get_actions(inputs, explore_rate, test_episode=False)
         print(actions)
         outputs = env.map_parallel_step(np.array(actions).T, actual_params, continuous=True, scaling = action_scaling)
         next_state, reward, done, _, u = outputs[0]
@@ -185,17 +190,16 @@ if __name__ == '__main__':
 
     fig, ax1 = plt.subplots()
 
-    ax1.plot(t, sol[:, 0] / 10000, label='Population')
+    ax1.plot(t, sol[:, 0] / 10000, label='mRNA')
     ax1.set_ylabel('Population ($10^9$ cells/L)')
     ax1.set_xlabel('Time (hours)')
 
     ax2 = ax1.twinx()
-    ax2.plot(t, sol[:, 1], ':', color='red', label='C')
-    ax2.plot(t, sol[:, 2], ':', color='black', label='$C_0$')
+    ax2.plot(t, sol[:, 1], ':', color='red', label='Protein')
     ax2.set_ylabel('Concentration ($g/L$)')
     ax2.set_xlabel('Time (hours)')
-    ax2.set_xticks(ticks=range(0, 21, 2))
-    ax2.set_xlim(left=0, right=20)
+    #ax2.set_xticks(ticks=range(0, 21, 2))
+    #ax2.set_xlim(left=0, right=20)
     fig.tight_layout()
     fig.legend(loc=(0.49, 0.7))
 
@@ -214,11 +218,12 @@ if __name__ == '__main__':
     print(env.us[:, 0].shape)
     print('env us', env.us)
     us = np.vstack((env.us[:, 0], env.us.T))
-    plt.step(t, us[:, 0], '--', color='red', label='$C_{in}$')
+    print('us', us)
+    plt.step(t, us.reshape(7,), '--', color='red', label='$u$')
     #plt.step(t, us[:, 1], '--', color='black', label='$C_{0, in}$')
     plt.ylim(bottom=0, top=1.01)
-    plt.xticks(ticks=range(0, 21, 2))
-    plt.xlim(left=0, right=20)
+    #plt.xticks(ticks=range(0, 21, 2))
+    #plt.xlim(left=0, right=20)
     plt.ylabel('u')
     plt.xlabel('Time (hours)')
     plt.legend()

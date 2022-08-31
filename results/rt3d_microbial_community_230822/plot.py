@@ -45,32 +45,11 @@ def get_rate( episode, MIN_RATE, MAX_RATE, denominator):
 
     return rate
 
-#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/one_hour_tstep/no_prior/single_chemostat_fixed'
-#path = '/home/neythen/Desktop/Projects/RL_OED/results/fixed/single_chemostat_fixed'
-#path = '/home/neythen/Desktop/Projects/RL_OED/results/parallel_no_prior/single_chemostat_parallel'
-#path = '/home/neythen/Desktop/Projects/RL_OED/results/parallel_no_prior_fixed'
-path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/single_chem/single_chemostat_fixed'
-#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/prior/single_chem_prior/single_chemostat_fixed'
-#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/double_eps/single_chemostat_fixed'
-#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps'
-#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps_new_ICS_reduced_state'
-#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps_reduced_state'
-#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/single_chemostat_rec_fitted_q'
-#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/rec_fitted_q_050721/single_chemostat_prior'
-
-#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_PG_220721'
-#path = '/home/neythen/Desktop/Projects/RL_OED/results/continuous/sing_chem_cont_18-08-21/single_chemostat_FDDPG'
-#path = '/home/neythen/Desktop/Projects/RL_OED/results/continuous/param_scan_080921/single_chemostat_FDDPG'
 
 
-#1-10 are non prior, 11-20 are prior
-#path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/non_prior_and_prior_180921/single_chemostat_FDDPG'
+path = '.'
 
-#1-10 are non prior, 11-20 are prior
-#path = '/home/neythen/Desktop/Projects/RL_OED/results/final_results/double_chemostat_151021'
-
-
-step = 100
+step = 500
 n_repeats = 3
 
 
@@ -80,7 +59,7 @@ all_returns = []
 all_us = []
 all_trajectories =[]
 
-for i in range(1,21):
+for i in [1,3,4,5,6,7,8,10]:
     '''
     us = np.load(path + '/repeat' + str(i) +'/us.npy')
     print(us.shape)
@@ -100,7 +79,7 @@ for i in range(1,21):
     #plt.xlabel('Time (min)')
 
     
-    trajectory = np.load(path + '/repeat' + str(i) +'/true_trajectory.npy')
+    trajectory = np.load(path + '/repeat' + str(i) +'/trajectory.npy')
     all_trajectories.append(trajectory)
 
     print(trajectory.shape)
@@ -172,13 +151,13 @@ print(explore_rates[-100:])
 fig, ax1 = plt.subplots()
 for i in range(len(all_returns)):
     print(len(all_returns[i]))
-ax1.errorbar(x, np.mean(np.array(all_returns), axis = 0), np.std(all_returns, axis = 0), label = 'Average Return')
+ax1.errorbar(np.array(x), np.mean(np.array(all_returns), axis = 0), np.std(np.array(all_returns), axis = 0), label = 'Average Return')
 #plt.plot(x,all_returns[0])
 #plt.plot(x,all_returns[1])
 #plt.plot(x,all_returns[2])
 
 #plt.plot(len(returns)+step,  16.612377905628856, 'o', label = 'OSAO = 16.61')
-#plt.plot(len(returns)+step, 15.2825, 'o', label = 'Rational = 15.28')
+##plt.plot(len(returns)+step, 15.2825, 'o', label = 'Rational = 15.28')
 #plt.plot(len(returns)+step, 20.27, 'o', label = 'Best RL = 20.27', color='C0')
 #plt.plot(len(returns)+step, 20.07, 'o', label = 'MPC = 20.07')
 ax1.set_ylabel('Return')

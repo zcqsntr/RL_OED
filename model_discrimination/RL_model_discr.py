@@ -96,7 +96,7 @@ if __name__ == '__main__':
     plt.plot(np.array(env.true_trajectory[0, :].elements()), label = 'true trajectory')
     plt.plot(np.array(env.est_trajectory_1[0, :].elements()), label = 'estimated trajectory 1')
     plt.plot(np.array(env.est_trajectory_2[0, :].elements()), label = 'estimated trajectory 2')
-    np.save('true_trajectory.npy', np.array(env.true_trajectory[0, :].elements()))
+    np.save('trajectory.npy', np.array(env.true_trajectory[0, :].elements()))
     np.save('est_trajectory_1.npy', np.array(env.est_trajectory_1[0, :].elements()))
     np.save('est_trajectory_2.npy', np.array(env.est_trajectory_2[0, :].elements()))
     plt.legend()

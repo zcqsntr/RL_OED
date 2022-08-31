@@ -120,6 +120,8 @@ class OED_env():
         sensitivities = reshape(Y[self.n_system_variables:self.n_system_variables + self.n_params *self.n_observed_variables],
                                 (self.n_observed_variables, self.n_params))
         FIM_dot = mtimes(transpose(sensitivities), mtimes(inv_sigma, sensitivities))
+
+
         FIM_dot = self.get_unique_elements(FIM_dot)
 
         RHS[0:self.n_system_variables] = dx

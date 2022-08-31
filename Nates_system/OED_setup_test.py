@@ -1,5 +1,7 @@
 from casadi import *
 import numpy as np
+import matplotlib as mpl
+mpl.use('tkagg')
 import matplotlib.pyplot as plt
 
 def xdot(sym_y, sym_theta, sym_u):
@@ -289,6 +291,7 @@ FIMs = []
 
 
 
+
 logus = [1,-3,2,-3,3,-3] # rational design, -67.73
 #logus = [3,-1,3,-1,3,3] # nates 1 (not exact) nan
 #logus = [1,1,3,-1,3,3] # nates 2 (not exact) -60.5
@@ -307,6 +310,8 @@ ws = [1,1,1,1]*int(N_control_intervals/4)
 
 us = np.array([1.00000000e+03, 1.00000000e-03, 2.31012970e+01, 1.00000000e-03, 3.51119173e-03, 3.51119173e-03]) # -73.84706840763531 fitted Q
 #us = np.array([9.99995957e+02, 1.00000000e-03, 1.84705323e+00, 1.00000000e-03,1.00000000e-03, 1.00000000e-03]) # 71.00  u optimisation
+
+us = np.array([1000., 0.00100021, 27.36043142, 0.00124282, 0.00101882, 0.00100001])  #0.7396907949847031 RT3D
 
 for i,doub_rate in enumerate(doub_rates):
     grs = []
@@ -341,7 +346,12 @@ for i,doub_rate in enumerate(doub_rates):
     print(trajectory.size())
 
 
-    FIMs.append(get_FIM(trajectory[:,-1]))
+
+
+    trajectory = np.hstack((initial_Y, trajectory))
+    print(trajectory.shape, initial_Y.shape)
+
+    FIMs.append(get_FIM(trajectory))
 
 
 print('elapsed_time (min): ', dt*int(control_interval_time/dt)*N_control_intervals)
@@ -374,7 +384,7 @@ print('obj: ', obj)
 
 
 sol = transpose(trajectory)
-t = np.arange(1,N_control_intervals +1)* (600/48) #int(control_interval_time / dt)) * dt
+t = np.arange(0,N_control_intervals +1)* (600/48) #int(control_interval_time / dt)) * dt
 
 fig, ax1 = plt.subplots()
 ax1.plot(t, sol[:, 0], label = 'mRNA')
@@ -390,7 +400,7 @@ fig.tight_layout()
 fig.legend(bbox_to_anchor=(0.8, 0.9))
 
 plt.figure()
-plt.step(t, np.log10(us[0].T), color='black')
+plt.step(t[1:], np.log10(us[0].T), color='black')
 plt.ylabel('log(u)')
 plt.xlabel('Time (min)')
 

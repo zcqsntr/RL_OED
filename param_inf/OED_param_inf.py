@@ -206,7 +206,7 @@ if __name__ == '__main__':
     plt.figure()
     plt.plot(np.array(env.true_trajectory[0, :].elements()), label = 'true trajectory')
     #plt.plot(np.array(env.est_trajectory[0, :].elements()), label = 'estimated trajectory')
-    np.save('true_trajectory.npy', np.array(env.true_trajectory[0, :].elements()))
+    np.save('trajectory.npy', np.array(env.true_trajectory[0, :].elements()))
     #np.save('est_trajectory.npy', np.array(env.est_trajectory[0, :].elements()))
     plt.legend()
     plt.ylabel('Population (A.U)')
