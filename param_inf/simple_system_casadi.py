@@ -244,7 +244,7 @@ if __name__ == '__main__':
     plt.figure()
     plt.plot(xs, label = 'trajectory')
 
-    #np.save('true_trajectory.npy', np.array(env.true_trajectory[0, :].elements()))
+    #np.save('trajectory.npy', np.array(env.true_trajectory[0, :].elements()))
 
     plt.legend()
     plt.ylabel('Population (A.U)')

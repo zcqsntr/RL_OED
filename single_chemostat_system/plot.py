@@ -55,7 +55,7 @@ path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_tim
 #path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps'
 #path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps_new_ICS_reduced_state'
 #path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/two_hour_timesteps_DQN/prior_double_eps_reduced_state'
-path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/single_chemostat_rec_fitted_q'
+#path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/single_chemostat_rec_fitted_q'
 #path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_fixed_timestep/rec_fitted_q_050721/single_chemostat_prior'
 
 #path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_PG_220721'
@@ -80,7 +80,7 @@ all_returns = []
 all_us = []
 all_trajectories =[]
 
-for i in range(4,7):
+for i in range(1,21):
     '''
     us = np.load(path + '/repeat' + str(i) +'/us.npy')
     print(us.shape)
@@ -172,7 +172,7 @@ print(explore_rates[-100:])
 fig, ax1 = plt.subplots()
 for i in range(len(all_returns)):
     print(len(all_returns[i]))
-ax1.errorbar(np.array(x), np.mean(np.array(all_returns), axis = 0), np.std(np.array(all_returns), axis = 0), label = 'Average Return')
+ax1.errorbar(x, np.mean(np.array(all_returns), axis = 0), np.std(all_returns, axis = 0), label = 'Average Return')
 #plt.plot(x,all_returns[0])
 #plt.plot(x,all_returns[1])
 #plt.plot(x,all_returns[2])

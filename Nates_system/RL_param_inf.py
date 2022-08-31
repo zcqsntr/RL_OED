@@ -197,7 +197,7 @@ if __name__ == '__main__':
     #print(env.actual_params)
 
     np.save(save_path + 'trajectories.npy', np.array(env.true_trajectory))
-    np.save(save_path + 'true_trajectory.npy', env.true_trajectory)
+    np.save(save_path + 'trajectory.npy', env.true_trajectory)
     np.save(save_path + 'us.npy', np.array(env.us))
     np.save(save_path + 'all_returns.npy', np.array(all_returns))
     np.save(save_path + 'actions.npy', np.array(agent.actions))

@@ -175,7 +175,7 @@ if __name__ == '__main__':
 
     np.save(save_path + 'trajectories.npy', np.array(env.true_trajectory))
 
-    np.save(save_path + 'true_trajectory.npy', env.true_trajectory)
+    np.save(save_path + 'trajectory.npy', env.true_trajectory)
     # np.save(save_path + 'est_trajectory.npy', env.est_trajectory)
     np.save(save_path + 'us.npy', np.array(env.us))
 

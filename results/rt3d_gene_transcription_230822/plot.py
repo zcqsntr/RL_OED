@@ -109,8 +109,8 @@ for i in range(1,11):
     print('max:', np.max(returns))
 
     actions = np.load(path + '/repeat' + str(i) +'/actions.npy')
-    #print('actions', actions[-10:])
-    #print('actions', actions.shape)
+    print('actions', actions[-10:])
+    print('actions', actions.shape)
 
     y = [np.mean(returns[i * step: (i + 1) * step]) for i in range(0, len(returns) // step)]
     print(i, 'everage max ', y[-1])
