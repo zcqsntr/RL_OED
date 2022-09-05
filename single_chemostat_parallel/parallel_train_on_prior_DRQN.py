@@ -200,7 +200,7 @@ if __name__ == '__main__':
                     #print('Val loss:', history.history['val_loss'][0], history.history['val_loss'][-1])
                     print('epochs:', len(history.history['loss']))
                 done_MC = True
-            if not done_inital_fit:
+            if not done_initial_fit:
                 for i in range(int(episode)):
                     print()
                     print('Initial iter: ' + str(i))

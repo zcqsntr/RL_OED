@@ -290,11 +290,11 @@ class OED_env():
         print('sym traj:', est_trajectory_sym.shape)
         print('traj:', trajectory.shape)
 
-        e = trajectory[0:self.n_observed_variables, :].T - est_trajectory_sym[0:self.n_observed_variables, :].T
+        e = (trajectory[0:self.n_observed_variables, :].T - est_trajectory_sym[0:self.n_observed_variables, :].T)/(0.05 * trajectory[0:self.n_observed_variables, :].T + 0.00000001)
         print('e shape:', e.shape)
         print(dot(e, e).shape)
 
-        nlp = {'x': sym_theta, 'f': 0.5 * dot(e / (0.05 * trajectory[0:self.n_observed_variables, :].T + 0.00000001),
+        nlp = {'x': sym_theta, 'f': 0.5 * dot(e ,
                                               e)}  # weighted least squares
         print('nlp initialised')
         #solver = self.gauss_newton(e, nlp, sym_theta, max_iter = 100000)
