@@ -13,6 +13,7 @@ from OED_env import *
 from DQN_agent import *
 import tensorflow as tf
 import time
+import random
 
 from xdot import xdot
 
@@ -63,11 +64,13 @@ us = np.array([1000., 0.00100021, 27.36043142, 0.00124282, 0.00101882, 0.0010000
 #us = np.array([9.99995957e+02, 1.00000000e-03, 1.84705323e+00, 1.00000000e-03,1.00000000e-03, 1.00000000e-03]) # 71.00  u optimisation log(det(cov)) = 34.17
 #us = np.array([2.84803587e+02, 1.23284674e-02, 2.31012970e+01, 3.51119173e-03, 1.23284674e-02, 3.51119173e-03]) #-73.2607748599451 fitted Q, log(det(cov)
 #us = np.array([1.00000000e+03, 1.00000000e-03, 2.31012970e+01, 1.00000000e-03, 3.51119173e-03, 3.51119173e-03]) # -73.84706840763531 fitted Q log(det(cov) = 28.388134466657768
-
+np.random.seed(0)
+random.seed(0)
 env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_controlled_inputs, num_inputs, input_bounds, dt, control_interval_time, normaliser)
 trajectory_solver = env.get_sampled_trajectory_solver(N_control_intervals,control_interval_time, dt,)
-
-
+save_path = '/home/neythen/Desktop/Projects/RL_OED/Nates_system/results/test_methods/RT3D'
+lb = [1, 2e3, 4.02e5, 7.7e-5, 1]
+ub = [30, 1e6, 59.3e10, 7.7e-4, 10]
 for i in range(30):
     print('SAMPLE: ', i)
     param_guesses = np.random.uniform(low=[1, 2e3, 4.02e5, 7.7e-5, 1], high=[30, 1e6, 59.3e10, 7.7e-4, 10])
@@ -108,7 +111,7 @@ for i in range(30):
     '''
 
 
-    param_guesses = param_solver(x0=param_guesses)['x']
+    param_guesses = param_solver(x0=param_guesses, lbx=lb, ubx=ub)['x']
 
     #est_trajectory = trajectory_solver(env.initial_Y, param_guesses, env.us).T
     print(param_guesses)
@@ -117,7 +120,7 @@ for i in range(30):
 
     all_final_params.append(param_guesses.elements())
 
-np.save('./working_dir/all_final_params.npy', all_final_params)
+np.save(save_path + '/all_final_params.npy', all_final_params)
 print(np.array(all_final_params))
 all_final_params = np.array(all_final_params)
 cov = np.cov(all_final_params.T)

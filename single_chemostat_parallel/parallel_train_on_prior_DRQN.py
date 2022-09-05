@@ -56,7 +56,7 @@ if __name__ == '__main__':
     monte_carlo = False
     cluster = False
     done_MC = True
-    done_inital_fit = True # fit on the data gathered during random explore phase before explore rate < 1
+    done_initial_fit = True # fit on the data gathered during random explore phase before explore rate < 1
     test_episode = True  # if true agent will take greedy actions for the last episode in the skip, to test current policy
     C = 100 # frequency of target network update if applicable
 
