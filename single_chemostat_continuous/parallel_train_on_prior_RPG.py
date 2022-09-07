@@ -82,7 +82,7 @@ if __name__ == '__main__':
     else:
         save_path = './working_results'
 
-    test_episode = True
+    test_episode = False
     recurrent = True
 
 
