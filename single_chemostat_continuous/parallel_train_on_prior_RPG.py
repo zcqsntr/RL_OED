@@ -27,7 +27,7 @@ import json
 
 
 if __name__ == '__main__':
-    print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
+    #print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
     n_cores = multiprocessing.cpu_count()
     print('Num CPU cores:', n_cores)
 
