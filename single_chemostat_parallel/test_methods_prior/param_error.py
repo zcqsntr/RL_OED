@@ -32,7 +32,7 @@ for h in ['/T3D/', '/MPC/', '/Rational/', '/OSAO/', '/working_results/']:
 
     print((inferred- actual).shape)
     print((((inferred- actual))**2).shape)
-    print('total error: ', np.sum(((inferred- actual)/actual)**2))
+    print('total error: ', np.sum(((inferred- actual)/actual)**2)/inferred.size)
 
     errors = np.sum(((inferred- actual)/actual)**2, axis = 1)
     errors.sort()

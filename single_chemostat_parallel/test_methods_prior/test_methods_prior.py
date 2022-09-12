@@ -52,10 +52,10 @@ network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_f
 
 
 network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat10' # best non pror
-network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat12' # best prior
+#network_path = '/home/neythen/Desktop/Projects/RL_OED/results/single_chemostat_continuous/non_prior_and_prior_180921/single_chemostat_FDDPG/repeat12' # best prior
 
-actions_from_agent = False
-prior = True
+actions_from_agent = True
+prior = False
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 n_cores = multiprocessing.cpu_count()//2
 print('Num CPU cores:', n_cores)
@@ -133,7 +133,7 @@ env = OED_env(y0, xdot, param_guesses, actual_params, n_observed_variables, n_co
 print('trajectory solver initialised')
 all_inferred_params = []
 all_initial_params = []
-prior = True
+
 if actions_from_agent:
     #agent = KerasFittedQAgent(layer_sizes=[n_observed_variables + n_params + n_FIM_elements + 2, 100, 100, num_inputs ** n_controlled_inputs])
     #agent = KerasFittedQAgent(layer_sizes=[n_observed_variables +1, 50, 50, num_inputs ** n_controlled_inputs])
@@ -166,15 +166,15 @@ trajectory_solver =env.get_sampled_trajectory_solver(N_control_intervals, contro
 lb = [0.5, 0.0001, 0.00001]
 ub = [2, 0.001, 0.0001]
 
-#all_losses = []
-#all_actual_params = []
+all_losses = []
+all_actual_params = []
 all_actions = []
 env.mapped_trajectory_solver = env.CI_solver.map(skip, "thread", n_cores)
 
-save_path = '/home/neythen/Desktop/Projects/RL_OED/single_chemostat_parallel/test_methods_prior/MPC'
+#save_path = '/home/neythen/Desktop/Projects/RL_OED/single_chemostat_parallel/test_methods_prior/MPC'
 
 #all_actual_params = np.load(save_path + '/all_actual_params.npy')
-all_actual_params = np.load('/home/neythen/Desktop/Projects/RL_OED/single_chemostat_parallel/test_methods_prior/T3D/all_actual_params.npy')
+#all_actual_params = np.load('/home/neythen/Desktop/Projects/RL_OED/single_chemostat_parallel/test_methods_prior/T3D/all_actual_params.npy')
 all_D_scores = []
 
 for i in range(30):
@@ -182,7 +182,7 @@ for i in range(30):
     if prior:
         actual_params = np.random.uniform(low=lb, high=ub)
         actual_params = DM(actual_params)
-        actual_params = DM(all_actual_params[i])
+        #actual_params = DM(all_actual_params[i])
     param_guesses = np.random.uniform(low=lb, high=ub)
     initial_params = param_guesses
 
@@ -242,7 +242,7 @@ for i in range(30):
     print('traj:', trajectory.shape)
 
 
-    '''
+
     param_solver = env.get_param_solver(trajectory_solver, trajectory)
     sol = param_solver(x0=param_guesses, lbx = lb, ubx = ub)
     inferred_params = sol['x']
@@ -252,7 +252,7 @@ for i in range(30):
     all_actual_params.append(actual_params.elements())
     all_inferred_params.append(inferred_params.elements())
     all_losses.append(sol['f'].elements())
-    '''
+
 
 print(' all final params: ', np.array(all_inferred_params))
 all_inferred_params = np.array(all_inferred_params)

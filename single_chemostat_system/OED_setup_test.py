@@ -46,6 +46,7 @@ if __name__ == '__main__':
         [params[k] for k in params.keys()]
 
     actual_params = DM(actual_params)
+    actual_params = DM([2, 0.001, 0.0001])
     normaliser = np.array(normaliser)
 
     param_guesses = actual_params
@@ -72,6 +73,8 @@ if __name__ == '__main__':
     # print('us: ',mpc_us)
 
     env.us = mpc_us
+
+    '''
 
     env.us = np.array([[0.01, 0.2, 0.01, 0.4, 0.01, 0.6, 0.01, 0.8, 0.01, 1.],
                        [1, 0.01, 0.8, 0.01, 0.6, 0.01, 0.4, 0.01, 0.2, 0.01]])  # rational retuirn: 15.2825
@@ -100,6 +103,7 @@ if __name__ == '__main__':
                        [9.64664102e-01, 5.07902063e-04],
                        [6.75407708e-01, 1.07866724e-03],
                        [9.93295372e-01, 3.97822623e-05]]).T  # t3d return = 20.27
+    '''
 
     '''
     solver = env.get_sampled_trajectory_solver(N_control_intervals, control_interval_time, dt)

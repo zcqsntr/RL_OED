@@ -228,9 +228,14 @@ if __name__ == '__main__':
 
         print('n unstable ', unstable)
         n_unstables.append(unstable)
-        all_returns.extend(e_returns[:-test_episode])
+
+
+
         if test_episode:
+            all_returns.extend(e_returns[:-1])
             all_test_returns.append(np.sum(np.array(e_rewards)[-1, :]))
+        else:
+            all_returns.extend(e_returns)
 
         print()
         print('EPISODE: ', episode, episode*skip)

@@ -290,12 +290,13 @@ class OED_env():
         print('sym traj:', est_trajectory_sym.shape)
         print('traj:', trajectory.shape)
 
-        e = (trajectory[0:self.n_observed_variables, :].T - est_trajectory_sym[0:self.n_observed_variables, :].T)/(0.05 * trajectory[0:self.n_observed_variables, :].T + 0.00000001)
+        #e = (trajectory[0:self.n_observed_variables, :].T - est_trajectory_sym[0:self.n_observed_variables, :].T)/(0.05 * trajectory[0:self.n_observed_variables, :].T + 0.00000001) # for GT system
+        e = trajectory[0:self.n_observed_variables, :].T - est_trajectory_sym[0:self.n_observed_variables, :].T
         print('e shape:', e.shape)
         print(dot(e, e).shape)
 
-        nlp = {'x': sym_theta, 'f': 0.5 * dot(e ,
-                                              e)}  # weighted least squares
+        #nlp = {'x': sym_theta, 'f': 0.5 * dot(e ,e)}  # for GT system
+        nlp = {'x': sym_theta, 'f': 0.5 * dot(e/(0.05 * trajectory[0:self.n_observed_variables, :].T + 0.00000001) ,e)}  # weighted least squares, for chemostat
         print('nlp initialised')
         #solver = self.gauss_newton(e, nlp, sym_theta, max_iter = 100000)
         solver = self.gauss_newton(e, nlp, sym_theta)

@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
     n_episodes, skip, y0, actual_params, input_bounds, n_controlled_inputs, num_inputs, dt, lb, ub, N_control_intervals, control_interval_time, n_observed_variables, prior, normaliser = \
         [params[k] for k in params.keys()]
-
+    n_episodes = 50000 #todo: remove this
 
     actual_params = DM(actual_params)
     normaliser = np.array(normaliser)
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     cluster = False
     done_MC = True
     done_initial_fit = True # fit on the data gathered during random explore phase before explore rate < 1
-    test_episode = True  # if true agent will take greedy actions for the last episode in the skip, to test current policy
+    test_episode = False  # if true agent will take greedy actions for the last episode in the skip, to test current policy
     C = 100 # frequency of target network update if applicable
 
 
@@ -220,9 +220,12 @@ if __name__ == '__main__':
 
         print('n unstable ', unstable)
         n_unstables.append(unstable)
-        all_returns.extend(e_returns[:-test_episode])
+
         if test_episode:
+            all_returns.extend(e_returns[:-1])
             all_test_returns.append(np.sum(np.array(e_rewards)[-1, :]))
+        else:
+            all_returns.extend(e_returns)
         print()
         print('EPISODE: ', episode, episode*skip)
 
