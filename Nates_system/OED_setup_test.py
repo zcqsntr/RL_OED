@@ -307,11 +307,15 @@ ws = [1,1,1,1]*int(N_control_intervals/4)
 #us:  [2.84803587e+02 1.00000000e-03 8.11130831e+01 1.00000000e-03 1.23284674e-02 1.23284674e-02]  #-72.46740549151691 fitted Q
 
 #us = np.array([2.84803587e+02, 1.23284674e-02, 2.31012970e+01, 3.51119173e-03, 1.23284674e-02, 3.51119173e-03]) #-73.2607748599451 fitted Q
+logus = [1,-3,2,-3,3,-3]
+us = 10. ** np.array(logus) # rational design -67.73 optimality score, log(detcov) = 66.96
 
-us = np.array([1.00000000e+03, 1.00000000e-03, 2.31012970e+01, 1.00000000e-03, 3.51119173e-03, 3.51119173e-03]) # -73.84706840763531 fitted Q
+#us = np.array([1.00000000e+03, 1.00000000e-03, 2.31012970e+01, 1.00000000e-03, 3.51119173e-03, 3.51119173e-03]) # -73.84706840763531 fitted Q
 #us = np.array([9.99995957e+02, 1.00000000e-03, 1.84705323e+00, 1.00000000e-03,1.00000000e-03, 1.00000000e-03]) # 71.00  u optimisation
 
-us = np.array([1000., 0.00100021, 27.36043142, 0.00124282, 0.00101882, 0.00100001])  #0.7396907949847031 RT3D
+#logus = [2.99997, -2.93105, 1.48927, -2.90577, -2.91904, -2.94369]
+#us = 10.**np.array(logus) # mpc -73.9751 OS
+#us = np.array([1000., 0.00100021, 27.36043142, 0.00124282, 0.00101882, 0.00100001])  #0.7396907949847031 RT3D
 
 for i,doub_rate in enumerate(doub_rates):
     grs = []
@@ -397,13 +401,14 @@ ax2.plot(t, sol[:, 1], color='red', label='Protein')
 ax2.set_ylabel('Protein #')
 ax2.set_xlabel('Time (min)')
 fig.tight_layout()
-fig.legend(bbox_to_anchor=(0.8, 0.9))
+fig.legend(bbox_to_anchor=(0.4, 0.9))
+plt.savefig('traj.png', dpi = 300)
 
 plt.figure()
 plt.step(t[1:], np.log10(us[0].T), color='black')
 plt.ylabel('log(u)')
 plt.xlabel('Time (min)')
-
+plt.savefig('us.png', dpi = 300)
 
 '''
 plt.figure()

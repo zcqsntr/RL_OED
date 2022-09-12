@@ -59,7 +59,7 @@ all_returns = []
 all_us = []
 all_trajectories =[]
 
-for i in range(1,11):
+for i in range(1,10):
     '''
     us = np.load(path + '/repeat' + str(i) +'/us.npy')
     print(us.shape)
@@ -157,9 +157,9 @@ ax1.errorbar(np.array(x), np.mean(np.array(all_returns), axis = 0), np.std(np.ar
 #plt.plot(x,all_returns[2])
 
 #plt.plot(len(returns)+step,  16.612377905628856, 'o', label = 'OSAO = 16.61')
-##plt.plot(len(returns)+step, 15.2825, 'o', label = 'Rational = 15.28')
-#plt.plot(len(returns)+step, 20.27, 'o', label = 'Best RL = 20.27', color='C0')
-#plt.plot(len(returns)+step, 20.07, 'o', label = 'MPC = 20.07')
+plt.plot(len(returns)+step, 66.96, 'o', label = 'Rational = 66.96')
+plt.plot(len(returns)+step, 73.97, 'o', label = 'Best RL = 73.97', color='C0')
+plt.plot(len(returns)+step, 73.98, 'o', label = 'MPC = 73.98')
 ax1.set_ylabel('Return')
 ax1.set_xlabel('Episode')
 #ax1.set_ylim(bottom=26)
@@ -173,10 +173,10 @@ ax2.set_ylabel('Explore Rate')
 ax2.set_xlabel('Episode')
 plt.tight_layout()
 
-ax1.legend(loc=(0.2, 0.9))
-ax2.legend(loc=(0.2,0.83))
+ax1.legend(loc=(0.6, 0.55))
+ax2.legend(loc=(0.6,0.47))
 #plt.title('LR: ' + str(pol_learning_rate) + ' ' + 'Layer sizes: ' + str(hidden_layer_size))
-plt.savefig('./plot.pdf')
+plt.savefig('./plot.png', dpi=300)
 plt.show()
 
 
