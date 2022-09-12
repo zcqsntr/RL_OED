@@ -27,7 +27,7 @@ import json
 
 
 if __name__ == '__main__':
-    print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
+    #print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
     n_cores = multiprocessing.cpu_count()
     print('Num CPU cores:', n_cores)
 
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     n_episodes, skip, y0, actual_params, input_bounds, n_controlled_inputs, num_inputs, dt, lb, ub, N_control_intervals, control_interval_time, n_observed_variables, prior, normaliser = \
         [params[k] for k in params.keys()]
 
-
+    n_episodes = 30000 #TODO: remove this
     actual_params = DM(actual_params)
 
 
