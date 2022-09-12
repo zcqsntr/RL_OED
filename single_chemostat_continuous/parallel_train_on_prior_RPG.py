@@ -38,7 +38,7 @@ if __name__ == '__main__':
     n_episodes, skip, y0, actual_params, input_bounds, n_controlled_inputs, num_inputs, dt, lb, ub, N_control_intervals, control_interval_time, n_observed_variables, prior, normaliser = \
         [params[k] for k in params.keys()]
 
-
+    n_episodes = 30000 #TODO: remove this
     actual_params = DM(actual_params)
 
 
