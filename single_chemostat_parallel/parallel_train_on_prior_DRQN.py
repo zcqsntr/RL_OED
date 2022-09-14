@@ -212,7 +212,7 @@ if __name__ == '__main__':
                 done_inital_fit = True
 
 
-        if fitted:
+        if fitted and explore_rate < 1:
             history = agent.Q_update(fitted=fitted, monte_carlo=monte_carlo, verbose=False)
 
             print('Loss:', history.history['loss'][0], history.history['loss'][-1])
