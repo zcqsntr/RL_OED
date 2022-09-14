@@ -38,7 +38,7 @@ if __name__ == '__main__':
     n_episodes, skip, y0, actual_params, input_bounds, n_controlled_inputs, num_inputs, dt, lb, ub, N_control_intervals, control_interval_time, n_observed_variables, prior, normaliser = \
         [params[k] for k in params.keys()]
     n_episodes = 50000 #todo: remove this
-    skip = 100
+    skip = 100 #todo: remove this
 
     actual_params = DM(actual_params)
     normaliser = np.array(normaliser)
@@ -188,7 +188,7 @@ if __name__ == '__main__':
 
         # train the agent
         explore_rate = agent.get_rate(episode, 0, 1, n_episodes / (11 * skip))
-        #explore_rate = 1 #todo: remove this
+
 
         if explore_rate < 1 or not fitted:
             if not done_MC:
@@ -248,7 +248,7 @@ if __name__ == '__main__':
             print('test rewards:', np.array(e_rewards)[-1, :])
             print('test return:', np.sum(np.array(e_rewards)[-1, :]))
             print()
-    history = agent.Q_update(fitted=fitted, monte_carlo=monte_carlo, verbose=False)
+
     print('time:', time.time() - t)
     print(env.detFIMs[-1])
     print(env.logdetFIMs[-1])
