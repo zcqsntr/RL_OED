@@ -102,6 +102,7 @@ if __name__ == '__main__':
     #agent = DRPG_agent(layer_sizes=layer_sizes, learning_rate = 0.0004, critic = True)
     agent = DDPG_agent(val_layer_sizes = val_layer_sizes, pol_layer_sizes = pol_layer_sizes,  policy_act = tf.nn.sigmoid, val_learning_rate = 0.0001, pol_learning_rate = pol_learning_rate)#, pol_learning_rate=0.0001)
     agent.batch_size = int(N_control_intervals * skip)
+    print('batch size', agent.batch_size)
     agent.max_length = 11
     agent.mem_size = 500000000
 
@@ -162,6 +163,8 @@ if __name__ == '__main__':
                 inputs = [states, sequences]
             else:
                 inputs = [states]
+
+           
 
             if episode < 1000 // skip:
                 actions = agent.get_actions0(inputs, explore_rate = 1, test_episode = True, recurrent=recurrent)
